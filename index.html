@@ -13,14 +13,14 @@
 radial-gradient(circle at 70% -10%,#3a1018 0,transparent 28rem),var(--bg);
 color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh}
 button,input,select{font:inherit}button{cursor:pointer}
-.app{max-width:1480px;margin:auto;padding:22px}
+.app{max-width:1480px;margin:auto;padding:22px 22px 104px}
 .top{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:end;border-bottom:1px solid var(--line);padding-bottom:18px}
-.brand small{letter-spacing:.28em;color:var(--red);font-weight:800}.brand h1{font-size:clamp(30px,4vw,58px);margin:3px 0 0;letter-spacing:-.04em}
+.brand small{letter-spacing:.28em;color:var(--red);font-weight:800}.brand h1{font-size:clamp(26px,4vw,58px);margin:3px 0 0;letter-spacing:-.04em;white-space:nowrap}
 .brand p{margin:3px 0 0;color:var(--muted)}
 .actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 .btn{background:#191c25;color:#eee;border:1px solid #343949;border-radius:8px;padding:10px 13px}
 .btn:hover{border-color:#656d85}.btn.primary{background:var(--red);border-color:var(--red);font-weight:800}
-.transport{display:grid;grid-template-columns:auto auto 1fr repeat(3,auto);gap:12px;align-items:center;padding:18px 0}
+.transport{position:fixed;left:0;right:0;bottom:0;z-index:20;display:grid;grid-template-columns:minmax(54px,auto) minmax(44px,auto) auto auto minmax(170px,1fr) auto auto auto;gap:8px;align-items:center;padding:10px max(22px,calc((100vw - 1436px)/2));background:rgba(8,9,13,.96);border-top:1px solid var(--line);box-shadow:0 -10px 28px rgba(0,0,0,.28);backdrop-filter:blur(12px)}
 .play{width:54px;height:54px;border-radius:50%;border:0;background:var(--red);color:white;font-size:19px}
 .stop{width:44px;height:44px;border-radius:50%;border:1px solid #3b4050;background:#141720;color:#fff}
 .time{min-width:130px;color:#dfe3ec}.time b{font-size:20px}.time span{color:var(--muted)}
@@ -28,7 +28,8 @@ button,input,select{font:inherit}button{cursor:pointer}
 .control input{width:68px;background:transparent;border:0;color:#fff;outline:0}
 .control input[type=range]{width:100px}
 .control input[type=text]{width:100%;min-width:0}
-.workspace{display:grid;grid-template-columns:330px 1fr;gap:15px}
+.workspace{display:grid;grid-template-columns:1fr;gap:15px}
+.workspace>.tracks{display:none}
 .panel{background:linear-gradient(180deg,rgba(23,26,35,.95),rgba(12,14,19,.95));border:1px solid var(--line);border-radius:12px;overflow:hidden}
 .panel-title{padding:13px 15px;border-bottom:1px solid var(--line);font-size:12px;letter-spacing:.18em;color:#b4bac9;text-transform:uppercase}
 .library-body{padding:12px;display:grid;gap:10px}
@@ -77,6 +78,9 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
  .transport{grid-template-columns:auto auto 1fr}.transport .control{display:none}
  .app{padding:12px}.sections{height:65px}
 }
+@media(max-width:1200px){
+ .top{grid-template-columns:1fr}.actions{justify-content:flex-start}
+}
 
 .chord-box{border:1px solid #343949;border-radius:8px;background:#131720;padding:10px;min-width:0}
 .chord-box b{display:block;font-size:16px}.chord-box span{font-size:10px;color:#7f8799}
@@ -88,10 +92,20 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
 
 
 .arr-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;color:#7f8799;font-size:11px}
-.arr-grid{display:grid;grid-template-columns:76px repeat(12,minmax(50px,1fr));gap:3px;min-width:900px}
+.arr-grid{display:grid;grid-template-columns:150px repeat(12,minmax(0,1fr));gap:3px;width:100%;min-width:0}
 .arr-label,.arr-cell,.arr-head{min-height:34px;border:1px solid #303646;border-radius:4px}
-.arr-label{display:flex;align-items:center;padding:0 8px;font-size:11px;color:#b8bfd0;background:#11151c}
-.arr-head{display:flex;align-items:center;justify-content:center;font-size:10px;color:#778095;background:#0e1117}
+.arr-label{display:flex;flex-direction:column;align-items:stretch;justify-content:center;gap:3px;padding:0 8px;font-size:11px;color:#b8bfd0;background:#11151c}
+.arr-track-top{display:flex;align-items:center;justify-content:space-between;gap:6px;min-width:0}
+.arr-track-name{flex:1;min-width:0;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.arr-track-controls{display:flex;align-items:center;gap:3px}
+.arr-track-controls button{font-size:9px;padding:2px 5px;border:1px solid #3a4051;background:#12151c;color:#9ea6ba;border-radius:3px;cursor:pointer}
+.arr-track-controls button.on{background:var(--red2);border-color:var(--red);color:white}
+.arr-label.selected{outline:2px solid #d5af62;outline-offset:-2px;background:#1d202a}
+.arr-track-controls input{width:38px;height:3px;accent-color:var(--red)}
+.arr-control-label{font-size:9px;color:#7f8799}
+.arr-volume-row{display:flex;align-items:center;gap:3px;color:#7f8799;font-size:8px;white-space:nowrap}
+.arr-volume-row input{width:100%;height:3px;accent-color:var(--red)}
+.arr-head{display:flex;align-items:center;justify-content:center;text-align:center;white-space:normal;line-height:1.15;font-size:10px;color:#778095;background:#0e1117}
 .arr-head:not(:first-child){cursor:pointer}
 .arr-cell{background:#11151c;position:relative;cursor:pointer}
 .arr-cell.on{background:linear-gradient(135deg,#4b1420,#24161c);border-color:#8f2b3a}
@@ -124,6 +138,10 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
 
 .note.selected{outline:2px solid #f8d990;box-shadow:0 0 12px rgba(248,217,144,.45)}
 .selection-box{position:absolute;border:1px dashed #f8d990;background:rgba(248,217,144,.08);z-index:8;pointer-events:none}
+.collapse-toggle{float:right;border:1px solid #3a4051;background:#12151c;color:#b8bfd0;border-radius:5px;padding:4px 8px;font-size:11px;cursor:pointer}
+.collapsible-panel.collapsed> :not(.panel-title):not(.roll-head){display:none!important}
+.library-body.collapsed-library{display:none}
+.main>#composerPanel{order:1}.main>#arrangementPanel{order:2}.main>#pianoPanel{order:3}.main>#soundPanel{order:4}.main>#samplerPanel{order:5}.main>#drumPanel{order:6}
 
 .velocity-lane{border-top:1px solid #2a2f3d;padding:8px 12px;background:#0f1218}
 .velocity-bars{display:flex;align-items:end;gap:2px;height:80px;overflow-x:auto}
@@ -153,12 +171,10 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
     </div>
     <div class="actions">
       <button class="btn" id="newBtn">新規</button>
-      <button class="btn" id="saveBtn">Project保存</button>
-      <button class="btn" id="loadBtn">Project読込</button>
+      <button class="btn" id="saveBtn" title="プロジェクトを保存">保存</button>
+      <button class="btn" id="loadBtn" title="プロジェクトを読み込み">読込</button>
       <input id="fileInput" type="file" accept=".amfproj,.json,application/json" hidden>
-      <button class="btn" id="midiImportBtn">MIDI読込</button><input id="midiInput" type="file" accept=".mid,.midi,audio/midi" hidden><button class="btn" id="midiBtn">MIDI</button>
-      <button class="btn" id="wavBtn">WAV</button>
-      <button class="btn primary" id="exportBtn">JSONを書き出す</button>
+      <button class="btn" id="midiImportBtn" title="MIDIを読み込み">MIDI読込</button><input id="midiInput" type="file" accept=".mid,.midi,audio/midi" hidden><button class="btn" id="midiBtn" title="MIDIファイルを保存">MIDI保存</button>
     </div>
   </header>
 
@@ -174,8 +190,8 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
 
   <section class="workspace">
     <aside class="panel tracks">
-      <div class="panel-title">曲ライブラリ <span style="float:right" id="songCount">1 曲</span></div>
-      <div class="library-body">
+      <div class="panel-title">曲ライブラリ <button class="collapse-toggle" data-collapse="#libraryBody">折りたたむ</button><span style="float:right;margin-right:90px" id="songCount">1 曲</span></div>
+      <div class="library-body" id="libraryBody">
         <div class="song-name-field">
           <span>現在の曲名</span>
           <input id="songNameInput" type="text" placeholder="曲名を入力">
@@ -189,13 +205,15 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
         <div class="song-meta" id="songMeta">クリックで曲を切り替えます。</div>
         <div class="song-list" id="songList"></div>
       </div>
-      <div class="panel-title">トラック <span style="float:right">07</span></div>
-      <div id="trackList"></div>
-      <div style="padding:13px;color:#777f91;font-size:11px">トラックを選ぶとピアノロールを編集できます。</div>
+      <div id="trackPanelLegacy" style="display:none">
+        <div class="panel-title">トラック <span style="float:right">07</span></div>
+        <div id="trackList"></div>
+        <div style="padding:13px;color:#777f91;font-size:11px">トラックを選ぶとピアノロールを編集できます。</div>
+      </div>
     </aside>
 
     <main class="main">
-      <section class="panel">
+      <section class="panel" id="arrangementPanel">
         <div class="panel-title">アレンジメント <span style="float:right">48 小節 · 7 トラック</span></div>
         <div class="arr">
           <div class="arr-toolbar">
@@ -208,8 +226,8 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
       </section>
 
 
-      <section class="panel">
-        <div class="panel-title">COMPOSER TOOLS <span style="float:right">Battle Generator</span></div>
+      <section class="panel collapsible-panel" id="composerPanel">
+        <div class="panel-title">COMPOSER TOOLS <button class="collapse-toggle" data-collapse="#composerPanel">折りたたむ</button><span style="float:right;margin-right:90px">Battle Generator</span></div>
         <div style="padding:14px;display:grid;gap:12px">
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
             <label class="control">WORK MODE
@@ -242,22 +260,20 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
                   <option value="orchestral">オーケストラ風</option>
                 </select>
               </label>
-              <button class="btn" id="applyGenreBtn">ジャンル設定を適用</button>
-              <button class="btn" id="applyChordsBtn">コード反映</button>
               <button class="btn primary" id="autoComposeBtn" type="button">自動生成</button>
               <button class="btn" id="autoPlayBtn" type="button">▶ Play</button>
-          </div>
-          <div style="color:#7f8799;font-size:11px" id="genreAutoHint">
-            ジャンル設定はBPM、進行、音符密度、ドラム、7トラックの音色、ADSR、FILTER、REVERB、DELAY、LFO、PANを連動させます。生成後は既存の48小節アレンジ、ライブラリ、MIDI/WAV、サンプラーへ反映されます。
           </div>
         </div>
       </section>
 
 
-      <section class="panel">
-        <div class="panel-title">SOUND DESIGN <span style="float:right">Track FX / Synth</span></div>
+      <section class="panel collapsible-panel collapsed" id="soundPanel">
+        <div class="panel-title">SOUND DESIGN <button class="collapse-toggle" data-collapse="#soundPanel">開く</button><span style="float:right;margin-right:50px">Track FX / Synth</span></div>
         <div style="padding:14px;display:grid;gap:12px">
           <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">
+            <label class="control">TRACK TYPE
+              <select id="trackTypeSel"></select>
+            </label>
             <label class="control">SOURCE
               <select id="sourceSel">
                 <option value="osc">Synth</option>
@@ -301,8 +317,8 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
       </section>
 
 
-      <section class="panel">
-        <div class="panel-title">PCM SAMPLER <span style="float:right">Custom Sample / Drum Slots</span></div>
+      <section class="panel collapsible-panel collapsed" id="samplerPanel">
+        <div class="panel-title">PCM SAMPLER <button class="collapse-toggle" data-collapse="#samplerPanel">開く</button><span style="float:right;margin-right:50px">Custom Sample / Drum Slots</span></div>
         <div style="padding:14px;display:grid;gap:12px">
           <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
             <label class="control">TRACK SAMPLE
@@ -374,10 +390,11 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
           <div id="drumSeq" style="min-width:760px;display:grid;gap:6px"></div>
         </div>
       </section>
-      <section class="panel">
+      <section class="panel collapsible-panel" id="pianoPanel">
         <div class="roll-head">
           <div><h2 id="rollTitle">メロディー・ピアノロール</h2><small>4小節パターン · 48小節アレンジメントに配置</small></div>
           <div class="pattern-switch">
+            <button class="collapse-toggle" data-collapse="#pianoPanel">折りたたむ</button>
             <label>PATTERN
               <select id="patternSel">
                 <option value="INTRO">INTRO</option>
@@ -439,6 +456,19 @@ const TRACKS = [
  {name:"ベース", inst:"Pulse bass", wave:"square"},
  {name:"ドラム", inst:"Hybrid kit", wave:"noise"}
 ];
+const TRACK_TYPES=[
+ {id:"lead",label:"メロディー",inst:"Lead",preset:"snes"},
+ {id:"counter",label:"カウンターメロディー",inst:"Counter",preset:"bell"},
+ {id:"strings",label:"ストリングス",inst:"Strings",preset:"pad"},
+ {id:"brass",label:"ブラス",inst:"Brass",preset:"brass"},
+ {id:"arp",label:"アルペジオ",inst:"Arp",preset:"pluck"},
+ {id:"bass",label:"ベース",inst:"Bass",preset:"bass"},
+ {id:"piano",label:"ピアノ",inst:"Piano",preset:"bell"},
+ {id:"guitar",label:"ギター",inst:"Guitar",preset:"pluck"},
+ {id:"pad",label:"パッド",inst:"Pad",preset:"pad"},
+ {id:"choir",label:"コーラス",inst:"Choir",preset:"choir"},
+ {id:"bell",label:"ベル",inst:"Bell",preset:"bell"}
+];
 const SOUND_DEFAULTS=[
  {source:"osc",wave:"sawtooth",attack:.01,decay:.12,sustain:.72,release:.18,filter:9000,reverb:.10,delay:.08,pan:0,width:.25,lfoRate:0,lfoDepth:0},
  {source:"osc",wave:"triangle",attack:.01,decay:.18,sustain:.55,release:.22,filter:7000,reverb:.18,delay:.06,pan:.1,width:.3,lfoRate:0,lfoDepth:0},
@@ -478,8 +508,8 @@ function createSongState(name="新しい曲"){
    name,genrePreset:"Action",workspaceMode:"library",progression:"Em-C-G-D",style:"snes",
    bpm:168,key:"E minor",master:.75,selected:0,selectedPattern:"A",patternOrder:[...PATTERNS],
    arrangement:Array.from({length:7},()=>Array(12).fill(null)),
-   tracks:TRACKS.map(() => ({
-     mute:false,solo:false,volume:.75,
+   tracks:TRACKS.map((_,i) => ({
+     mute:false,solo:false,volume:.75,label:TRACKS[i].name,type:TRACK_TYPES[i]?.id||"lead",
      patterns:Object.fromEntries(PATTERNS.map(p=>[p,[]]))
    }))
  };
@@ -523,6 +553,11 @@ const GENRE_PRESETS={
  Sports:{bpm:164,progression:"Em-G-D-C",style:"nes",density:6,drums:"drive",sounds:["snes","pluck","bass","pluck","brass","brass","bell"]},
  Rhythm:{bpm:132,progression:"Em-C-G-D",style:"nes",density:6,drums:"drive",sounds:["snes","pluck","bass","pluck","brass","bell","bell"]}
 };
+const STYLE_GENERATION={
+ snes:{densityOffset:1,octave:12,arpStep:2,drumBoost:1.15},
+ nes:{densityOffset:2,octave:0,arpStep:1,drumBoost:1.35},
+ orchestral:{densityOffset:-1,octave:-12,arpStep:4,drumBoost:.65}
+};
 const SCALE_SEMITONES = {
  "E minor":[0,2,3,5,7,8,10],
  "A minor":[0,2,3,5,7,8,10],
@@ -535,6 +570,16 @@ function scalePool(key, low=64, high=88){
  const root=tonicMidi(key), pcs=SCALE_SEMITONES[key]||SCALE_SEMITONES["E minor"], out=[];
  for(let m=low;m<=high;m++){ if(pcs.includes((m-root+120)%12)) out.push(m) }
  return out;
+}
+function transposeAllPatterns(fromKey,toKey){
+ const delta=tonicMidi(toKey)-tonicMidi(fromKey);
+ if(!delta)return;
+ state.tracks.forEach((track,trackIndex)=>{
+   if(trackIndex===6)return;
+   Object.values(track.patterns||{}).forEach(notes=>notes.forEach(note=>{
+     note.pitch=noteFromMidi(clamp(midiOf(note.pitch)+delta,64,88));
+   }));
+ });
 }
 function progression(){
  return (state.progression||$("#progressionSel")?.value||"Em-C-G-D").split("-");
@@ -836,14 +881,16 @@ function autoComposeBattle(){
  }
  ensurePatterns();
  const profile=GENRE_PRESETS[state.genrePreset]||GENRE_PRESETS.Action;
+ const styleProfile=STYLE_GENERATION[state.style]||STYLE_GENERATION.snes;
  state.tracks.forEach(t=>PATTERNS.forEach(p=>t.patterns[p]=[]));
  const prog=progression(), pool=scalePool(state.key,64,88);
  PATTERNS.forEach((pat,pi)=>{
    prog.forEach((c,bar)=>{
      const chord=CHORDS[c]||CHORDS["Em"], base=bar*16;
-     const density=pat==="BREAK"?[0,8]:Array.from({length:Math.max(1,pat==="CLIMAX"?profile.density+2:profile.density)},(_,i)=>Math.floor(i*16/Math.max(1,pat==="CLIMAX"?profile.density+2:profile.density)));
+     const targetDensity=Math.max(1,(pat==="CLIMAX"?profile.density+2:profile.density)+styleProfile.densityOffset);
+     const density=pat==="BREAK"?[0,8]:Array.from({length:targetDensity},(_,i)=>Math.floor(i*16/targetDensity));
      density.forEach((off,idx)=>{
-       const chordMidi=midiOf(chord[idx%chord.length])+12+(pat==="CLIMAX"?12:0);
+       const chordMidi=midiOf(chord[idx%chord.length])+styleProfile.octave+(pat==="CLIMAX"?12:0);
        const nearest=pool.reduce((a,b)=>Math.abs(b-chordMidi)<Math.abs(a-chordMidi)?b:a,pool[0]);
        state.tracks[0].patterns[pat].push({pitch:noteFromMidi(clamp(nearest,64,88)),step:base+off,len:pat==="BREAK"?4:2});
      });
@@ -852,12 +899,12 @@ function autoComposeBattle(){
      state.tracks[3].patterns[pat].push({pitch:chord[2],step:base+8,len:8});
      state.tracks[5].patterns[pat].push({pitch:chord[0],step:base,len:12});
    });
-   for(let s=0;s<64;s+=(profile.density>=5?1:2)){
+   for(let s=0;s<64;s+=styleProfile.arpStep){
      if(pat!=="BREAK") state.tracks[4].patterns[pat].push({pitch:["E5","G5","B5","G5"][(s/2+pi)%4],step:s,len:1});
    }
    for(let s=0;s<64;s++){
      const mode=profile.drums;
-     if(mode!=="none" && ((mode==="drive"&&s%4===0)||(mode==="soft"&&s%8===0)||(mode==="sparse"&&s%8===0))) state.tracks[6].patterns[pat].push({pitch:"C5",step:s,len:1});
+     if(mode!=="none" && ((mode==="drive"&&s%Math.max(1,Math.round(4/styleProfile.drumBoost))===0)||(mode==="soft"&&s%8===0)||(mode==="sparse"&&s%8===0))) state.tracks[6].patterns[pat].push({pitch:"C5",step:s,len:1});
      if(mode!=="none" && ((mode==="drive"&&s%8===4)||(mode!=="drive"&&s%16===12))) state.tracks[6].patterns[pat].push({pitch:"D5",step:s,len:1});
      if(mode==="drive" && s%2===1 && pat!=="BREAK") state.tracks[6].patterns[pat].push({pitch:"E5",step:s,len:1});
      if(mode==="soft" && s%4===2 && pat!=="BREAK") state.tracks[6].patterns[pat].push({pitch:"E5",step:s,len:1});
@@ -1013,7 +1060,9 @@ function ensurePatterns(){
     state.patternOrder=[...PATTERNS];
   }
   if(!state.selectedPattern || !PATTERNS.includes(state.selectedPattern)) state.selectedPattern=PATTERNS[0]||"A";
-  state.tracks.forEach(t=>{
+  state.tracks.forEach((t,ti)=>{
+    if(!t.type)t.type=TRACK_TYPES[ti]?.id||"lead";
+    if(!t.label)t.label=TRACKS[ti]?.name||"Track";
     if(!t.patterns){
       const legacy=t.notes||[];
       t.patterns=Object.fromEntries(PATTERNS.map(p=>[p,[]]));
@@ -1021,8 +1070,13 @@ function ensurePatterns(){
       delete t.notes;
     }
     PATTERNS.forEach(p=>{ if(!Array.isArray(t.patterns[p])) t.patterns[p]=[]; });
-    if(!t.sound)t.sound={...SOUND_DEFAULTS[state.tracks.indexOf(t)]};if(!t.sample)t.sample={name:"",root:"E4",gain:1,loop:false,loopStart:0,loopEnd:0,oneShot:false,fadeIn:0,fadeOut:0};
+    if(!t.sound)t.sound={...SOUND_DEFAULTS[ti]};if(!t.sample)t.sample={name:"",root:"E4",gain:1,loop:false,loopStart:0,loopEnd:0,oneShot:false,fadeIn:0,fadeOut:0};
     Object.keys(t.patterns).forEach(k=>{ if(!PATTERNS.includes(k)) delete t.patterns[k]; });
+  });
+  let soloFound=false;
+  state.tracks.forEach(t=>{
+    if(!t.solo)return;
+    if(soloFound)t.solo=false;else soloFound=true;
   });
   ensureNoteVelocity();refreshPatternSelect();
 }
@@ -1114,7 +1168,14 @@ function renderArrangement(){
  const blank=document.createElement("div");blank.className="arr-head";blank.textContent="TRACK";host.appendChild(blank);
  for(let b=0;b<12;b++){const h=document.createElement("div");h.className="arr-head";h.textContent=`${b*4+1}-${b*4+4}`;h.title=`${b*4+1}-${b*4+4}小節から再生`;h.onclick=()=>seekToArrangementBlock(b);host.appendChild(h)}
  state.tracks.forEach((tr,ti)=>{
-   const l=document.createElement("div");l.className="arr-label";l.textContent=TRACKS[ti].name;host.appendChild(l);
+   const l=document.createElement("div");l.className="arr-label"+(state.selected===ti?" selected":"");
+   const type=TRACK_TYPES.find(x=>x.id===tr.type)||TRACK_TYPES[ti]||TRACK_TYPES[0];
+   l.innerHTML=`<div class="arr-track-top"><div class="arr-track-name" title="クリックで選択">${tr.label||TRACKS[ti].name}</div><div class="arr-track-controls"><button data-arr-mute class="${tr.mute?"on":""}">M</button><button data-arr-solo class="${tr.solo?"on":""}">S</button></div></div><div class="arr-volume-row"><input data-arr-volume type="range" min="0" max="1" step=".01" value="${tr.volume}" title="Volume"></div>`;
+   l.onclick=()=>{state.selected=ti;render();};
+   const mute=l.querySelector("[data-arr-mute]");mute.onclick=e=>{e.stopPropagation();tr.mute=!tr.mute;state.selected=ti;render();};
+   const solo=l.querySelector("[data-arr-solo]");solo.onclick=e=>{e.stopPropagation();const wasSolo=!!tr.solo;state.tracks.forEach((track,index)=>{track.solo=!wasSolo&&index===ti;});state.selected=ti;render();};
+   const volume=l.querySelector("[data-arr-volume]");volume.onclick=e=>e.stopPropagation();volume.oninput=e=>{e.stopPropagation();tr.volume=+e.target.value;autoSave();};
+   host.appendChild(l);
    for(let b=0;b<12;b++){
      const p=state.arrangement[ti][b];
      const c=document.createElement("div");
@@ -1259,12 +1320,18 @@ function initTracks(){
  const host=$("#trackList"); host.innerHTML="";
  state.tracks.forEach((t,i)=>{
   const el=document.createElement("div"); el.className="track"+(i===state.selected?" active":"");
-  el.innerHTML=`<div class="num">${String(i+1).padStart(2,"0")}</div><div><div class="track-name">${TRACKS[i].name}</div><div class="track-inst">${TRACKS[i].inst}</div></div><div class="track-actions"><button class="mini ${t.mute?"on":""}" data-m="${i}">M</button><button class="mini ${t.solo?"on":""}" data-s="${i}">S</button></div><input class="vol" data-v="${i}" type="range" min="0" max="1" step=".01" value="${t.volume}">`;
+  const type=TRACK_TYPES.find(x=>x.id===t.type)||TRACK_TYPES[i]||TRACK_TYPES[0];
+  el.innerHTML=`<div class="num">${String(i+1).padStart(2,"0")}</div><div><div class="track-name">${t.label||type.label}</div><div class="track-inst">${type.inst}</div></div><div class="track-actions"><button class="mini ${t.mute?"on":""}" data-m="${i}">M</button><button class="mini ${t.solo?"on":""}" data-s="${i}">S</button></div><input class="vol" data-v="${i}" type="range" min="0" max="1" step=".01" value="${t.volume}">`;
   el.addEventListener("click",e=>{if(e.target.matches("button,input"))return; state.selected=i;clearSelection();render()});
   host.appendChild(el);
  });
  host.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{const i=+b.dataset.m;state.tracks[i].mute=!state.tracks[i].mute;render()});
- host.querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>{const i=+b.dataset.s;state.tracks[i].solo=!state.tracks[i].solo;render()});
+ host.querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>{
+   const i=+b.dataset.s;
+   const wasSolo=!!state.tracks[i].solo;
+   state.tracks.forEach((track,index)=>{track.solo=!wasSolo&&index===i;});
+   render();
+ });
  host.querySelectorAll("[data-v]").forEach(r=>r.oninput=()=>{state.tracks[+r.dataset.v].volume=+r.value});
 }
 function initGrid(){
@@ -1387,10 +1454,18 @@ function getLoopBounds(){
  return {startStep:(start-1)*16,endStep:end*16};
 }
 
+function previewPianoNote(note){
+ if(!note)return;
+ ensureAudio();
+ if(audio.state==="suspended")audio.resume();
+ synth(state.selected,{...note},Math.max(1,Math.min(note.len||1,8)));
+}
+
 function renderNotes(){
  ensurePatterns();normalizeSelection();
  $("#grid").querySelectorAll(".note,.selection-box").forEach(x=>x.remove());
  const notes=currentPatternNotes();
+ const noteEls=new Map();
  $("#patternSel").value=state.selectedPattern;
  notes.forEach((n,idx)=>{
   const row=noteNames.indexOf(n.pitch); if(row<0)return;
@@ -1398,20 +1473,15 @@ function renderNotes(){
   el.style.left=(n.step/64*100)+"%";el.style.width=(n.len/64*100)+"%";el.style.top=(row*26)+"px";
   const rz=document.createElement("span");rz.className="resize";el.appendChild(rz);
   let mode=null,startX=0,startY=0,orig=[];
-  el.onclick=e=>{
-    e.stopPropagation();
-    if(e.shiftKey||e.ctrlKey||e.metaKey){
-      if(selectedNotes.has(idx))selectedNotes.delete(idx);else selectedNotes.add(idx);
-    }else{
-      selectedNotes.clear();selectedNotes.add(idx);
-    }
-    renderNotes();
-  };
+  let moved=false;
   el.onpointerdown=e=>{
     if(e.button!==0)return;
     e.stopPropagation();
-    if(!selectedNotes.has(idx)){
-      if(!(e.shiftKey||e.ctrlKey||e.metaKey))selectedNotes.clear();
+    const additive=e.shiftKey||e.ctrlKey||e.metaKey;
+    if(additive&&selectedNotes.has(idx)){
+      selectedNotes.delete(idx);
+    }else if(!selectedNotes.has(idx)){
+      if(!additive)selectedNotes.clear();
       selectedNotes.add(idx);
     }
     saveUndo(); el.setPointerCapture(e.pointerId);el.classList.add("dragging");
@@ -1421,6 +1491,7 @@ function renderNotes(){
   el.onpointermove=e=>{
     if(!mode)return;
     const rect=$("#grid").getBoundingClientRect(), dx=e.clientX-startX, dy=e.clientY-startY;
+    if(Math.abs(dx)>2||Math.abs(dy)>2)moved=true;
     const stepDelta=Math.round(dx/(rect.width/64)), rowDelta=Math.round(dy/26);
     orig.forEach(o=>{
       const nn=notes[o.i]; if(!nn)return;
@@ -1430,14 +1501,27 @@ function renderNotes(){
         nn.step=clamp(o.step+stepDelta,0,63);
         const nr=clamp(o.row+rowDelta,0,noteNames.length-1);nn.pitch=noteNames[nr];
       }
+      const target=noteEls.get(o.i);
+      if(target){
+        target.style.left=(nn.step/64*100)+"%";
+        target.style.width=(nn.len/64*100)+"%";
+        target.style.top=(noteNames.indexOf(nn.pitch)*26)+"px";
+      }
     });
-    renderNotes();
   };
-  el.onpointerup=()=>{mode=null;autoSave();renderNotes()};
+  el.onpointerup=e=>{
+    try{el.releasePointerCapture(e.pointerId)}catch{}
+    const wasMoved=moved;
+    mode=null;el.classList.remove("dragging");
+    if(!wasMoved)previewPianoNote(n);
+    autoSave();renderNotes();
+  };
   $("#grid").appendChild(el);
+  noteEls.set(idx,el);
  });
- $("#rollTitle").textContent=`${TRACKS[state.selected].name}・${state.selectedPattern} パターン`;
- $("#noteStatus").textContent=`${TRACKS[state.selected].inst} · ${state.selectedPattern} · ${notes.length} 音符`;
+ const activeType=TRACK_TYPES.find(x=>x.id===state.tracks[state.selected].type)||TRACK_TYPES[state.selected]||TRACK_TYPES[0];
+ $("#rollTitle").textContent=`${state.tracks[state.selected].label||activeType.label}・${state.selectedPattern} パターン`;
+ $("#noteStatus").textContent=`${activeType.inst} · ${state.selectedPattern} · ${notes.length} 音符`;
  updateSelectionStatus();
 }
 
@@ -1471,6 +1555,11 @@ $("#grid").addEventListener("pointerup",e=>{
 
 function renderSoundControls(){
  const t=state.tracks[state.selected],s=t.sound||SOUND_DEFAULTS[state.selected];
+ const typeSel=$("#trackTypeSel");
+ if(typeSel){
+   typeSel.innerHTML=TRACK_TYPES.map(type=>`<option value="${type.id}">${type.label}</option>`).join("");
+   typeSel.value=t.type||TRACK_TYPES[state.selected]?.id||"lead";
+ }
  $("#sourceSel").value=s.source||"osc";$("#waveSel").value=s.wave==="noise"?"square":s.wave;
  $("#attackCtl").value=s.attack;$("#decayCtl").value=s.decay;$("#sustainCtl").value=s.sustain;
  $("#releaseCtl").value=s.release;$("#filterCtl").value=s.filter;$("#reverbCtl").value=s.reverb;$("#delayCtl").value=s.delay;$("#panCtl").value=s.pan||0;$("#widthCtl").value=s.width||0;$("#lfoRateCtl").value=s.lfoRate||0;$("#lfoDepthCtl").value=s.lfoDepth||0;
@@ -1480,7 +1569,7 @@ function updateSoundFromControls(){
  Object.assign(t.sound,{source:$("#sourceSel").value,wave:$("#waveSel").value,attack:+$("#attackCtl").value,decay:+$("#decayCtl").value,sustain:+$("#sustainCtl").value,release:+$("#releaseCtl").value,filter:+$("#filterCtl").value,reverb:+$("#reverbCtl").value,delay:+$("#delayCtl").value,pan:+$("#panCtl").value,width:+$("#widthCtl").value,lfoRate:+$("#lfoRateCtl").value,lfoDepth:+$("#lfoDepthCtl").value});
  autoSave();
 }
-function applySoundPreset(preset){
+function applySoundPreset(preset,silent=false){
  const presets={
   snes:{source:"pcm",wave:"sawtooth",attack:.008,decay:.14,sustain:.68,release:.16,filter:7200,reverb:.16,delay:.07,pan:0,width:.35,lfoRate:5.2,lfoDepth:5},
   pluck:{source:"pcm",wave:"triangle",attack:.003,decay:.12,sustain:.18,release:.10,filter:9000,reverb:.12,delay:.10,pan:.12,width:.45,lfoRate:0,lfoDepth:0},
@@ -1490,7 +1579,14 @@ function applySoundPreset(preset){
   choir:{source:"pcm",wave:"sine",attack:.18,decay:.30,sustain:.82,release:1.1,filter:5000,reverb:.48,delay:.10,pan:0,width:.8,lfoRate:4.5,lfoDepth:8},
   bell:{source:"pcm",wave:"triangle",attack:.002,decay:.45,sustain:.08,release:.75,filter:11000,reverb:.32,delay:.18,pan:.2,width:.65,lfoRate:0,lfoDepth:0}
  };
- state.tracks[state.selected].sound={...presets[preset]};renderSoundControls();autoSave();toast("音色プリセットを適用しました");
+ state.tracks[state.selected].sound={...presets[preset]};renderSoundControls();autoSave();if(!silent)toast("音色プリセットを適用しました");
+}
+function applyTrackType(typeId){
+ const type=TRACK_TYPES.find(x=>x.id===typeId)||TRACK_TYPES[0];
+ const track=state.tracks[state.selected];
+ track.type=type.id;track.label=type.label;
+ applySoundPreset(type.preset,true);
+ render();autoSave();toast(`${type.label}タイプを適用しました`);
 }
 
 function render(){
@@ -1855,7 +1951,30 @@ function stopPlayback(){
 function sanitizeFileName(name){
  return String(name||"arcadia-music-forge").replace(/[\\/:*?"<>|]+/g,"_").trim()||"arcadia-music-forge";
 }
+function moveLibraryAboveComposer(){
+ const aside=document.querySelector("aside.tracks");
+ const composer=$("#composerPanel");
+ const body=$("#libraryBody");
+ if(!aside||!composer||!body||$("#libraryPanel"))return;
+ const title=aside.querySelector(".panel-title");
+ const panel=document.createElement("section");
+ panel.className="panel collapsible-panel";
+ panel.id="libraryPanel";
+ panel.append(title,body);
+ body.classList.add("collapsed-library");
+ const toggle=title?.querySelector(".collapse-toggle");
+ if(toggle)toggle.textContent="開く";
+ composer.parentElement.insertBefore(panel,composer);
+}
 function bindUi(){
+ document.querySelectorAll(".collapse-toggle").forEach(button=>button.onclick=()=>{
+   const target=$(button.dataset.collapse);
+   if(!target)return;
+   const collapsed=target.id==="libraryBody"
+     ? target.classList.toggle("collapsed-library")
+     : target.classList.toggle("collapsed");
+   button.textContent=collapsed?"開く":"折りたたむ";
+ });
  const genreSel=$("#genrePresetSel");
  if(genreSel){
    genreSel.innerHTML=Object.keys(GENRE_PRESETS).map(name=>`<option value="${name}">${name}</option>`).join("");
@@ -1863,10 +1982,10 @@ function bindUi(){
    genreSel.onchange=()=>applyGenrePreset(genreSel.value,false);
  }
  $("#workspaceModeSel").onchange=e=>setWorkspaceMode(e.target.value);
- $("#applyGenreBtn").onclick=()=>applyGenrePreset();
+ const applyGenreBtn=$("#applyGenreBtn");
+ if(applyGenreBtn)applyGenreBtn.onclick=()=>applyGenrePreset();
  $("#newBtn").onclick=()=>newProject();
  $("#saveBtn").onclick=()=>downloadJson(`${sanitizeFileName(project.title||state.name)}.amfproj`,exportProjectPayload());
- $("#exportBtn").onclick=()=>downloadJson(`${sanitizeFileName(project.title||state.name)}.json`,exportProjectPayload());
  $("#loadBtn").onclick=()=>$("#fileInput").click();
  $("#fileInput").onchange=async e=>{
    const file=e.target.files?.[0];
@@ -1893,11 +2012,16 @@ function bindUi(){
    }
  };
  $("#midiBtn").onclick=exportMidi;
- $("#wavBtn").onclick=exportWav;
  $("#playBtn").onclick=play;
  $("#stopBtn").onclick=stopPlayback;
  $("#bpm").oninput=()=>{state.bpm=+$("#bpm").value||168;updateDuration();autoSave();};
- $("#keySel").onchange=()=>{state.key=$("#keySel").value;autoSave();};
+ $("#keySel").onchange=()=>{
+   const next=$("#keySel").value,previous=state.key||next;
+   transposeAllPatterns(previous,next);
+   state.key=next;
+   render();autoSave();
+   if(previous!==next)toast(`${next} に移調しました`);
+ };
  $("#masterVol").oninput=()=>{state.master=+$("#masterVol").value;$("#masterText").textContent=Math.round(state.master*100)+"%";autoSave();};
  $("#loopToggle").onchange=()=>{state.loopEnabled=$("#loopToggle").checked;autoSave();};
  $("#loopStart").oninput=()=>{state.loopStart=+$("#loopStart").value||1;autoSave();};
@@ -1909,12 +2033,17 @@ function bindUi(){
  $("#songNameInput").onchange=updateCurrentSongName;
  $("#arrClearBtn").onclick=()=>{saveUndo();state.arrangement=Array.from({length:7},()=>Array(12).fill(null));renderArrangement();autoSave();};
  $("#arrDemoBtn").onclick=()=>{saveUndo();standardArrangement();renderArrangement();autoSave();};
- $("#applyChordsBtn").onclick=applyChordBacking;
- $("#autoComposeBtn").onclick=autoComposeBattle;
+ const applyChordsBtn=$("#applyChordsBtn");
+ if(applyChordsBtn)applyChordsBtn.onclick=applyChordBacking;
+ $("#autoComposeBtn").onclick=()=>{
+   const ok=confirm("ジャンル設定を曲へ反映して自動生成します。\nBPM、進行、音符密度、ドラム、7トラックの音色と各種FXを変更し、48小節アレンジ・ライブラリ・MIDI/WAV・サンプラーへ反映します。\n\n実行しますか？");
+   if(ok)autoComposeBattle();
+ };
  $("#autoPlayBtn").onclick=()=>{if(!playing){play();$("#autoPlayBtn").textContent="■ Stop";}else stopPlayback();};
  $("#progressionSel").onchange=()=>{state.progression=$("#progressionSel").value;renderChords();autoSave();};
  $("#styleSel").onchange=()=>{state.style=$("#styleSel").value;applyStylePreset();render();};
  $("#sourceSel").onchange=()=>{state.tracks[state.selected].sound={...(state.tracks[state.selected].sound||SOUND_DEFAULTS[state.selected]),source:$("#sourceSel").value};autoSave();};
+ $("#trackTypeSel").onchange=e=>applyTrackType(e.target.value);
  ["waveSel","attackCtl","decayCtl","sustainCtl","releaseCtl","filterCtl","reverbCtl","delayCtl","panCtl","widthCtl","lfoRateCtl","lfoDepthCtl"].forEach(id=>{$(`#${id}`).oninput=updateSoundFromControls;});
  ["presetSnesBtn","presetPluckBtn","presetPadBtn","presetBassBtn","presetBrassBtn","presetChoirBtn","presetBellBtn"].forEach((id,i)=>{
    const preset=["snes","pluck","pad","bass","brass","choir","bell"][i];
@@ -1960,6 +2089,7 @@ function bindUi(){
  $("#arrGrid").addEventListener("dragend",()=>autoSave());
  document.querySelectorAll(".control input,.control select").forEach(el=>{if(!el.oninput&&!el.onchange) el.onchange=autoSave;});
 }
+moveLibraryAboveComposer();
 initGrid();
 const loadedAutoSave=loadAutoSavedProject();
 if(!loadedAutoSave){
