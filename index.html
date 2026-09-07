@@ -21,6 +21,9 @@ button,input,select{font:inherit}button{cursor:pointer}
 .btn{background:#191c25;color:#eee;border:1px solid #343949;border-radius:8px;padding:10px 13px}
 .btn:hover{border-color:#656d85}.btn.primary{background:var(--red);border-color:var(--red);font-weight:800}
 .transport{position:fixed;left:0;right:0;bottom:0;z-index:20;display:grid;grid-template-columns:minmax(54px,auto) minmax(44px,auto) auto auto minmax(170px,1fr) auto auto auto;gap:8px;align-items:center;padding:10px max(22px,calc((100vw - 1436px)/2));background:rgba(8,9,13,.96);border-top:1px solid var(--line);box-shadow:0 -10px 28px rgba(0,0,0,.28);backdrop-filter:blur(12px)}
+.transport .transport-stack{flex-direction:column;align-items:stretch;gap:3px;padding:5px 7px;font-size:10px;line-height:1}
+.transport .transport-stack>span:first-child{color:#9ea6ba;font-size:10px;letter-spacing:.04em}
+.transport .loop-fields,.transport .value-fields{display:flex;align-items:center;gap:5px}
 .play{width:54px;height:54px;border-radius:50%;border:0;background:var(--red);color:white;font-size:19px}
 .stop{width:44px;height:44px;border-radius:50%;border:1px solid #3b4050;background:#141720;color:#fff}
 .time{min-width:130px;color:#dfe3ec}.time b{font-size:20px}.time span{color:var(--muted)}
@@ -55,9 +58,24 @@ button,input,select{font:inherit}button{cursor:pointer}
 .section strong{font-size:11px;letter-spacing:.08em}.section span{display:block;color:#7f879a;font-size:10px;margin-top:4px}
 .section.hot{background:linear-gradient(135deg,#43141d,#1a1820);border-color:#6e2633}
 .ruler{display:grid;grid-template-columns:repeat(12,1fr);color:#686f82;font-size:10px;margin-top:8px}
-.roll-head{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line)}
+.roll-head{display:grid;gap:10px;padding:14px;border-bottom:1px solid var(--line)}
+.roll-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.roll-title-actions{display:flex;align-items:flex-start;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 .roll-head h2{font-size:16px;margin:0}.roll-head small{color:var(--muted)}
-.roll-tools{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.roll-tools select{background:#11141b;color:white;border:1px solid #363c4c;border-radius:6px;padding:6px}
+.roll-tools{display:flex;gap:8px;align-items:stretch;flex-wrap:wrap;padding-top:10px;border-top:1px solid #252a36}.roll-tools select{background:#11141b;color:white;border:1px solid #363c4c;border-radius:6px;padding:6px}
+.tool-group{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:5px 7px;border:1px solid #2a3040;border-radius:7px;background:rgba(17,20,27,.72)}
+.tool-group-title{font-size:9px;letter-spacing:.08em;color:#7f8799;white-space:nowrap}
+.tool-group-collapsible{display:block;min-width:48px}
+.tool-group-collapsible>summary{cursor:pointer;list-style:none;color:#7f8799;font-size:9px;letter-spacing:.08em;white-space:nowrap;padding:3px 1px}
+.tool-group-collapsible>summary::-webkit-details-marker{display:none}
+.tool-group-collapsible>summary::after{content:'＋';margin-left:5px;color:#d5af62}
+.tool-group-collapsible[open]>summary::after{content:'−'}
+.tool-group-collapsible[open]>summary{margin-bottom:6px}
+.icon-btn{min-width:34px;padding:6px 8px;font-size:15px;line-height:1;text-align:center}
+.pattern-tab-label{display:grid;gap:4px;color:#8d94a8;font-size:10px;letter-spacing:.08em}
+.pattern-tabs{display:flex;gap:3px;flex-wrap:wrap}
+.pattern-tab{border:1px solid #3a4051;background:#12151c;color:#aeb6c8;border-radius:5px;padding:5px 9px;font-size:11px;cursor:pointer}
+.pattern-tab:hover{border-color:#737c96}.pattern-tab.active{background:var(--red2);border-color:var(--red);color:#fff;font-weight:800}
 .roll-wrap{display:grid;grid-template-columns:62px 1fr;max-height:530px;overflow:auto}
 .keys{position:sticky;left:0;z-index:2;background:#11141a}
 .key{height:26px;border-bottom:1px solid #252a36;padding:5px 8px;color:#8f96a9;font-size:10px;text-align:right}
@@ -107,6 +125,8 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
 .arr-volume-row input{width:100%;height:3px;accent-color:var(--red)}
 .arr-head{display:flex;align-items:center;justify-content:center;text-align:center;white-space:normal;line-height:1.15;font-size:10px;color:#778095;background:#0e1117}
 .arr-head:not(:first-child){cursor:pointer}
+.arr-head.playing{color:#f8d990;background:#4a3b20;border-color:#d5af62;box-shadow:0 0 10px rgba(248,217,144,.35)}
+.arr-head.selected{color:#d5af62;border-color:#9a7b42}
 .arr-cell{background:#11151c;position:relative;cursor:pointer}
 .arr-cell.on{background:linear-gradient(135deg,#4b1420,#24161c);border-color:#8f2b3a}
 .arr-cell.on::after{content:"";position:absolute;inset:5px;border-radius:3px;background:rgba(217,52,69,.28)}
@@ -118,9 +138,10 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
 
 .arr-cell.playing{outline:2px solid #f8d990;box-shadow:0 0 12px rgba(248,217,144,.35)}
 .arr-cell.selected{outline:2px solid #9a7b42;box-shadow:0 0 8px rgba(154,123,66,.22)}
-.transport-badge{font-size:11px;color:#d5af62;border:1px solid #5b4d32;border-radius:999px;padding:4px 8px}
+.arrangement-body.collapsed-arrangement .arr-toolbar,.arrangement-body.collapsed-arrangement .arr-label,.arrangement-body.collapsed-arrangement .arr-cell{display:none}
+.transport-badge{display:none;font-size:11px;color:#d5af62;border:1px solid #5b4d32;border-radius:999px;padding:4px 8px}
 
-.pattern-switch{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.pattern-switch{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .pattern-switch label{font-size:11px;color:#8f96a9;display:flex;align-items:center;gap:6px}
 .pattern-switch select{background:#11141b;color:#fff;border:1px solid #363c4c;border-radius:6px;padding:6px}
 .arr-cell{display:flex;align-items:center;justify-content:center;font-size:10px;color:#c7cedc;font-weight:800}
@@ -138,7 +159,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
 
 .note.selected{outline:2px solid #f8d990;box-shadow:0 0 12px rgba(248,217,144,.45)}
 .selection-box{position:absolute;border:1px dashed #f8d990;background:rgba(248,217,144,.08);z-index:8;pointer-events:none}
-.collapse-toggle{float:right;border:1px solid #3a4051;background:#12151c;color:#b8bfd0;border-radius:5px;padding:4px 8px;font-size:11px;cursor:pointer}
+.collapse-toggle{border:1px solid #3a4051;background:#12151c;color:#b8bfd0;border-radius:5px;padding:5px 10px;font-size:11px;cursor:pointer;white-space:nowrap}
 .collapsible-panel.collapsed> :not(.panel-title):not(.roll-head){display:none!important}
 .library-body.collapsed-library{display:none}
 .main>#composerPanel{order:1}.main>#arrangementPanel{order:2}.main>#pianoPanel{order:3}.main>#soundPanel{order:4}.main>#samplerPanel{order:5}.main>#drumPanel{order:6}
@@ -182,10 +203,10 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
     <button class="play" id="playBtn" title="再生/一時停止">▶</button>
     <button class="stop" id="stopBtn" title="停止">■</button>
     <div class="time"><b id="time">00:00</b> <span>/ <span id="duration">00:00</span></span></div><span class="transport-badge" id="barBadge">1 / 48 小節</span>
-    <label class="control">LOOP <input id="loopToggle" type="checkbox"> <input id="loopStart" type="number" min="1" max="48" value="1" style="width:44px">-<input id="loopEnd" type="number" min="1" max="48" value="48" style="width:44px"></label>
-    <label class="control">BPM <input id="bpm" type="number" min="50" max="240" value="168"></label>
-    <label class="control">KEY <select id="keySel"><option>E minor</option><option>A minor</option><option>D minor</option><option>G minor</option></select></label>
-    <label class="control">MASTER <input id="masterVol" type="range" min="0" max="1" step=".01" value=".75"><span id="masterText">75%</span></label>
+    <label class="control transport-stack"><span>LOOP</span><span class="loop-fields"><input id="loopToggle" type="checkbox"> <input id="loopStart" type="number" min="1" max="48" value="1" style="width:44px">-<input id="loopEnd" type="number" min="1" max="48" value="48" style="width:44px"></span></label>
+    <label class="control transport-stack"><span>BPM</span><span class="value-fields"><input id="bpm" type="number" min="50" max="500" value="168"><input id="bpmCtl" type="range" min="50" max="500" value="168" aria-label="BPMスライダー"></span></label>
+    <label class="control">KEY <select id="keySel"><option value="E minor">Em</option><option value="A minor">Am</option><option value="D minor">Dm</option><option value="G minor">Gm</option></select></label>
+    <label class="control transport-stack"><span>MASTER</span><span class="value-fields"><input id="masterVol" type="range" min="0" max="1" step=".01" value=".75"><span id="masterText">75%</span></span></label>
   </section>
 
   <section class="workspace">
@@ -214,7 +235,8 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
 
     <main class="main">
       <section class="panel" id="arrangementPanel">
-        <div class="panel-title">アレンジメント <span style="float:right">48 小節 · 7 トラック</span></div>
+        <div class="panel-title">アレンジメント <button class="collapse-toggle" data-collapse="#arrangementBody">折りたたむ</button><span style="float:right;margin-right:90px">48 小節 · 7 トラック</span></div>
+        <div class="arrangement-body" id="arrangementBody">
         <div class="arr">
           <div class="arr-toolbar">
             <button class="btn" id="arrClearBtn">配置をクリア</button>
@@ -222,6 +244,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
             <span>クリックでパターン切替 · 右クリックでOFF · ドラッグ＆ドロップでブロック移動/コピー</span>
           </div>
           <div class="arr-grid" id="arrGrid"></div>
+        </div>
         </div>
       </section>
 
@@ -251,6 +274,25 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
                   <option value="Am-F-C-G">Am - F - C - G</option>
                   <option value="C-Am-F-G">C - Am - F - G</option>
                   <option value="C-G-Am-F">C - G - Am - F</option>
+                  <option value="F-C-G-Am">F - C - G - Am</option>
+                  <option value="Am-G-F-C">Am - G - F - C</option>
+                  <option value="C-F-G-Am">C - F - G - Am</option>
+                  <option value="Em-C-Am-D">Em - C - Am - D</option>
+                  <option value="Em-Am-C-D">Em - Am - C - D</option>
+                  <option value="C-G-F-Am">C - G - F - Am</option>
+                  <option value="C-G-Am-Em">カノン進行 · C - G - Am - Em</option>
+                  <option value="F-G-Am-Em">小室進行 · F - G - Am - Em</option>
+                  <option value="F-G-Em-Am">王道進行 · F - G - Em - Am</option>
+                  <option value="C-Am-F-G">織田哲郎進行 · C - Am - F - G</option>
+                  <option value="C-Am-Dm-G">循環進行 · C - Am - Dm - G</option>
+                  <option value="C-G-F-G">ポップパンク · C - G - F - G</option>
+                  <option value="Am-G-F-E">アンダルシア風 · Am - G - F - E</option>
+                  <option value="C-F-G-Am">明るい冒険系 · C - F - G - Am</option>
+                  <option value="Am-F-Dm-E">切ないゲーム系 · Am - F - Dm - E</option>
+                  <option value="Em-F-G-Em">ボス戦系 · Em - F - G - Em</option>
+                  <option value="Am-Bb-Am-E">不安・ホラー系 · Am - Bb - Am - E</option>
+                  <option value="C-D-Em-Bm">浮遊感・SF系 · C - D - Em - Bm</option>
+                  <option value="C-G-Am-Em">パッヘルベル型・前半 · C - G - Am - Em</option>
                 </select>
               </label>
               <label class="control">STYLE
@@ -392,39 +434,38 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
       </section>
       <section class="panel collapsible-panel" id="pianoPanel">
         <div class="roll-head">
-          <div><h2 id="rollTitle">メロディー・ピアノロール</h2><small>4小節パターン · 48小節アレンジメントに配置</small></div>
+          <div class="roll-title-row"><div><h2 id="rollTitle">メロディー・ピアノロール</h2><small>4小節パターン · 48小節アレンジメントに配置</small></div><div class="roll-title-actions"><details class="tool-group tool-group-collapsible"><summary title="音符設定を開閉">音符</summary>
+              <label>音価 <select id="lengthSel"><option value="1">1/16</option><option value="2" selected>1/8</option><option value="4">1/4</option><option value="8">1/2</option></select></label>
+              <label>VELOCITY <input id="velocityInput" type="number" min="1" max="127" value="100" style="width:64px;background:#11141b;color:#fff;border:1px solid #363c4c;border-radius:6px;padding:6px"></label>
+            </details><details class="tool-group tool-group-collapsible"><summary title="補正設定を開閉">補正</summary>
+              <label>QUANTIZE <select id="quantizeSel"><option value="1">1/16</option><option value="2">1/8</option><option value="4">1/4</option></select></label>
+              <button class="btn icon-btn" id="quantizeBtn" title="クオンタイズ" aria-label="クオンタイズ">⊞</button>
+              <button class="btn icon-btn" id="transposeDownBtn" title="半音下げる" aria-label="半音下げる">−1</button>
+              <button class="btn icon-btn" id="transposeUpBtn" title="半音上げる" aria-label="半音上げる">＋1</button>
+              <button class="btn icon-btn" id="humanizeBtn" title="ヒューマナイズ" aria-label="ヒューマナイズ">✧</button>
+            </details><details class="tool-group tool-group-collapsible"><summary title="パターン管理を開閉">管理</summary>
+              <button class="btn icon-btn" id="copyPatternBtn" title="パターンを複製" aria-label="パターンを複製">⧉</button>
+              <button class="btn icon-btn" id="renamePatternBtn" title="パターン名を変更" aria-label="パターン名を変更">✎</button>
+              <button class="btn icon-btn" id="addPatternBtn" title="パターンを追加" aria-label="パターンを追加">＋</button>
+              <button class="btn icon-btn" id="deletePatternBtn" title="パターンを削除" aria-label="パターンを削除">−</button>
+              <button class="btn icon-btn" id="clearPatternBtn" title="パターンをクリア" aria-label="パターンをクリア">×</button>
+            </details><details class="tool-group tool-group-collapsible"><summary title="ノート編集を開閉">編集</summary>
+              <button class="btn icon-btn" id="selectAllBtn" title="すべて選択" aria-label="すべて選択">☷</button>
+              <button class="btn icon-btn" id="copyNotesBtn" title="ノートをコピー" aria-label="ノートをコピー">⧉</button>
+              <button class="btn icon-btn" id="pasteNotesBtn" title="ノートを貼り付け" aria-label="ノートを貼り付け">▣</button>
+              <button class="btn icon-btn" id="deleteNotesBtn" title="選択したノートを削除" aria-label="選択したノートを削除">×</button>
+            </details><button class="collapse-toggle" data-collapse="#pianoPanel">折りたたむ</button></div></div>
           <div class="pattern-switch">
-            <button class="collapse-toggle" data-collapse="#pianoPanel">折りたたむ</button>
-            <label>PATTERN
-              <select id="patternSel">
-                <option value="INTRO">INTRO</option>
-                <option value="A" selected>A</option>
-                <option value="B">B</option>
-                <option value="BREAK">BREAK</option>
-                <option value="CLIMAX">CLIMAX</option>
-                <option value="TURN">TURN</option>
-              </select>
-            </label>
-            <button class="btn" id="copyPatternBtn">複製</button>
-            <button class="btn" id="renamePatternBtn">名前変更</button>
-            <button class="btn" id="addPatternBtn">追加</button>
-            <button class="btn" id="deletePatternBtn">削除</button>
-            <button class="btn" id="clearPatternBtn">クリア</button>
-          </div>
-          <div class="roll-tools">
-            <label>音価 <select id="lengthSel"><option value="1">1/16</option><option value="2" selected>1/8</option><option value="4">1/4</option><option value="8">1/2</option></select></label>
-            <label>VELOCITY <input id="velocityInput" type="number" min="1" max="127" value="100" style="width:64px;background:#11141b;color:#fff;border:1px solid #363c4c;border-radius:6px;padding:6px"></label>
-            <label>QUANTIZE <select id="quantizeSel"><option value="1">1/16</option><option value="2">1/8</option><option value="4">1/4</option></select></label>
-            <button class="btn" id="quantizeBtn">クオンタイズ</button>
-            <button class="btn" id="transposeDownBtn">-1</button>
-            <button class="btn" id="transposeUpBtn">+1</button>
-            <button class="btn" id="humanizeBtn">Humanize</button>
-            <button class="btn" id="selectAllBtn">全選択</button>
-            <button class="btn" id="copyNotesBtn">コピー</button>
-            <button class="btn" id="pasteNotesBtn">貼付</button>
-            <button class="btn" id="deleteNotesBtn">削除</button>
-            <button class="btn" id="undoBtn">戻す</button>
-            <button class="btn" id="demoBtn">デモ復元</button>
+            <div class="tool-group">
+              <label class="pattern-tab-label">PATTERN
+                <div class="pattern-tabs" id="patternTabs"></div>
+                <select id="patternSel" hidden></select>
+              </label>
+            </div>
+            <div class="tool-group"><span class="tool-group-title">履歴</span>
+              <button class="btn icon-btn" id="undoBtn" title="元に戻す" aria-label="元に戻す">↶</button>
+              <button class="btn icon-btn" id="demoBtn" title="デモパターンを復元" aria-label="デモパターンを復元">▶</button>
+            </div>
           </div>
         </div>
         <div class="roll-wrap">
@@ -536,7 +577,8 @@ const patternSteps=64, arrangementBlocks=12, totalSteps=patternSteps*arrangement
 
 const CHORDS = {
  "Em":["E4","G4","B4"], "C":["C4","E4","G4"], "G":["G4","B4","D5"], "D":["D4","F#4","A4"],
- "Am":["A4","C5","E5"], "F":["F4","A4","C5"]
+ "Am":["A4","C5","E5"], "F":["F4","A4","C5"], "Dm":["D4","F4","A4"], "E":["E4","G#4","B4"],
+ "Bb":["A#4","D5","F5"], "Bm":["B4","D5","F#5"]
 };
 const GENRE_PRESETS={
  Action:{bpm:156,progression:"Em-C-G-D",style:"snes",density:4,drums:"drive",sounds:["snes","pad","bass","pluck","brass","choir","bell"]},
@@ -570,6 +612,73 @@ function scalePool(key, low=64, high=88){
  const root=tonicMidi(key), pcs=SCALE_SEMITONES[key]||SCALE_SEMITONES["E minor"], out=[];
  for(let m=low;m<=high;m++){ if(pcs.includes((m-root+120)%12)) out.push(m) }
  return out;
+}
+function makeGeneratorRandom(seed){
+ let value=(seed>>>0)||1;
+ return ()=>{
+   value=(value+0x6D2B79F5)|0;
+   let t=Math.imul(value^(value>>>15),1|value);
+   t^=t+Math.imul(t^(t>>>7),61|t);
+   return ((t^(t>>>14))>>>0)/4294967296;
+ };
+}
+function generateMelodyPhrase(prog,pat,profile,styleProfile,pool,rng,phraseIndex){
+ const notes=[],used=new Set();
+ const density=Math.max(1,Math.min(8,(pat==="CLIMAX"?profile.density+2:profile.density)+styleProfile.densityOffset));
+ let previous=pool[Math.floor(rng()*pool.length)]||76;
+ prog.forEach((chord,bar)=>{
+   const chordMidi=(CHORDS[chord]||CHORDS.Em).map(midiOf);
+   const slots=[0,2,3,5,7,9,11,14].sort(()=>rng()-.5);
+   const count=pat==="BREAK"?1:Math.max(1,Math.min(slots.length,Math.round(density/2)+((bar+phraseIndex)%2)));
+   slots.slice(0,count).sort((a,b)=>a-b).forEach((offset,noteIndex)=>{
+     if(rng()<.12 && noteIndex>0)return;
+     const anchor=chordMidi[(bar+noteIndex+phraseIndex)%chordMidi.length];
+     const passing=pool.filter(m=>Math.abs(m-anchor)<=9);
+     let target=rng()<.68?anchor+(rng()<.5?0:12*(rng()<.18?1:-1)):(passing[Math.floor(rng()*passing.length)]||previous);
+     target+=styleProfile.octave;
+     target+=Math.round((rng()-.5)*4)+(noteIndex%3===2?Math.round((previous-target)*.2):0);
+     target=pool.reduce((a,b)=>Math.abs(b-target)<Math.abs(a-target)?b:a,previous);
+     if(pat==="CLIMAX")target=clamp(target+12,64,88);
+     const step=bar*16+offset;
+     if(used.has(step))return;
+     used.add(step);previous=target;
+     notes.push({pitch:noteFromMidi(clamp(target,64,88)),step,len:rng()<.25?1:(rng()<.45?3:2),velocity:82+Math.floor(rng()*38)});
+   });
+ });
+ return notes;
+}
+function generateSupportingPhrase(trackIndex,prog,pat,styleProfile,rng,phraseIndex){
+ const notes=[];
+ prog.forEach((symbol,bar)=>{
+   const chord=(CHORDS[symbol]||CHORDS.Em).map(midiOf),base=bar*16;
+   if(trackIndex===1){
+     if(pat==="BREAK"||rng()<.18)return;
+     const count=rng()<.55?1:2;
+     for(let i=0;i<count;i++){
+       const step=base+(i?10:6)+(rng()<.25?2:0), target=chord[(bar+i+phraseIndex)%chord.length]+12;
+       notes.push({pitch:noteFromMidi(clamp(target,64,88)),step,len:i?2:3,velocity:68+Math.floor(rng()*28)});
+     }
+   }else if(trackIndex===2){
+     chord.forEach((m,i)=>notes.push({pitch:noteFromMidi(m),step:base,len:16,velocity:48+Math.floor(rng()*18)}));
+   }else if(trackIndex===3){
+     if(pat==="BREAK")return;
+     [0,rng()<.5?8:10].forEach((offset,i)=>{
+       const target=chord[(i+bar+phraseIndex)%chord.length]+(rng()<.35?12:0);
+       notes.push({pitch:noteFromMidi(clamp(target,64,88)),step:base+offset,len:2,velocity:82+Math.floor(rng()*30)});
+     });
+   }else if(trackIndex===4){
+     const stepSize=styleProfile.arpStep||2;
+     for(let offset=0,n=0;offset<16;offset+=stepSize,n++){
+       const target=chord[(n+bar+phraseIndex)%chord.length]+12;
+       notes.push({pitch:noteFromMidi(clamp(target,64,88)),step:base+offset,len:1,velocity:58+Math.floor(rng()*34)});
+     }
+   }else if(trackIndex===5){
+     const root=chord[0], fifth=chord[2]||root;
+     notes.push({pitch:noteFromMidi(root),step:base,len:8,velocity:72+Math.floor(rng()*24)});
+     if(rng()<.72)notes.push({pitch:noteFromMidi(fifth),step:base+8,len:4,velocity:66+Math.floor(rng()*22)});
+   }
+ });
+ return notes;
 }
 function transposeAllPatterns(fromKey,toKey){
  const delta=tonicMidi(toKey)-tonicMidi(fromKey);
@@ -882,26 +991,15 @@ function autoComposeBattle(){
  ensurePatterns();
  const profile=GENRE_PRESETS[state.genrePreset]||GENRE_PRESETS.Action;
  const styleProfile=STYLE_GENERATION[state.style]||STYLE_GENERATION.snes;
+ const rng=makeGeneratorRandom((Date.now()^Math.floor(Math.random()*0xFFFFFFFF))>>>0);
  state.tracks.forEach(t=>PATTERNS.forEach(p=>t.patterns[p]=[]));
  const prog=progression(), pool=scalePool(state.key,64,88);
  PATTERNS.forEach((pat,pi)=>{
    prog.forEach((c,bar)=>{
      const chord=CHORDS[c]||CHORDS["Em"], base=bar*16;
-     const targetDensity=Math.max(1,(pat==="CLIMAX"?profile.density+2:profile.density)+styleProfile.densityOffset);
-     const density=pat==="BREAK"?[0,8]:Array.from({length:targetDensity},(_,i)=>Math.floor(i*16/targetDensity));
-     density.forEach((off,idx)=>{
-       const chordMidi=midiOf(chord[idx%chord.length])+styleProfile.octave+(pat==="CLIMAX"?12:0);
-       const nearest=pool.reduce((a,b)=>Math.abs(b-chordMidi)<Math.abs(a-chordMidi)?b:a,pool[0]);
-       state.tracks[0].patterns[pat].push({pitch:noteFromMidi(clamp(nearest,64,88)),step:base+off,len:pat==="BREAK"?4:2});
-     });
-     chord.forEach((p,i)=>state.tracks[2].patterns[pat].push({pitch:p,step:base+i*2,len:6}));
-     state.tracks[3].patterns[pat].push({pitch:chord[0],step:base,len:8});
-     state.tracks[3].patterns[pat].push({pitch:chord[2],step:base+8,len:8});
-     state.tracks[5].patterns[pat].push({pitch:chord[0],step:base,len:12});
    });
-   for(let s=0;s<64;s+=styleProfile.arpStep){
-     if(pat!=="BREAK") state.tracks[4].patterns[pat].push({pitch:["E5","G5","B5","G5"][(s/2+pi)%4],step:s,len:1});
-   }
+   state.tracks[0].patterns[pat].push(...generateMelodyPhrase(prog,pat,profile,styleProfile,pool,rng,pi));
+   [1,2,3,4,5].forEach(ti=>state.tracks[ti].patterns[pat].push(...generateSupportingPhrase(ti,prog,pat,styleProfile,rng,pi)));
    for(let s=0;s<64;s++){
      const mode=profile.drums;
      if(mode!=="none" && ((mode==="drive"&&s%Math.max(1,Math.round(4/styleProfile.drumBoost))===0)||(mode==="soft"&&s%8===0)||(mode==="sparse"&&s%8===0))) state.tracks[6].patterns[pat].push({pitch:"C5",step:s,len:1});
@@ -1096,6 +1194,15 @@ function refreshPatternSelect(){
     const o=document.createElement("option");o.value=p;o.textContent=p;sel.appendChild(o);
   });
   sel.value=PATTERNS.includes(current)?current:(PATTERNS[0]||"");
+  const tabs=$("#patternTabs");
+  if(tabs){
+    tabs.innerHTML="";
+    PATTERNS.forEach(p=>{
+      const tab=document.createElement("button");tab.type="button";tab.className="pattern-tab"+(p===sel.value?" active":"");tab.textContent=p;tab.dataset.pattern=p;
+      tab.onclick=()=>{state.selectedPattern=p;clearSelection();renderNotes();autoSave();};
+      tabs.appendChild(tab);
+    });
+  }
 }
 
 
@@ -1112,8 +1219,11 @@ function currentPatternNotes(trackIndex=state.selected){
   return state.tracks[trackIndex].patterns[state.selectedPattern];
 }
 function setPatternFromSelect(){
-  state.selectedPattern=$("#patternSel").value;clearSelection();
-  renderNotes();autoSave();
+ state.selectedPattern=$("#patternSel").value;clearSelection();
+ renderNotes();autoSave();
+}
+function syncPatternTabs(){
+ document.querySelectorAll(".pattern-tab").forEach(tab=>tab.classList.toggle("active",tab.dataset.pattern===state.selectedPattern));
 }
 function patternLabel(p){ return p || "OFF"; }
 
@@ -1174,7 +1284,7 @@ function renderArrangement(){
  ensureArrangement();
  const host=$("#arrGrid"); if(!host)return; host.innerHTML="";
  const blank=document.createElement("div");blank.className="arr-head";blank.textContent="TRACK";host.appendChild(blank);
- for(let b=0;b<12;b++){const h=document.createElement("div");h.className="arr-head";h.textContent=`${b*4+1}-${b*4+4}`;h.title=`${b*4+1}-${b*4+4}小節から再生`;h.onclick=()=>seekToArrangementBlock(b);host.appendChild(h)}
+ for(let b=0;b<12;b++){const h=document.createElement("div");h.className="arr-head";h.dataset.block=b;h.textContent=`${b*4+1}-${b*4+4}`;h.title=`${b*4+1}-${b*4+4}小節から再生`;h.onclick=()=>seekToArrangementBlock(b);host.appendChild(h)}
  state.tracks.forEach((tr,ti)=>{
    const l=document.createElement("div");l.className="arr-label"+(state.selected===ti?" selected":"");
    const type=TRACK_TYPES.find(x=>x.id===tr.type)||TRACK_TYPES[ti]||TRACK_TYPES[0];
@@ -1475,6 +1585,7 @@ function renderNotes(){
  const notes=currentPatternNotes();
  const noteEls=new Map();
  $("#patternSel").value=state.selectedPattern;
+ syncPatternTabs();
  notes.forEach((n,idx)=>{
   const row=noteNames.indexOf(n.pitch); if(row<0)return;
   const el=document.createElement("div");el.className="note"+(selectedNotes.has(idx)?" selected":"");el.dataset.idx=idx;
@@ -1599,7 +1710,7 @@ function applyTrackType(typeId){
 
 function render(){
  ensurePatterns();
- $("#bpm").value=state.bpm;$("#keySel").value=state.key;$("#masterVol").value=state.master;$("#masterText").textContent=Math.round(state.master*100)+"%";
+ $("#bpm").value=state.bpm;$("#bpmCtl").value=state.bpm;$("#keySel").value=state.key;$("#masterVol").value=state.master;$("#masterText").textContent=Math.round(state.master*100)+"%";
  if($("#genrePresetSel"))$("#genrePresetSel").value=state.genrePreset||"Action";
  if($("#progressionSel"))$("#progressionSel").value=state.progression||"Em-C-G-D";
  if($("#styleSel"))$("#styleSel").value=state.style||"snes";
@@ -1640,6 +1751,11 @@ function currentBlockFromStep(s){
 }
 function updateArrangementHighlight(){
  const block=currentBlockFromStep(step);
+ document.querySelectorAll(".arr-head[data-block]").forEach(el=>{
+   const col=+el.dataset.block;
+   el.classList.toggle("playing",playing && col===block);
+   el.classList.toggle("selected",!playing && col===block);
+ });
  document.querySelectorAll(".arr-cell").forEach((el,idx)=>{
    const col=idx%12;
    el.classList.toggle("playing",playing && col===block);
@@ -1980,7 +2096,9 @@ function bindUi(){
    if(!target)return;
    const collapsed=target.id==="libraryBody"
      ? target.classList.toggle("collapsed-library")
-     : target.classList.toggle("collapsed");
+     : target.id==="arrangementBody"
+       ? target.classList.toggle("collapsed-arrangement")
+       : target.classList.toggle("collapsed");
    button.textContent=collapsed?"開く":"折りたたむ";
  });
  const genreSel=$("#genrePresetSel");
@@ -2022,7 +2140,8 @@ function bindUi(){
  $("#midiBtn").onclick=exportMidi;
  $("#playBtn").onclick=play;
  $("#stopBtn").onclick=stopPlayback;
- $("#bpm").oninput=()=>{state.bpm=+$("#bpm").value||168;updateDuration();autoSave();};
+ $("#bpm").oninput=()=>{state.bpm=clamp(+$("#bpm").value||168,50,500);$("#bpm").value=state.bpm;$("#bpmCtl").value=state.bpm;updateDuration();autoSave();};
+ $("#bpmCtl").oninput=()=>{state.bpm=clamp(+$("#bpmCtl").value||168,50,500);$("#bpm").value=state.bpm;updateDuration();autoSave();};
  $("#keySel").onchange=()=>{
    const next=$("#keySel").value,previous=state.key||next;
    transposeAllPatterns(previous,next);
