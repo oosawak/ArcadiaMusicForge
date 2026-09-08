@@ -303,6 +303,9 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
                 </select>
               </label>
               <button class="btn primary" id="autoComposeBtn" type="button">自動生成</button>
+              <label class="control">進行モード<select id="generationMode"><option value="auto">おまかせ</option><option value="fixed">指定進行</option><option value="develop">展開あり</option><option value="minimal">コード少なめ</option></select></label>
+              <label class="control">SEED<input id="generationSeed" type="number" min="1" max="4294967295" value="1" style="width:110px"></label>
+              <label class="control"><input id="freshSeed" type="checkbox" checked>毎回変更</label>
               <button class="btn" id="autoPlayBtn" type="button">▶ Play</button>
           </div>
         </div>
@@ -595,11 +598,32 @@ const GENRE_PRESETS={
  Sports:{bpm:164,progression:"Em-G-D-C",style:"nes",density:6,drums:"drive",sounds:["snes","pluck","bass","pluck","brass","brass","bell"]},
  Rhythm:{bpm:132,progression:"Em-C-G-D",style:"nes",density:6,drums:"drive",sounds:["snes","pluck","bass","pluck","brass","bell","bell"]}
 };
+const GENRE_TEMPO_RANGES={
+ Action:[140,180],Puzzle:[80,120],Racing:[170,200],Horror:[65,105],Cozy:[80,120],
+ 'Sci-Fi':[110,155],Platformer:[125,175],Boss:[170,220],Menu:[70,110],Town:[85,125],Dungeon:[90,140],Sports:[145,190],Rhythm:[120,165]
+};
+const STYLE_TEMPO_OFFSETS={snes:0,nes:10,orchestral:-5,fm:5,piano:-10,ambient:-25,rock:0,funk:-10,jazz:-5,bossa:-15,house:-10,techno:5,dnb:20,synthwave:-15,japanese:-10,folk:-5};
+function generationTempo(genre,style,rng){
+ const range=GENRE_TEMPO_RANGES[genre]||GENRE_TEMPO_RANGES.Action;
+ const offset=STYLE_TEMPO_OFFSETS[style]||0;
+ const low=Math.max(50,range[0]+offset),high=Math.min(500,range[1]+offset);
+ return low+Math.floor(rng()*(high-low+1));
+}
 const STYLE_GENERATION={
  snes:{densityOffset:1,octave:12,arpStep:2,drumBoost:1.15},
  nes:{densityOffset:2,octave:0,arpStep:1,drumBoost:1.35},
  orchestral:{densityOffset:-1,octave:-12,arpStep:4,drumBoost:.65}
 };
+const EXTRA_STYLES={
+ fm:['FM音源',150,2,'pluck','drive',2],piano:['ピアノ',90,8,'bell','none',-2],ambient:['アンビエント',72,16,'pad','none',-3],
+ rock:['ロック',160,4,'brass','drive',1],funk:['ファンク',112,3,'pluck','soft',1],jazz:['ジャズ',126,3,'bell','soft',0],bossa:['ボサノバ',108,4,'pluck','soft',-1],
+ house:['ハウス',126,2,'snes','drive',1],techno:['テクノ',140,1,'bass','drive',2],dnb:['ドラムンベース',174,2,'pluck','drive',2],synthwave:['シンセウェーブ',100,2,'snes','drive',0],
+ japanese:['和風',100,4,'pluck','sparse',-1],folk:['民族音楽風',118,3,'choir','soft',0]
+};
+Object.entries(EXTRA_STYLES).forEach(([id,p])=>{
+ STYLE_GENERATION[id]={densityOffset:p[5],octave:0,arpStep:p[2],drumBoost:1};
+ const option=document.createElement('option');option.value=id;option.textContent=p[0];$('#styleSel').append(option);
+});
 const SCALE_SEMITONES = {
  "E minor":[0,2,3,5,7,8,10],
  "A minor":[0,2,3,5,7,8,10],
@@ -980,39 +1004,65 @@ function applyGenrePreset(name=$("#genrePresetSel")?.value||state.genrePreset||"
 }
 function autoComposeBattle(){
  saveUndo();stopPlayback();
- const selectedGenre=$("#genrePresetSel")?.value||state.genrePreset||"Action";
- if(state.genrePreset!==selectedGenre){
-   applyGenrePreset(selectedGenre,false);
- }else{
-   state.progression=$("#progressionSel")?.value||state.progression||"Em-C-G-D";
-   state.style=$("#styleSel")?.value||state.style||"snes";
-   applyStylePreset();
- }
+ state.genrePreset=$('#genrePresetSel').value;
+ state.progression=$('#progressionSel').value;
+ state.style=$('#styleSel').value;
+ applyStylePreset();
  ensurePatterns();
  const profile=GENRE_PRESETS[state.genrePreset]||GENRE_PRESETS.Action;
  const styleProfile=STYLE_GENERATION[state.style]||STYLE_GENERATION.snes;
- const rng=makeGeneratorRandom((Date.now()^Math.floor(Math.random()*0xFFFFFFFF))>>>0);
+ const seed=$('#freshSeed').checked?(crypto.getRandomValues(new Uint32Array(1))[0]||1):(Number($('#generationSeed').value)>>>0)||1;
+ $('#generationSeed').value=seed;
+ const rng=makeGeneratorRandom(seed),mode=$('#generationMode').value;
+ state.generation={seed,mode,style:state.style,genre:state.genrePreset};
+ const choices=Array.from($('#progressionSel').options).map(o=>o.value).filter(v=>v.split('-').every(c=>CHORDS[c]));
+ if(mode==='auto')state.progression=choices[Math.floor(rng()*choices.length)];
+ if(mode==='minimal'){const c=state.progression.split('-');state.progression=[c[0],c[0],c[1]||c[0],c[0]].join('-');}
+ $('#progressionSel').value=state.progression;
+ const spec=EXTRA_STYLES[state.style];
+ state.bpm=generationTempo(state.genrePreset,state.style,rng);
+ state.generation.bpm=state.bpm;
+ const selected=state.selected;
+ const voices=state.style==='orchestral'?['choir','bell','pad','brass','pluck','bass','pluck']:state.style==='nes'?['pluck','pluck','pad','pluck','pluck','bass','pluck']:[spec?spec[3]:'snes','bell','pad','brass','pluck','bass','pluck'];
+ voices.forEach((voice,i)=>{state.selected=i;applySoundPreset(voice,true);state.tracks[i].volume=[.78,.35,.38,.3,.32,.68,.6][i];});state.selected=selected;
+ const motif=Array.from({length:4},()=>Math.floor(rng()*3));
  state.tracks.forEach(t=>PATTERNS.forEach(p=>t.patterns[p]=[]));
- const prog=progression(), pool=scalePool(state.key,64,88);
+ const mainProg=progression(),sectionProgressions={};
  PATTERNS.forEach((pat,pi)=>{
+   const prog=(mode==='develop'&&(pat==='B'||pat==='CLIMAX'))?choices[Math.floor(rng()*choices.length)].split('-'):mainProg;
+   sectionProgressions[pat]=prog;
+   const pcs=new Set(prog.flatMap(c=>CHORDS[c].map(p=>midiOf(p)%12)));
+   const pool=Array.from({length:25},(_,i)=>64+i).filter(m=>pcs.has(m%12));
    prog.forEach((c,bar)=>{
      const chord=CHORDS[c]||CHORDS["Em"], base=bar*16;
    });
    const lead=generateMelodyPhrase(prog,pat,profile,styleProfile,pool,rng,pi);
    state.tracks[0].patterns[pat].push(...lead);
+   lead.forEach((n,i)=>{const chord=CHORDS[prog[Math.floor(n.step/16)]].map(midiOf);n.pitch=noteFromMidi(chord[motif[i%4]]+12);});
    [1,2,3,4,5].forEach(ti=>state.tracks[ti].patterns[pat].push(...generateSupportingPhrase(ti,prog,pat,styleProfile,rng,pi)));
    const occupied=new Set(lead.flatMap(n=>Array.from({length:n.len},(_,i)=>n.step+i)));
    if(pat==="B"||pat==="CLIMAX")state.tracks[1].patterns[pat]=state.tracks[1].patterns[pat].filter(n=>!occupied.has(n.step));
    for(let s=0;s<64;s++){
-     const mode=profile.drums;
+     const mode=spec?spec[4]:profile.drums;
      if(mode!=="none" && ((mode==="drive"&&s%Math.max(1,Math.round(4/styleProfile.drumBoost))===0)||(mode==="soft"&&s%8===0)||(mode==="sparse"&&s%8===0))) state.tracks[6].patterns[pat].push({pitch:"C5",step:s,len:1,velocity:105});
      if(mode!=="none" && ((mode==="drive"&&s%8===4)||(mode!=="drive"&&s%16===12))) state.tracks[6].patterns[pat].push({pitch:"D5",step:s,len:1,velocity:92});
      if(mode==="drive" && s%2===1 && pat!=="BREAK") state.tracks[6].patterns[pat].push({pitch:"E5",step:s,len:1,velocity:55});
      if(mode==="soft" && s%4===2 && pat!=="BREAK") state.tracks[6].patterns[pat].push({pitch:"E5",step:s,len:1,velocity:48});
    }
  });
+ PATTERNS.forEach(pat=>{
+   const tracks=state.tracks;
+   [2,3,4,5].forEach(ti=>{tracks[ti].patterns[pat]=tracks[ti].patterns[pat].filter(()=>rng()>(pat==='INTRO'?.38:.12));});
+   if(spec){
+     tracks[5].patterns[pat]=[];
+     sectionProgressions[pat].forEach((c,bar)=>{for(let s=0;s<16;s+=spec[2])tracks[5].patterns[pat].push({pitch:CHORDS[c][0],step:bar*16+s,len:Math.min(spec[2],16-s),velocity:65+Math.floor(rng()*30)});});
+     if(spec[4]==='none'){tracks[3].patterns[pat]=[];tracks[4].patterns[pat]=tracks[4].patterns[pat].filter((_,i)=>i%3===0);}
+     if(state.style==='dnb')tracks[6].patterns[pat].push(...[6,22,38,54,58].map(step=>({pitch:'C5',step,len:1,velocity:85})));
+   }
+ });
  state.tracks[6].sound={...SOUND_DEFAULTS[6],filter:12000,reverb:.06};
  state.selectedPattern="INTRO";
+ state.generation.progressions=sectionProgressions;
  standardArrangement();
  render();toast(`${state.genrePreset} の曲を48小節へ自動生成しました`);
 }
@@ -1351,15 +1401,12 @@ function applyStylePreset(){
  const style=$("#styleSel")?.value||"snes";
  if(style==="snes"){
    state.tracks[0].volume=.78;state.tracks[1].volume=.62;state.tracks[2].volume=.56;state.tracks[3].volume=.58;state.tracks[4].volume=.52;state.tracks[5].volume=.72;state.tracks[6].volume=.68;
-   state.bpm=168;
  }
  if(style==="nes"){
    state.tracks.forEach((t,i)=>t.volume=[.82,.68,.35,.45,.4,.72,.58][i]);
-   state.bpm=176;
  }
  if(style==="orchestral"){
    state.tracks.forEach((t,i)=>t.volume=[.72,.58,.74,.76,.48,.68,.62][i]);
-   state.bpm=154;
  }
 }
 function getActiveBlocksForTrack(ti){
