@@ -479,7 +479,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
             </div>
             <div class="tool-group"><span class="tool-group-title">履歴</span>
               <button class="btn icon-btn" id="undoBtn" title="元に戻す" aria-label="元に戻す">↶</button>
-              <button class="btn icon-btn" id="demoBtn" title="デモパターンを復元" aria-label="デモパターンを復元">▶</button>
+              <button class="btn" id="demoBtn" title="デモパターンを復元" aria-label="デモパターンを復元">デモ復元</button>
             </div>
           </div>
         </div>
@@ -1481,18 +1481,28 @@ function demo(){
  ensurePatterns();
  state.tracks.forEach(t=>PATTERNS.forEach(p=>t.patterns[p]=[]));
  const add=(t,pat,p,s,l=2,v=100)=>state.tracks[t].patterns[pat].push({pitch:p,step:s,len:l,velocity:v});
- const baseSeq=[
-   ["E5",0],["G5",4],["B5",8],["E6",12],["D6",16],["B5",20],["C6",24],["B5",28],
-   ["A5",32],["C6",36],["E6",40],["D6",44],["B5",48],["G5",52],["A5",56],["B5",60]
- ];
+ state.bpm=172;state.key='E minor';state.progression='Em-C-G-D';state.selectedPattern='INTRO';
+ const baseSeq=[['E5',0,3],['B5',3,1],['D6',6,2],['B5',8,4],['G5',14,2],['E5',16,3],['G5',19,1],['C6',22,2],['B5',24,3],['G5',28,2],['E5',30,2],['G5',32,3],['A5',35,1],['B5',38,2],['D6',40,6],['B5',46,2],['A5',48,3],['F#5',51,1],['D5',54,2],['F#5',56,2],['A5',58,2],['B5',60,3]];
+ const bridge=[['B5',0,6],['A5',8,2],['G5',12,4],['G5',16,3],['E5',20,3],['C6',24,6],['D6',32,3],['B5',36,3],['G5',40,6],['A5',48,4],['F#5',54,2],['D6',56,4],['B5',62,2]];
  PATTERNS.forEach((pat,pi)=>{
-   baseSeq.forEach(([p,s],idx)=>{
-     let midi=midiOf(p)+(pi%3===1?(idx%4===0?2:0):0)+(pat==="CLIMAX"?12:0);
-     add(0,pat,noteFromMidi(clamp(midi,60,88)),s,pat==="BREAK"?4:3);
+   const quiet=pat==='INTRO'||pat==='BREAK',peak=pat==='CLIMAX';
+   (pat==='B'?bridge:baseSeq).forEach(([p,s,l],idx)=>{
+     if(quiet&&idx%3!==0)return;
+     add(0,pat,p,s,quiet?Math.min(6,64-s):l,peak?112:96);
+     if(peak&&idx%4===0)add(1,pat,noteFromMidi(midiOf(p)-12),s,l,62);
    });
-   for(let s=0;s<64;s+=8)add(5,pat,["E4","C5","G4","D5"][(s/8+pi)%4],s,6);
-   for(let s=0;s<64;s+=4)add(6,pat,["C5","E5","D5","E5"][(s/4)%4],s,1);
-   for(let s=0;s<64;s+=4)add(4,pat,["E5","G5","B5","G5"][(s/4+pi)%4],s,1);
+   ['Em','C','G','D'].forEach((symbol,bar)=>{
+     const chord=CHORDS[symbol],start=bar*16;
+     chord.forEach(p=>add(2,pat,p,start,quiet?16:12,quiet?43:55));
+     if(!quiet){[0,6,10].forEach(s=>chord.forEach(p=>add(3,pat,p,start+s,2,peak?76:58)));if(!peak)add(1,pat,chord[2],start+12,3,64);}
+     for(let s=0;s<16;s+=quiet?4:2)add(4,pat,noteFromMidi(midiOf(chord[[0,2,1,2][(s/2)%4]])+12),start+s,1,quiet?38:54+(s%4===0?10:0));
+     (quiet?[0,8]:[0,3,6,8,10,14]).forEach((s,i)=>add(5,pat,chord[i%3===2?2:0],start+s,quiet?6:2,88));
+   });
+   if(pat!=='BREAK'){
+     for(let s=0;s<64;s+=quiet?8:2){add(6,pat,'E5',s,1,s%4===0?58:38);}
+     for(let s=0;s<64;s+=16){add(6,pat,'C5',s,1,108);if(!quiet){add(6,pat,'C5',s+10,1,95);add(6,pat,'D5',s+4,1,98);add(6,pat,'D5',s+12,1,104);}}
+     if(!quiet)[58,60,62,63].forEach((s,i)=>add(6,pat,'D5',s,1,65+i*10));
+   }
  });
  standardArrangement();
  render();
@@ -2355,7 +2365,7 @@ function bindUi(){
  $("#pasteNotesBtn").onclick=pasteNotes;
  $("#deleteNotesBtn").onclick=deleteSelectedNotes;
  $("#undoBtn").onclick=()=>{if(!undoStack.length)return; const prev=JSON.parse(undoStack.pop()); Object.assign(state,prev); render();};
- $("#demoBtn").onclick=demo;
+ $("#demoBtn").onclick=()=>{if(!confirm('現在の曲全体をデモに置き換えます。続けますか？'))return;saveUndo();stopPlayback();demo();autoSave();};
  $("#arrGrid").addEventListener("dragend",()=>autoSave());
  document.querySelectorAll(".control input,.control select").forEach(el=>{if(!el.oninput&&!el.onchange) el.onchange=autoSave;});
 }
