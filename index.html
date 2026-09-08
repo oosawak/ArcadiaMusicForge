@@ -303,7 +303,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
                 </select>
               </label>
               <button class="btn primary" id="autoComposeBtn" type="button">自動生成</button>
-              <label class="control">進行モード<select id="generationMode"><option value="auto">おまかせ</option><option value="fixed">指定進行</option><option value="develop">展開あり</option><option value="minimal">コード少なめ</option></select></label>
+              <label class="control">進行モード<select id="generationMode" title="指定進行では選んだコード進行を使います"><option value="fixed">指定進行</option><option value="auto">おまかせ</option><option value="develop">展開あり</option><option value="minimal">コード少なめ</option></select></label>
               <label class="control">SEED<input id="generationSeed" type="number" min="1" max="4294967295" value="1" style="width:110px"></label>
               <label class="control"><input id="freshSeed" type="checkbox" checked>毎回変更</label>
               <button class="btn" id="autoPlayBtn" type="button">▶ Play</button>
@@ -331,6 +331,10 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
                 <option value="square">Square</option>
                 <option value="triangle">Triangle</option>
                 <option value="sine">Sine</option>
+                <option value="pulse">Pulse</option>
+                <option value="organ">Organ</option>
+                <option value="metallic">Metallic</option>
+                <option value="soft">Soft</option>
               </select>
             </label>
             <label class="control">ATTACK <input id="attackCtl" type="range" min="0.001" max="0.5" step="0.001" value="0.01"></label>
@@ -353,6 +357,14 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
             <button class="btn" id="presetBrassBtn">Brass</button>
             <button class="btn" id="presetChoirBtn">Choir</button>
             <button class="btn" id="presetBellBtn">Bell</button>
+            <button class="btn primary" id="previewInstrumentBtn" title="現在の音色を試聴">▶ 試聴</button>
+          </div>
+          <div class="control" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+            <span>楽器プリセット</span><input id="instrumentPresetName" type="text" placeholder="名前を入力" style="width:150px">
+            <button class="btn" id="instrumentPresetSaveBtn">保存</button>
+            <select id="instrumentPresetSel" aria-label="保存した楽器プリセット"><option value="">プリセットを選択</option></select>
+            <button class="btn" id="instrumentPresetLoadBtn">読込</button>
+            <button class="btn" id="instrumentPresetDeleteBtn">削除</button>
           </div>
           <div class="fx-chain" id="fxChain">
             <span class="fx-chip">SOURCE</span><span class="fx-chip">FILTER</span><span class="fx-chip">PAN</span><span class="fx-chip">WIDTH</span><span class="fx-chip">REVERB</span><span class="fx-chip">DELAY</span>
@@ -603,6 +615,12 @@ const GENRE_TEMPO_RANGES={
  'Sci-Fi':[110,155],Platformer:[125,175],Boss:[170,220],Menu:[70,110],Town:[85,125],Dungeon:[90,140],Sports:[145,190],Rhythm:[120,165]
 };
 const STYLE_TEMPO_OFFSETS={snes:0,nes:10,orchestral:-5,fm:5,piano:-10,ambient:-25,rock:0,funk:-10,jazz:-5,bossa:-15,house:-10,techno:5,dnb:20,synthwave:-15,japanese:-10,folk:-5};
+const GENRE_SOUND_SHAPES={
+ Action:{filter:1.08,reverb:.85,delay:1.1,pan:.18},Puzzle:{filter:.82,reverb:1.2,delay:1.25,pan:.35},Racing:{filter:1.18,reverb:.65,delay:1.05,pan:.22},
+ Horror:{filter:.55,reverb:1.55,delay:1.35,pan:.48},Cozy:{filter:.76,reverb:1.35,delay:1.15,pan:.3},'Sci-Fi':{filter:1.05,reverb:1.15,delay:1.5,pan:.6},
+ Platformer:{filter:1.12,reverb:.8,delay:1,pan:.16},Boss:{filter:1.2,reverb:.78,delay:1.15,pan:.2},Menu:{filter:.72,reverb:1.5,delay:1.45,pan:.55},
+ Town:{filter:.8,reverb:1.35,delay:1.2,pan:.35},Dungeon:{filter:.64,reverb:1.6,delay:1.3,pan:.42},Sports:{filter:1.15,reverb:.7,delay:1,pan:.16},Rhythm:{filter:1.12,reverb:.72,delay:1.05,pan:.25}
+};
 function generationTempo(genre,style,rng){
  const range=GENRE_TEMPO_RANGES[genre]||GENRE_TEMPO_RANGES.Action;
  const offset=STYLE_TEMPO_OFFSETS[style]||0;
@@ -1023,8 +1041,8 @@ function autoComposeBattle(){
  state.bpm=generationTempo(state.genrePreset,state.style,rng);
  state.generation.bpm=state.bpm;
  const selected=state.selected;
- const voices=state.style==='orchestral'?['choir','bell','pad','brass','pluck','bass','pluck']:state.style==='nes'?['pluck','pluck','pad','pluck','pluck','bass','pluck']:[spec?spec[3]:'snes','bell','pad','brass','pluck','bass','pluck'];
- voices.forEach((voice,i)=>{state.selected=i;applySoundPreset(voice,true);state.tracks[i].volume=[.78,.35,.38,.3,.32,.68,.6][i];});state.selected=selected;
+ const voices=profile.sounds||['snes','bell','pad','brass','pluck','bass','pluck'],shape=GENRE_SOUND_SHAPES[state.genrePreset]||GENRE_SOUND_SHAPES.Action;
+ voices.forEach((voice,i)=>{state.selected=i;applySoundPreset(voice,true);const sound=state.tracks[i].sound;sound.filter=clamp(Math.round(sound.filter*shape.filter),200,12000);sound.reverb=clamp(sound.reverb*shape.reverb,0,1);sound.delay=clamp(sound.delay*shape.delay,0,0.7);sound.pan=clamp((i%2?1:-1)*shape.pan, -1,1);if(spec&&i===0)sound.wave=spec[3]==='snes'?'pulse':spec[3]==='pluck'?'triangle':sound.wave;state.tracks[i].volume=[.78,.35,.38,.3,.32,.68,.6][i];});state.selected=selected;
  const motif=Array.from({length:4},()=>Math.floor(rng()*3));
  state.tracks.forEach(t=>PATTERNS.forEach(p=>t.patterns[p]=[]));
  const mainProg=progression(),sectionProgressions={};
@@ -1734,6 +1752,48 @@ function renderSoundControls(){
  $("#sourceSel").value=s.source||"osc";$("#waveSel").value=s.wave==="noise"?"square":s.wave;
  $("#attackCtl").value=s.attack;$("#decayCtl").value=s.decay;$("#sustainCtl").value=s.sustain;
  $("#releaseCtl").value=s.release;$("#filterCtl").value=s.filter;$("#reverbCtl").value=s.reverb;$("#delayCtl").value=s.delay;$("#panCtl").value=s.pan||0;$("#widthCtl").value=s.width||0;$("#lfoRateCtl").value=s.lfoRate||0;$("#lfoDepthCtl").value=s.lfoDepth||0;
+ renderInstrumentPresets();
+}
+const INSTRUMENT_PRESETS_KEY="arcadiaMusicForge.instrumentPresets";
+const DEFAULT_INSTRUMENT_PRESETS={
+ "Crystal Lead":{...SOUND_DEFAULTS[0],wave:"pulse",voice:"snes"},
+ "Soft Pad":{...SOUND_DEFAULTS[2],wave:"soft",voice:"pad",attack:.28,release:1.1,reverb:.48},
+ "Arcade Pluck":{...SOUND_DEFAULTS[4],wave:"triangle",voice:"pluck",attack:.003,decay:.1,sustain:.16},
+ "Deep Bass":{...SOUND_DEFAULTS[5],wave:"square",voice:"bass",filter:1800},
+ "Battle Brass":{...SOUND_DEFAULTS[3],wave:"sawtooth",voice:"brass",filter:4200,reverb:.2},
+ "Retro Organ":{...SOUND_DEFAULTS[1],wave:"organ",voice:"organ",attack:.02,sustain:.78,release:.3,reverb:.25},
+ "Metal Hit":{...SOUND_DEFAULTS[6],wave:"metallic",voice:"bell",attack:.001,decay:.3,sustain:.05,release:.45,filter:10500}
+};
+function readInstrumentPresets(){
+ try{
+  const saved=JSON.parse(localStorage.getItem(INSTRUMENT_PRESETS_KEY)||"{}");
+  const presets={...DEFAULT_INSTRUMENT_PRESETS,...saved};
+  if(Object.keys(saved).length!==Object.keys(presets).length)localStorage.setItem(INSTRUMENT_PRESETS_KEY,JSON.stringify(presets));
+  return presets;
+ }catch{return {...DEFAULT_INSTRUMENT_PRESETS}}
+}
+function renderInstrumentPresets(){
+ const sel=$("#instrumentPresetSel");if(!sel)return;const current=sel.value,presets=readInstrumentPresets();
+ sel.innerHTML='<option value="">プリセットを選択</option>'+Object.keys(presets).sort().map(name=>`<option value="${name.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;")}">${name.replace(/&/g,"&amp;").replace(/</g,"&lt;")}</option>`).join("");
+ if(presets[current])sel.value=current;
+}
+function currentInstrumentSettings(){const t=state.tracks[state.selected],s=t.sound||SOUND_DEFAULTS[state.selected];return {...s,type:t.type,label:t.label}}
+function saveInstrumentPreset(){
+ const name=$("#instrumentPresetName")?.value.trim();if(!name){toast("楽器名を入力してください");return}
+ const presets=readInstrumentPresets();presets[name]=currentInstrumentSettings();localStorage.setItem(INSTRUMENT_PRESETS_KEY,JSON.stringify(presets));renderInstrumentPresets();$("#instrumentPresetSel").value=name;toast(`${name} を保存しました`);
+}
+function loadInstrumentPreset(){
+ const name=$("#instrumentPresetSel")?.value,preset=readInstrumentPresets()[name];if(!preset)return;state.tracks[state.selected].sound={...preset};if(preset.type)state.tracks[state.selected].type=preset.type;if(preset.label)state.tracks[state.selected].label=preset.label;render();autoSave();toast(`${name} を読み込みました`);
+}
+function deleteInstrumentPreset(){
+ const sel=$("#instrumentPresetSel"),name=sel?.value;if(!name)return;const presets=readInstrumentPresets();delete presets[name];localStorage.setItem(INSTRUMENT_PRESETS_KEY,JSON.stringify(presets));renderInstrumentPresets();toast(`${name} を削除しました`);
+}
+function previewInstrument(){
+ const index=state.selected,track=state.tracks[index],wasMuted=track.mute,wasSolo=state.tracks.map(t=>t.solo);
+ ensureAudio();track.mute=false;state.tracks.forEach(t=>t.solo=false);
+ synth(index,{pitch:"C4",step:0,len:4,velocity:112},4);
+ setTimeout(()=>{track.mute=wasMuted;state.tracks.forEach((t,i)=>t.solo=wasSolo[i]);},700);
+ toast("現在の音色を試聴しました");
 }
 function updateSoundFromControls(){
  const t=state.tracks[state.selected];if(!t.sound)t.sound={...SOUND_DEFAULTS[state.selected]};
@@ -1874,25 +1934,30 @@ function shapeToneFilter(filter,sound,at,duration){
   filter.Q.value=sound.voice==="brass"?.8:.5;filter.frequency.setValueAtTime(top*.35,at);filter.frequency.exponentialRampToValueAtTime(top,at+Math.min(.035,duration/3));filter.frequency.exponentialRampToValueAtTime(Math.max(200,top*.45),at+Math.max(.04,duration));
  }
 }
+function setWaveform(ctx,osc,wave){
+ if(["sine","square","sawtooth","triangle"].includes(wave)){osc.type=wave;return;}
+ const harmonics=wave==="pulse"?[0,1,0,0,0.8,0,0.5]:wave==="organ"?[0,1,.55,.28,.16,.1,.06]:wave==="metallic"?[0,1,.2,.65,.12,.45,.08]:[0,1,.35,.08,.02];
+ const real=new Float32Array(harmonics),imag=new Float32Array(harmonics);osc.setPeriodicWave(ctx.createPeriodicWave(real,imag));
+}
 function buildToneSources(ctx,sound,freqHz){
  const nodes=[];
  if(sound.voice){
   const bass=sound.voice==="bass",brass=sound.voice==="brass",bell=sound.voice==="bell";
-  const layers=bass?[[.25,"sine",.65,0],[.5,"sawtooth",.35,0]]:bell?[[1,"sine",.7,0],[2.76,"sine",.18,0],[5.4,"sine",.08,0]]:[[1,brass?"sawtooth":sound.wave,.5,-7*(sound.width||.3)],[1,brass?"sawtooth":sound.wave,.4,9*(sound.width||.3)],[.5,"sine",.15,0]];
-  layers.forEach(([ratio,wave,level,detune])=>{const o=ctx.createOscillator(),g=ctx.createGain();o.type=wave;o.frequency.value=freqHz*ratio;o.detune.value=detune;g.gain.value=level;o.connect(g);nodes.push({osc:o,gain:g});});
+  const layers=bass?[[.25,"sine",.65,0],[.5,sound.wave,.35,0]]:bell?[[1,sound.wave,.7,0],[2.76,"sine",.18,0],[5.4,"sine",.08,0]]:[[1,brass?"sawtooth":sound.wave,.5,-7*(sound.width||.3)],[1,brass?"sawtooth":sound.wave,.4,9*(sound.width||.3)],[.5,"sine",.15,0]];
+  layers.forEach(([ratio,wave,level,detune])=>{const o=ctx.createOscillator(),g=ctx.createGain();setWaveform(ctx,o,wave);o.frequency.value=freqHz*ratio;o.detune.value=detune;g.gain.value=level;o.connect(g);nodes.push({osc:o,gain:g});});
   return nodes;
  }
  if(sound.source==="pcm"){
    const ratios=[1,2,3.01];
    ratios.forEach((r,idx)=>{
      const o=ctx.createOscillator(),g=ctx.createGain();
-     o.type=idx===0?(sound.wave==="noise"?"triangle":sound.wave):(idx===1?"sine":"triangle");
+     setWaveform(ctx,o,idx===0?(sound.wave==="noise"?"triangle":sound.wave):(idx===1?"sine":"triangle"));
      o.frequency.value=freqHz*r;
      g.gain.value=[1,.28,.12][idx];
      o.connect(g);nodes.push({osc:o,gain:g});
    });
  }else{
-   const o=ctx.createOscillator(),g=ctx.createGain();o.type=sound.wave==="noise"?"square":sound.wave;o.frequency.value=freqHz;o.connect(g);nodes.push({osc:o,gain:g});
+   const o=ctx.createOscillator(),g=ctx.createGain();setWaveform(ctx,o,sound.wave==="noise"?"square":sound.wave);o.frequency.value=freqHz;o.connect(g);nodes.push({osc:o,gain:g});
  }
  return nodes;
 }
@@ -2179,7 +2244,7 @@ function bindUi(){
  if(genreSel){
    genreSel.innerHTML=Object.keys(GENRE_PRESETS).map(name=>`<option value="${name}">${name}</option>`).join("");
    genreSel.value=state.genrePreset||"Action";
-   genreSel.onchange=()=>applyGenrePreset(genreSel.value,false);
+   genreSel.onchange=()=>{state.genrePreset=genreSel.value;autoSave();};
  }
  $("#workspaceModeSel").onchange=e=>setWorkspaceMode(e.target.value);
  const applyGenreBtn=$("#applyGenreBtn");
@@ -2242,7 +2307,7 @@ function bindUi(){
  };
  $("#autoPlayBtn").onclick=()=>{if(!playing){play();$("#autoPlayBtn").textContent="■ Stop";}else stopPlayback();};
  $("#progressionSel").onchange=()=>{state.progression=$("#progressionSel").value;renderChords();autoSave();};
- $("#styleSel").onchange=()=>{state.style=$("#styleSel").value;applyStylePreset();render();};
+ $("#styleSel").onchange=()=>{state.style=$("#styleSel").value;autoSave();};
  $("#sourceSel").onchange=()=>{state.tracks[state.selected].sound={...(state.tracks[state.selected].sound||SOUND_DEFAULTS[state.selected]),source:$("#sourceSel").value};autoSave();};
  $("#trackTypeSel").onchange=e=>applyTrackType(e.target.value);
  ["waveSel","attackCtl","decayCtl","sustainCtl","releaseCtl","filterCtl","reverbCtl","delayCtl","panCtl","widthCtl","lfoRateCtl","lfoDepthCtl"].forEach(id=>{$(`#${id}`).oninput=updateSoundFromControls;});
@@ -2250,6 +2315,10 @@ function bindUi(){
    const preset=["snes","pluck","pad","bass","brass","choir","bell"][i];
    $(`#${id}`).onclick=()=>applySoundPreset(preset);
  });
+ $("#instrumentPresetSaveBtn").onclick=saveInstrumentPreset;
+ $("#instrumentPresetLoadBtn").onclick=loadInstrumentPreset;
+ $("#instrumentPresetDeleteBtn").onclick=deleteInstrumentPreset;
+ $("#previewInstrumentBtn").onclick=previewInstrument;
  $("#trackSampleInput").onchange=e=>loadTrackSample(e.target.files?.[0]);
  $("#clearSampleBtn").onclick=()=>{getSampleStore().tracks[state.selected]=null; if(state.tracks[state.selected].sample) state.tracks[state.selected].sample.name=""; renderSamplerControls(); autoSave();};
  $("#previewSampleBtn").onclick=()=>{const runtime=getSampleStore().tracks[state.selected]; if(runtime?.buffer) previewBuffer(runtime.buffer,state.tracks[state.selected].sample?.gain||1);};
