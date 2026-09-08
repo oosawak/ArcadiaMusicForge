@@ -664,6 +664,48 @@ function makeGeneratorRandom(seed){
    return ((t^(t>>>14))>>>0)/4294967296;
  };
 }
+function generateThematicPhrase(prog,pat,profile,styleProfile,pool,rng,theme){
+ const notes=[], density=clamp(profile.density+(styleProfile.densityOffset||0),1,8);
+ const rhythm=density>=5?[0,3,6,8,10,12]:[0,4,8,12];
+ const nearest=(values,target)=>values.reduce((a,b)=>Math.abs(b-target)<Math.abs(a-target)?b:a,values[0]);
+ let previous=nearest(pool,74+(styleProfile.octave||0));
+ prog.forEach((symbol,bar)=>{
+   const pcs=(CHORDS[symbol]||CHORDS.Em).map(p=>midiOf(p)%12);
+   const anchors=pool.filter(m=>pcs.includes(m%12));
+   const slots=pat==='BREAK'?[0,8]:pat==='INTRO'?[0,6,12]:rhythm;
+   slots.forEach((offset,i)=>{
+     if(bar%2===1&&i===slots.length-2)return;
+     const degree=theme[i%theme.length]*(pat==='B'?-1:1);
+     const center=74+(styleProfile.octave||0)+(pat==='CLIMAX'?5:0);
+     let target=nearest(pool,center+degree+(bar%2?2:0));
+     const ending=i===slots.length-1;
+     if(offset===0||ending)target=nearest(anchors,ending?previous:center+degree);
+     if(Math.abs(target-previous)>7)target=nearest(ending?anchors:pool,previous+Math.sign(target-previous)*5);
+     const next=slots[i+1]??16;
+     notes.push({pitch:noteFromMidi(target),step:bar*16+offset,len:Math.max(1,next-offset-(ending?1:0)),velocity:clamp(90+(offset===0?9:0)+(pat==='CLIMAX'?9:0)+Math.floor(rng()*9)-4,1,127)});
+     previous=target;
+   });
+ });
+ return notes;
+}
+function coordinateGeneratedParts(pat,prog,styleProfile,rng){
+ const parts=state.tracks.map(t=>t.patterns[pat]);
+ const overlaps=n=>parts[0].some(m=>n.step<m.step+m.len&&m.step<n.step+n.len);
+ parts[1]=parts[1].filter(n=>!overlaps(n));
+ parts[3]=parts[3].map(n=>({...n,velocity:overlaps(n)?Math.round(n.velocity*.65):n.velocity}));
+ parts[4]=parts[4].map(n=>({...n,velocity:Math.round(n.velocity*(overlaps(n)?.65:.85))}));
+ if(pat==='INTRO'||pat==='BREAK'){
+   parts[1]=[];parts[3]=[];
+   parts[4]=parts[4].filter(n=>n.step%(pat==='BREAK'?8:4)===0);
+   parts[6]=parts[6].filter(n=>n.pitch==='C5'&&n.step%16===0);
+ }
+ // Keep bass attacks with the kick, leaving space before the loop returns.
+ const kicks=[...new Set(parts[6].filter(n=>n.pitch==='C5').map(n=>n.step))];
+ const attacks=kicks.length?kicks:prog.map((_,bar)=>bar*16);
+ parts[5]=attacks.map((step,i)=>({pitch:CHORDS[prog[Math.floor(step/16)]][0],step,len:Math.max(1,Math.min((attacks[i+1]??64)-step,8)-1),velocity:85+Math.floor(rng()*12)}));
+ if(pat==='TURN')parts.forEach((notes,i)=>{parts[i]=notes.filter(n=>n.step<60).map(n=>({...n,len:Math.min(n.len,60-n.step)}));});
+ parts.forEach((notes,i)=>state.tracks[i].patterns[pat]=notes);
+}
 function generateMelodyPhrase(prog,pat,profile,styleProfile,pool,rng,phraseIndex){
  const notes=[],used=new Set();
  const density=Math.max(1,Math.min(8,(pat==="CLIMAX"?profile.density+2:profile.density)+styleProfile.densityOffset));
@@ -1043,7 +1085,7 @@ function autoComposeBattle(){
  const selected=state.selected;
  const voices=profile.sounds||['snes','bell','pad','brass','pluck','bass','pluck'],shape=GENRE_SOUND_SHAPES[state.genrePreset]||GENRE_SOUND_SHAPES.Action;
  voices.forEach((voice,i)=>{state.selected=i;applySoundPreset(voice,true);const sound=state.tracks[i].sound;sound.filter=clamp(Math.round(sound.filter*shape.filter),200,12000);sound.reverb=clamp(sound.reverb*shape.reverb,0,1);sound.delay=clamp(sound.delay*shape.delay,0,0.7);sound.pan=clamp((i%2?1:-1)*shape.pan, -1,1);if(spec&&i===0)sound.wave=spec[3]==='snes'?'pulse':spec[3]==='pluck'?'triangle':sound.wave;state.tracks[i].volume=[.78,.35,.38,.3,.32,.68,.6][i];});state.selected=selected;
- const motif=Array.from({length:4},()=>Math.floor(rng()*3));
+ const theme=Array.from({length:6},()=>Math.floor(rng()*9)-4);
  state.tracks.forEach(t=>PATTERNS.forEach(p=>t.patterns[p]=[]));
  const mainProg=progression(),sectionProgressions={};
  PATTERNS.forEach((pat,pi)=>{
@@ -1054,9 +1096,8 @@ function autoComposeBattle(){
    prog.forEach((c,bar)=>{
      const chord=CHORDS[c]||CHORDS["Em"], base=bar*16;
    });
-   const lead=generateMelodyPhrase(prog,pat,profile,styleProfile,pool,rng,pi);
+   const lead=generateThematicPhrase(prog,pat,profile,styleProfile,pool,rng,theme);
    state.tracks[0].patterns[pat].push(...lead);
-   lead.forEach((n,i)=>{const chord=CHORDS[prog[Math.floor(n.step/16)]].map(midiOf);n.pitch=noteFromMidi(chord[motif[i%4]]+12);});
    [1,2,3,4,5].forEach(ti=>state.tracks[ti].patterns[pat].push(...generateSupportingPhrase(ti,prog,pat,styleProfile,rng,pi)));
    const occupied=new Set(lead.flatMap(n=>Array.from({length:n.len},(_,i)=>n.step+i)));
    if(pat==="B"||pat==="CLIMAX")state.tracks[1].patterns[pat]=state.tracks[1].patterns[pat].filter(n=>!occupied.has(n.step));
@@ -1078,6 +1119,7 @@ function autoComposeBattle(){
      if(state.style==='dnb')tracks[6].patterns[pat].push(...[6,22,38,54,58].map(step=>({pitch:'C5',step,len:1,velocity:85})));
    }
  });
+ PATTERNS.forEach(pat=>coordinateGeneratedParts(pat,sectionProgressions[pat],styleProfile,rng));
  state.tracks[6].sound={...SOUND_DEFAULTS[6],filter:12000,reverb:.06};
  state.selectedPattern="INTRO";
  state.generation.progressions=sectionProgressions;
