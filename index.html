@@ -1374,6 +1374,10 @@ function setActiveSong(index){
  render();
 }
 function renderSongLibrary(){
+ if(!$('#addDemoSongsBtn')){
+  const button=document.createElement('button');button.id='addDemoSongsBtn';button.type='button';button.className='btn';button.textContent='サンプル曲を追加（5曲）';button.onclick=addDemoSongs;
+  document.querySelector('.library-actions')?.appendChild(button);
+ }
  const list=$("#songList"); if(!list)return;
  list.innerHTML="";
  project.songs.forEach((song,index)=>{
@@ -1388,6 +1392,33 @@ function renderSongLibrary(){
  $("#songNameInput").value=state.name||"";
  $("#songMeta").textContent=`編集中: ${state.name||"曲"} / 保存される状態は曲ごとに切り替わります。`;
  updateDocumentTitle();
+}
+function addDemoSongs(){
+ stopPlayback();
+ const original=state,index=project.activeSongIndex,history=undoStack.slice();
+ const controls=['genrePresetSel','styleSel','generationMode','generationSeed','progressionSel'];
+ const values=controls.map(id=>$('#'+id).value),fresh=$('#freshSeed').checked;
+ const presets=[
+  ['demo-neon','NEON PURSUIT — 夜の高速道路','Racing','synthwave','E','minor',174,4107],
+  ['demo-boss','CRIMSON ENGINE — 決戦','Boss','rock','D','minor',168,8209],
+  ['demo-orbit','ORBIT BREAKER — 軌道戦','Sci-Fi','fm','F#','minor',148,2311],
+  ['demo-pixel','PIXEL RUNNER — 空中ステージ','Platformer','nes','C','major',164,7713],
+  ['demo-dawn','DAWN HARBOR — 夜明けの港','Town','bossa','C','major',104,9517]
+ ];
+ let count=0;
+ try{
+  for(const [id,name,genre,style,root,scale,bpm,seed] of presets){
+   if(project.songs.some(s=>s.demoId===id))continue;
+   state=createSongState(name);state.theory.root=root;state.theory.scale=scale;state.theory.phraseAssist=true;
+   $('#genrePresetSel').value=genre;$('#styleSel').value=style;$('#generationMode').value='develop';$('#generationSeed').value=seed;$('#freshSeed').checked=false;
+   autoComposeBattle();state.bpm=bpm;state.demoId=id;state.workspaceMode='library';
+   state.tracks.forEach(t=>{t.sound.reverb=Math.min(t.sound.reverb||0,.12);t.sound.delay=Math.min(t.sound.delay||0,.08);});
+   project.songs.push(state);count++;
+  }
+ }finally{
+  state=original;project.activeSongIndex=index;controls.forEach((id,i)=>$('#'+id).value=values[i]);$('#freshSeed').checked=fresh;undoStack=history;render();autoSave();
+ }
+ toast(count?`${count}曲のサンプルを追加しました。曲ライブラリから選んで再生できます。`:'サンプル曲は追加済みです');
 }
 function updateCurrentSongName(){
  const next=($("#songNameInput").value||"").trim();
