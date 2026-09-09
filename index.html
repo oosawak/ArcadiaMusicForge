@@ -2838,6 +2838,7 @@ function initWorkspaceTabs(){
 }
 function bindUi(){
  $('#helpBtn').onclick=()=>$('#helpModal').showModal();$('#helpCloseBtn').onclick=()=>$('#helpModal').close();
+ const fxBypass=$('#fxBypassToggle');if(fxBypass)fxBypass.checked=typeof navigator==='undefined'||!(/Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
  renderLookup();
  $('#lookupFromNotesBtn').onclick=lookupFromCurrentNotes;
  $('#lookupClearBtn').onclick=()=>{lookupPitchClasses.clear();renderLookup();};
