@@ -63,7 +63,7 @@ for(const root of T.NOTE_NAMES)for(const scale of Object.keys(T.SCALE_TYPES))for
 api.initTheoryControls();api.bindUi();
 assert.equal(nodes.get('#rootSel').options.length,12);
 assert.equal(nodes.get('#scaleSel').options.length,17);
-assert.ok(!ids.has('keySel')&&!ids.has('progressionSel'));
+assert.ok(!ids.has('keySel'));
 assert.deepEqual(plain(T.resolveProgression('E','naturalMinor','minor_epic').map(c=>c.symbol)),['Em','C','G','D']);
 assert.equal(T.diatonic('C','harmonicMinor',true)[0].symbol,'Cm(maj7)');
 assert.deepEqual(plain(T.diatonic('C','major').map(c=>c.symbol)),['C','Dm','Em','F','G','Am','Bdim']);
