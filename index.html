@@ -730,7 +730,7 @@ function getSampleStore(song=state){
  return song.sampleStore;
 }
 
-let undoStack=[], playing=false, step=0, timer=null, audio=null, masterGain=null, startedAt=0, selectedNotes=new Set(), noteClipboard=[];
+let undoStack=[], playing=false, step=0, timer=null, stableTimer=null, audio=null, masterGain=null, startedAt=0, selectedNotes=new Set(), noteClipboard=[];
 const patternSteps=64, arrangementBlocks=12, totalSteps=patternSteps*arrangementBlocks;
 
 
@@ -2722,12 +2722,12 @@ async function play(){
  playing=true;$("#playBtn").textContent="❚❚";
  syncPatternToPlayhead();
  const ms=60000/state.bpm/4;
- tick();timer=setInterval(tick,ms);
+ tick();const stable=mode==="stable"||(mode==="auto"&&mobile);if(stable){let target=performance.now()+ms;const schedule=()=>{if(!playing)return;stableTimer=setTimeout(()=>{tick();target+=ms;schedule();},Math.max(0,target-performance.now()));};schedule();}else timer=setInterval(tick,ms);
  updateArrangementHighlight();
 }
 function pause(){
  stopTheoryPreview();
- playing=false;clearInterval(timer);timer=null;$("#playBtn").textContent="▶";$("#autoPlayBtn").textContent="▶ Play";updateArrangementHighlight();
+ playing=false;clearInterval(timer);timer=null;clearTimeout(stableTimer);stableTimer=null;$("#playBtn").textContent="▶";$("#autoPlayBtn").textContent="▶ Play";updateArrangementHighlight();
 }
 function stopPlayback(){
  pause();
