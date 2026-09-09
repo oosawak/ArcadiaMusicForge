@@ -359,7 +359,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
 
 
       <section class="panel collapsible-panel" id="soundPanel">
-        <div class="panel-title">SOUND DESIGN <button class="collapse-toggle" data-collapse="#soundPanel">開く</button><span style="float:right;margin-right:50px">Track FX / Synth</span></div>
+        <div class="panel-title">SOUND DESIGN <button class="collapse-toggle" data-collapse="#soundPanel">開く</button><label class="control" style="margin-left:8px;letter-spacing:0"><input id="fxBypassToggle" type="checkbox"> FX全オフ</label><span style="float:right;margin-right:50px">Track FX / Synth</span></div>
         <div style="padding:14px;display:grid;gap:12px">
           <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">
             <label class="control">TRACK TYPE
@@ -2423,6 +2423,7 @@ function makeImpulse(ctx, seconds=1.1, decay=2.0){
  return buf;
 }
 function connectTrackFX(ctx,input,destination,sound){
+ if($('#fxBypassToggle')?.checked){input.connect(destination);return;}
  const dry=ctx.createGain(),wet=ctx.createGain(),delay=ctx.createDelay(1),feedback=ctx.createGain(),conv=ctx.createConvolver();
  conv.buffer=makeImpulse(ctx,1.0,2.2);
  dry.gain.value=1;wet.gain.value=clamp(sound.reverb||0,0,1);
