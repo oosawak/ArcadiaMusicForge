@@ -34,7 +34,7 @@ button,input,select{font:inherit}button{cursor:pointer}
 .workspace{display:grid;grid-template-columns:1fr;gap:15px}
 .workspace>.tracks{display:none}
 .panel{background:linear-gradient(180deg,rgba(23,26,35,.95),rgba(12,14,19,.95));border:1px solid var(--line);border-radius:12px;overflow:hidden}
-.panel-title{padding:13px 15px;border-bottom:1px solid var(--line);font-size:12px;letter-spacing:.18em;color:#b4bac9;text-transform:uppercase}
+.panel-title{padding:13px 15px;border-bottom:1px solid var(--line);font-size:12px;letter-spacing:.18em;color:#b4bac9;text-transform:uppercase;display:flex;align-items:center;gap:0}.panel-title>span:last-child{margin-left:auto}
 .library-body{padding:12px;display:grid;gap:10px}
 .library-actions{display:flex;gap:8px;flex-wrap:wrap}
 .song-name-field{display:grid;gap:6px}
@@ -85,6 +85,30 @@ button,input,select{font:inherit}button{cursor:pointer}
 linear-gradient(to right,rgba(255,255,255,.035) 1px,transparent 1px);
 background-size:calc(100% / 64) 100%}
 .grid-row.black{background-color:rgba(0,0,0,.16)}
+.grid-row.theory-scale{background-color:rgba(64,110,170,.08)}
+.grid-row.theory-chord{background-color:rgba(213,175,98,.14)}
+.grid-row{position:relative}
+.theory-bar{position:absolute;top:0;bottom:0;width:25%;pointer-events:none}
+.theory-bar.theory-chord{background-color:rgba(213,175,98,.14)}
+.theory-bar.theory-scale{background-color:rgba(64,110,170,.08)}
+#theoryAssist{font-size:14px;line-height:1.5}
+.gemini-assist{display:grid;gap:8px;padding:12px 0;border-top:1px solid var(--line)}
+.gemini-assist textarea{width:100%;min-height:76px;resize:vertical;background:#11141b;color:#fff;border:1px solid #363c4c;border-radius:7px;padding:9px}
+.gemini-status{font-size:12px;color:var(--muted)}
+.gemini-log{font-size:11px;color:#9ea6ba;background:#0d1016;border:1px solid #292f3d;border-radius:6px;padding:7px 9px;max-height:110px;overflow:auto;white-space:pre-line}
+.gemini-title{display:flex;align-items:center;justify-content:space-between;gap:12px}.gemini-title .gemini-status{font-weight:400;letter-spacing:0;text-transform:none;text-align:right}
+.composer-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:0}
+.workspace-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:0}
+.composer-tab{border:1px solid #3a4051;background:#12151c;color:#aeb6c8;border-radius:7px;padding:8px 13px;cursor:pointer}
+.composer-tab.active{background:var(--red2);border-color:var(--red);color:#fff;font-weight:800}
+.composer-tab-panel-hidden{display:none!important}
+.collapse-toggle{font-size:0}.collapse-toggle::before{content:'▼';font-size:12px}.collapse-toggle.is-collapsed::before{content:'▶'}
+details>summary{list-style:none}details>summary::-webkit-details-marker{display:none}details>summary::before{content:'▶';display:inline-block;margin-right:4px;color:#9bb7dd;font-size:11px}details[open]>summary::before{content:'▼'}
+.gemini-assist>summary.panel-title,#theoryAssist>summary.panel-title{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:#b4bac9}
+.main>#theoryAssist{padding:0 14px 14px}.main>#theoryAssist>summary{margin:0 -14px 10px;padding:13px 15px;border-bottom:1px solid var(--line)}
+.tool-group-collapsible>summary::after{content:''!important}
+.help-modal{border:1px solid var(--line);border-radius:12px;background:#11131a;color:var(--text);max-width:680px;width:calc(100% - 32px);padding:0;box-shadow:0 18px 60px #000b}
+.help-modal::backdrop{background:#0009}.help-modal-body{padding:18px;line-height:1.65}.help-modal h2{margin:0 0 10px}.help-modal h3{font-size:13px;color:var(--gold);margin:14px 0 3px}.help-close{float:right}
 .note{position:absolute;height:20px;margin-top:3px;border-radius:4px;background:linear-gradient(#ef5262,#bb2638);border:1px solid #ff7784;box-shadow:0 0 12px rgba(217,52,69,.2);pointer-events:none}
 .playhead{position:absolute;top:0;bottom:0;width:2px;background:#f8d990;box-shadow:0 0 10px #f8d990;z-index:5;pointer-events:none}
 .status{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:10px 14px;color:#7f8799;font-size:11px;border-top:1px solid var(--line)}
@@ -95,6 +119,8 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
  .workspace{grid-template-columns:1fr}.tracks{max-height:285px;overflow:auto}
  .transport{grid-template-columns:auto auto 1fr}.transport .control{display:none}
  .app{padding:12px}.sections{height:65px}
+ .arr{overflow-x:auto;-webkit-overflow-scrolling:touch}
+ .arr-grid{min-width:980px}
 }
 @media(max-width:1200px){
  .top{grid-template-columns:1fr}.actions{justify-content:flex-start}
@@ -159,10 +185,12 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
 
 .note.selected{outline:2px solid #f8d990;box-shadow:0 0 12px rgba(248,217,144,.45)}
 .selection-box{position:absolute;border:1px dashed #f8d990;background:rgba(248,217,144,.08);z-index:8;pointer-events:none}
-.collapse-toggle{border:1px solid #3a4051;background:#12151c;color:#b8bfd0;border-radius:5px;padding:5px 10px;font-size:11px;cursor:pointer;white-space:nowrap}
+.collapse-toggle{border:0;background:transparent;color:#9bb7dd;border-radius:0;padding:0;margin-right:4px;font-size:11px;line-height:1;cursor:pointer;white-space:nowrap}
 .collapsible-panel.collapsed> :not(.panel-title):not(.roll-head){display:none!important}
 .library-body.collapsed-library{display:none}
 .main>#composerPanel{order:1}.main>#arrangementPanel{order:2}.main>#pianoPanel{order:3}.main>#soundPanel{order:4}.main>#samplerPanel{order:5}.main>#drumPanel{order:6}
+.main>#libraryPanel{order:0}.main>#composerTabs{order:1}.main>#theoryAssist,.main>#geminiAssist{order:2}.main>#composerPanel{order:3}.main>#arrangementPanel{order:4}.main>#pianoPanel{order:5}
+.main>#workspaceTabs{order:5}.main>#pianoPanel,.main>#soundPanel,.main>#samplerPanel{order:6}
 
 .velocity-lane{border-top:1px solid #2a2f3d;padding:8px 12px;background:#0f1218}
 .velocity-bars{display:flex;align-items:end;gap:2px;height:80px;overflow-x:auto}
@@ -195,7 +223,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
       <button class="btn" id="saveBtn" title="プロジェクトを保存">保存</button>
       <button class="btn" id="loadBtn" title="プロジェクトを読み込み">読込</button>
       <input id="fileInput" type="file" accept=".amfproj,.json,application/json" hidden>
-      <button class="btn" id="midiImportBtn" title="MIDIを読み込み">MIDI読込</button><input id="midiInput" type="file" accept=".mid,.midi,audio/midi" hidden><button class="btn" id="midiBtn" title="MIDIファイルを保存">MIDI保存</button>
+      <button class="btn" id="midiImportBtn" title="MIDIを読み込み">MIDI読込</button><input id="midiInput" type="file" accept=".mid,.midi,audio/midi" hidden><button class="btn" id="midiBtn" title="MIDIファイルを保存">MIDI保存</button><button class="btn" id="helpBtn" type="button">使い方</button>
     </div>
   </header>
 
@@ -205,7 +233,9 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
     <div class="time"><b id="time">00:00</b> <span>/ <span id="duration">00:00</span></span></div><span class="transport-badge" id="barBadge">1 / 48 小節</span>
     <label class="control transport-stack"><span>LOOP</span><span class="loop-fields"><input id="loopToggle" type="checkbox"> <input id="loopStart" type="number" min="1" max="48" value="1" style="width:44px">-<input id="loopEnd" type="number" min="1" max="48" value="48" style="width:44px"></span></label>
     <label class="control transport-stack"><span>BPM</span><span class="value-fields"><input id="bpm" type="number" min="50" max="500" value="168"><input id="bpmCtl" type="range" min="50" max="500" value="168" aria-label="BPMスライダー"></span></label>
-    <label class="control">KEY <select id="keySel"><option value="E minor">Em</option><option value="A minor">Am</option><option value="D minor">Dm</option><option value="G minor">Gm</option></select></label>
+    <label class="control">ROOT <select id="rootSel"></select></label>
+    <label class="control">SCALE <select id="scaleSel"></select></label>
+    <label class="control">再生モード <select id="playbackMode"><option value="auto">自動（スマホは安定再生）</option><option value="standard">標準（現在の方式）</option><option value="stable">安定再生</option></select></label>
     <label class="control transport-stack"><span>MASTER</span><span class="value-fields"><input id="masterVol" type="range" min="0" max="1" step=".01" value=".75"><span id="masterText">75%</span></span></label>
   </section>
 
@@ -243,12 +273,11 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
             <button class="btn" id="arrDemoBtn">標準構成</button>
             <span>クリックでパターン切替 · 右クリックでOFF · ドラッグ＆ドロップでブロック移動/コピー</span>
           </div>
+          <div class="gemini-assist" id="geminiAssistPlaceholder" style="display:none"></div>
           <div class="arr-grid" id="arrGrid"></div>
         </div>
         </div>
       </section>
-
-
       <section class="panel collapsible-panel" id="composerPanel">
         <div class="panel-title">COMPOSER TOOLS <button class="collapse-toggle" data-collapse="#composerPanel">折りたたむ</button><span style="float:right;margin-right:90px">Battle Generator</span></div>
         <div style="padding:14px;display:grid;gap:12px">
@@ -262,38 +291,51 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
             <span id="workspaceModeHint" style="color:#7f8799;font-size:11px">既存曲を選び、パターンと48小節配置を手動編集します。</span>
           </div>
           <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px" id="chordGrid"></div>
+          <details id="theoryAssist" class="panel gemini-assist" style="display:grid;gap:10px">
+            <summary class="panel-title" style="padding-left:15px;cursor:pointer">THEORY ASSIST</summary>
+            <div id="diatonicGrid" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+              <label class="control">DEGREE PROGRESSION <select id="degreeProgressionSel"></select></label>
+              <label class="control"><input id="seventhsToggle" type="checkbox">7th（独自スケールは4音）</label>
+              <label class="control">配置先の小節 <select id="theoryBarSel"><option value="0">1</option><option value="1">2</option><option value="2">3</option><option value="3">4</option></select></label>
+              <label class="control"><input id="smoothVoicingToggle" type="checkbox">滑らかな和音配置（コード配置・試聴）</label>
+              <button class="btn" id="smoothVoicingPreviewBtn" type="button">和音配置を試聴</button>
+              <label class="control" title="生成後のメロディを4小節の主題・応答・変化・結びに整えます"><input id="phraseAssistToggle" type="checkbox">フレーズ補助（メロディ・一括生成）</label>
+              <button class="btn" id="applyTheoryChordsBtn" type="button">コード配置</button>
+              <button class="btn" id="generateTheoryMelodyBtn" type="button">メロディ生成</button>
+              <button class="btn" id="generateTheoryBassBtn" type="button">ベース生成</button>
+              <button class="btn" id="generateTheoryArpBtn" type="button">アルペジオ生成</button>
+              <label class="control"><input id="scaleGuideToggle" type="checkbox">Scale Tone（青）</label>
+              <label class="control"><input id="chordGuideToggle" type="checkbox">Chord Tone（金）</label>
+            </div>
+            <p id="theorySummary" aria-live="polite"></p>
+            <details id="theoryExplore">
+              <summary>コード／スケール逆引き・進行の試聴と保存</summary>
+              <div style="display:grid;gap:10px;padding:12px 0">
+                <p>音を選ぶと、一致するコードと、その音をすべて含むスケールを表示します。候補は調性の確定ではありません。</p>
+                <div id="lookupKeys" style="display:flex;gap:6px;flex-wrap:wrap" aria-label="逆引きする音"></div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                  <button class="btn" id="lookupFromNotesBtn" type="button">選択音から取得（未選択なら現在トラック全音）</button>
+                  <button class="btn" id="lookupClearBtn" type="button">選択をクリア</button>
+                </div>
+                <p id="lookupResult" aria-live="polite"></p>
+                <div id="lookupChords" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+                <div id="lookupScales" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                  <button class="btn" id="previewProgressionBtn" type="button">表示中の4小節を試聴</button>
+                  <button class="btn" id="stopTheoryPreviewBtn" type="button">試聴を停止</button>
+                  <button class="btn" id="saveProgressionBtn" type="button">表示中の進行を履歴に保存</button>
+                </div>
+                <p id="theoryPreviewStatus" aria-live="polite">試聴は確認用の音色で再生します。曲の音符や音色は変更しません。</p>
+                <div id="theoryHistory" style="display:grid;gap:6px"></div>
+                <small>履歴は曲ごとに最大20件、プロジェクト内に保存します。「設定を復元」は現在パターンの和音設定だけを戻します。音符は「コード配置」で反映してください。</small>
+              </div>
+            </details>
+            <small>ROOT変更は既存音符も移調します。SCALE・進行・7th変更は設定のみです。「コード配置」は現在パターンの伴奏3トラックを置換します。コードボタンは指定小節の和音設定を変更します。</small>
+          </details>
           <div id="genreAutoControls" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
               <label class="control">GAME GENRE
                 <select id="genrePresetSel"></select>
-              </label>
-              <label class="control">進行
-                <select id="progressionSel">
-                  <option value="Em-C-G-D">Em - C - G - D</option>
-                  <option value="Em-D-C-D">Em - D - C - D</option>
-                  <option value="Em-G-D-C">Em - G - D - C</option>
-                  <option value="Am-F-C-G">Am - F - C - G</option>
-                  <option value="C-Am-F-G">C - Am - F - G</option>
-                  <option value="C-G-Am-F">C - G - Am - F</option>
-                  <option value="F-C-G-Am">F - C - G - Am</option>
-                  <option value="Am-G-F-C">Am - G - F - C</option>
-                  <option value="C-F-G-Am">C - F - G - Am</option>
-                  <option value="Em-C-Am-D">Em - C - Am - D</option>
-                  <option value="Em-Am-C-D">Em - Am - C - D</option>
-                  <option value="C-G-F-Am">C - G - F - Am</option>
-                  <option value="C-G-Am-Em">カノン進行 · C - G - Am - Em</option>
-                  <option value="F-G-Am-Em">小室進行 · F - G - Am - Em</option>
-                  <option value="F-G-Em-Am">王道進行 · F - G - Em - Am</option>
-                  <option value="C-Am-F-G">織田哲郎進行 · C - Am - F - G</option>
-                  <option value="C-Am-Dm-G">循環進行 · C - Am - Dm - G</option>
-                  <option value="C-G-F-G">ポップパンク · C - G - F - G</option>
-                  <option value="Am-G-F-E">アンダルシア風 · Am - G - F - E</option>
-                  <option value="C-F-G-Am">明るい冒険系 · C - F - G - Am</option>
-                  <option value="Am-F-Dm-E">切ないゲーム系 · Am - F - Dm - E</option>
-                  <option value="Em-F-G-Em">ボス戦系 · Em - F - G - Em</option>
-                  <option value="Am-Bb-Am-E">不安・ホラー系 · Am - Bb - Am - E</option>
-                  <option value="C-D-Em-Bm">浮遊感・SF系 · C - D - Em - Bm</option>
-                  <option value="C-G-Am-Em">パッヘルベル型・前半 · C - G - Am - Em</option>
-                </select>
               </label>
               <label class="control">STYLE
                 <select id="styleSel">
@@ -312,7 +354,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
       </section>
 
 
-      <section class="panel collapsible-panel collapsed" id="soundPanel">
+      <section class="panel collapsible-panel" id="soundPanel">
         <div class="panel-title">SOUND DESIGN <button class="collapse-toggle" data-collapse="#soundPanel">開く</button><span style="float:right;margin-right:50px">Track FX / Synth</span></div>
         <div style="padding:14px;display:grid;gap:12px">
           <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">
@@ -374,7 +416,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
       </section>
 
 
-      <section class="panel collapsible-panel collapsed" id="samplerPanel">
+      <section class="panel collapsible-panel" id="samplerPanel">
         <div class="panel-title">PCM SAMPLER <button class="collapse-toggle" data-collapse="#samplerPanel">開く</button><span style="float:right;margin-right:50px">Custom Sample / Drum Slots</span></div>
         <div style="padding:14px;display:grid;gap:12px">
           <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
@@ -448,6 +490,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
         </div>
       </section>
       <section class="panel collapsible-panel" id="pianoPanel">
+        <div class="panel-title">PIANO ROLL <button class="collapse-toggle" data-collapse="#pianoPanel">折りたたむ</button></div>
         <div class="roll-head">
           <div class="roll-title-row"><div><h2 id="rollTitle">メロディー・ピアノロール</h2><small>4小節パターン · 48小節アレンジメントに配置</small></div><div class="roll-title-actions"><details class="tool-group tool-group-collapsible"><summary title="音符設定を開閉">音符</summary>
               <label>音価 <select id="lengthSel"><option value="1">1/16</option><option value="2" selected>1/8</option><option value="4">1/4</option><option value="8">1/2</option></select></label>
@@ -469,7 +512,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
               <button class="btn icon-btn" id="copyNotesBtn" title="ノートをコピー" aria-label="ノートをコピー">⧉</button>
               <button class="btn icon-btn" id="pasteNotesBtn" title="ノートを貼り付け" aria-label="ノートを貼り付け">▣</button>
               <button class="btn icon-btn" id="deleteNotesBtn" title="選択したノートを削除" aria-label="選択したノートを削除">×</button>
-            </details><button class="collapse-toggle" data-collapse="#pianoPanel">折りたたむ</button></div></div>
+            </details></div></div>
           <div class="pattern-switch">
             <div class="tool-group">
               <label class="pattern-tab-label">PATTERN
@@ -496,13 +539,114 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
           <span>グリッド 1/16 · <kbd>SPACE</kbd> 48小節 再生 / 一時停止</span>
         </div>
       </section>
+      <details class="panel gemini-assist" id="geminiAssist">
+        <summary class="panel-title gemini-title" style="cursor:pointer"><span>CHROME GEMINI 作曲アシスト（オプション）</span><span class="gemini-status" id="geminiStatus"></span></summary>
+        <div style="padding:0 14px 14px">
+          <textarea id="geminiPrompt" placeholder="例：町の夜。少し寂しいが安心できる、8小節のゲームBGMを作って"></textarea>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <label class="control">作曲モード <select id="geminiMode"><option value="motif">モチーフを育てる</option><option value="variation">大きく展開する</option><option value="contrast">意外性を入れる</option></select></label>
+            <label class="control"><input id="geminiKeepMotif" type="checkbox" checked>主旋律モチーフを保持</label>
+            <button class="btn" id="geminiPlanBtn" type="button">曲の設計図を作る</button>
+            <button class="btn" id="geminiComposeBtn" type="button">Geminiに作曲を依頼</button>
+            <button class="btn" id="geminiApplyBtn" type="button" disabled>結果を現在パターンへ反映</button>
+          </div>
+          <div class="gemini-log" id="geminiLog" aria-live="polite">ログ：待機中</div>
+          </div>
+        </div>
+      </details>
     </main>
   </section>
 </div>
 <div class="toast" id="toastMessage"></div>
+<dialog class="help-modal" id="helpModal"><div class="help-modal-body"><button class="btn help-close" id="helpCloseBtn" type="button">閉じる</button><h2>Arcadia Music Forge の使い方</h2><h3>基本操作</h3><div>再生・停止、BPM、ROOT、SCALEを設定します。曲は48小節、7トラックで構成されます。</div><h3>COMPOSER TOOLS</h3><div>GENERATORでジャンル・スタイル・SEEDを指定して自動生成します。THEORY ASSISTではコード配置、メロディ生成、フレーズ補助、逆引きが使えます。</div><h3>ピアノロール</h3><div>グリッドをクリックして音符を追加し、音符設定・補正・管理・編集から編集します。パターンはA、B、BREAK、CLIMAX、TURNを切り替えられます。</div><h3>保存と書き出し</h3><div>「保存／読込」はプロジェクト、「MIDI保存」はMIDIファイルを扱います。変更はUndoで戻せます。</div><h3>Gemini</h3><div>CHROME GEMINIタブから設計図や作曲を依頼します。モデル準備中はログに状態が表示されます。</div></div></dialog>
 
 <script>
 (() => {
+// Harmonic API supplied for Theory Assist. No generator or audio dependencies.
+const ArcadiaTheory = (() => {
+ 'use strict';
+ const NOTE_NAMES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+ const SCALE_TYPES={
+  major:{label:'Major',intervals:[0,2,4,5,7,9,11]},
+  naturalMinor:{label:'Natural Minor',intervals:[0,2,3,5,7,8,10]},
+  harmonicMinor:{label:'Harmonic Minor',intervals:[0,2,3,5,7,8,11]},
+  melodicMinor:{label:'Melodic Minor (ascending)',intervals:[0,2,3,5,7,9,11]},
+  dorian:{label:'Dorian',intervals:[0,2,3,5,7,9,10]},
+  phrygian:{label:'Phrygian',intervals:[0,1,3,5,7,8,10]},
+  lydian:{label:'Lydian',intervals:[0,2,4,6,7,9,11]},
+  mixolydian:{label:'Mixolydian',intervals:[0,2,4,5,7,9,10]},
+  locrian:{label:'Locrian',intervals:[0,1,3,5,6,8,10]},
+  majorPentatonic:{label:'Major Pentatonic',intervals:[0,2,4,7,9]},
+  minorPentatonic:{label:'Minor Pentatonic',intervals:[0,3,5,7,10]},
+  blues:{label:'Blues',intervals:[0,3,5,6,7,10]},
+  wholeTone:{label:'Whole Tone',intervals:[0,2,4,6,8,10]},
+  diminished:{label:'Diminished (whole–half)',intervals:[0,2,3,5,6,8,9,11]},
+  hirajoshi:{label:'Hirajoshi',intervals:[0,2,3,7,8]},
+  inSen:{label:'In Sen',intervals:[0,1,5,7,10]},
+  yo:{label:'Yo',intervals:[0,2,5,7,9]}
+ };
+ const CHORD_TYPES={
+  major:[0,4,7],minor:[0,3,7],diminished:[0,3,6],augmented:[0,4,8],
+  maj7:[0,4,7,11],min7:[0,3,7,10],dom7:[0,4,7,10],min7b5:[0,3,6,10],dim7:[0,3,6,9],
+  minMaj7:[0,3,7,11],augMaj7:[0,4,8,11],sus2:[0,2,7],sus4:[0,5,7],add9:[0,2,4,7],minAdd9:[0,2,3,7]
+ };
+ const PROGRESSIONS=[
+  {id:'minor_epic',name:'Epic Minor',degrees:[1,6,3,7],tags:['battle','boss','epic']},
+  {id:'minor_drive',name:'Minor Drive',degrees:[1,7,6,7],tags:['battle','racing']},
+  {id:'minor_dark',name:'Dark Descent',degrees:[1,6,4,5],tags:['dungeon','horror']},
+  {id:'royal_road',name:'Royal Road',degrees:[4,5,3,6],tags:['jrpg','field','ending']},
+  {id:'pop_loop',name:'Pop Loop',degrees:[1,5,6,4],tags:['town','field','bright']},
+  {id:'circle',name:'Circle',degrees:[1,6,2,5],tags:['town','ending','classic']},
+  {id:'adventure',name:'Adventure',degrees:[1,4,5,6],tags:['field','adventure']},
+  {id:'heroic',name:'Heroic',degrees:[1,5,6,4],tags:['epic','boss','bright']},
+  {id:'dark_descent',name:'Dark Descent II',degrees:[1,7,6,7],tags:['horror','dungeon']},
+  {id:'hopeful',name:'Hopeful',degrees:[1,4,6,5],tags:['town','field','bright']},
+  {id:'mystery',name:'Mystery',degrees:[1,4,6,5],tags:['dungeon','horror']}
+ ];
+ const mod12=n=>((n%12)+12)%12;
+ const noteIndex=note=>typeof note==='number'?mod12(note):Math.max(0,NOTE_NAMES.indexOf(String(note)));
+ const noteName=pc=>NOTE_NAMES[mod12(pc)];
+ const scale=(root,type='major')=>{const def=SCALE_TYPES[type]||SCALE_TYPES.major,r=noteIndex(root);return def.intervals.map(i=>mod12(r+i));};
+ const scaleNotes=(root,type='major')=>scale(root,type).map(noteName);
+ const midi=(root,octave=4)=>(octave+1)*12+noteIndex(root);
+ const midiName=value=>noteName(value)+(Math.floor(value/12)-1);
+ function stackScale(pcs,degree,count=3){return Array.from({length:count},(_,i)=>pcs[(degree+i*2)%pcs.length]);}
+ function intervalsFromPcs(pcs){return pcs.map(pc=>mod12(pc-pcs[0])).sort((a,b)=>a-b);}
+ function chordTypeFromIntervals(intervals){const key=intervals.join(',');for(const [name,ints] of Object.entries(CHORD_TYPES))if(ints.join(',')===key)return name;return 'custom';}
+ function chordSymbol(rootPc,type){const suffix={major:'',minor:'m',diminished:'dim',augmented:'aug',maj7:'maj7',min7:'m7',dom7:'7',min7b5:'m7b5',dim7:'dim7',minMaj7:'m(maj7)',augMaj7:'augMaj7',sus2:'sus2',sus4:'sus4',add9:'add9',minAdd9:'m(add9)',custom:'(custom)'};return noteName(rootPc)+(suffix[type]??'');}
+ function degreeName(degree,type='major'){
+  const pcs=scale('C',type),d=((degree-1)%pcs.length+pcs.length)%pcs.length;
+  const quality=chordTypeFromIntervals(intervalsFromPcs(stackScale(pcs,d,3)));
+  const numeral=['I','II','III','IV','V','VI','VII','VIII'][d];
+  return quality==='minor'?numeral.toLowerCase():quality==='diminished'?numeral.toLowerCase()+'°':quality==='augmented'?numeral+'+':numeral;
+ }
+ function diatonic(root,type='major',sevenths=false){
+  const pcs=scale(root,type);
+  return pcs.map((rootPc,degree)=>{
+   let chordPcs=stackScale(pcs,degree,sevenths?4:3);
+   if(pcs.length!==7){
+    // Prefer a familiar chord fully contained in this scale. Otherwise use a
+    // unique scale stack; a six-note scale's fourth stacked note can repeat.
+    const count=sevenths?4:3,allowed=new Set(pcs);
+    const familiar=Object.values(CHORD_TYPES).find(ints=>ints.length===count&&ints.every(n=>allowed.has(mod12(rootPc+n))));
+    if(familiar)chordPcs=familiar.map(n=>mod12(rootPc+n));
+    else {chordPcs=[...new Set(chordPcs)];for(let i=1;chordPcs.length<count&&i<pcs.length;i++){const pc=pcs[(degree+i)%pcs.length];if(!chordPcs.includes(pc))chordPcs.push(pc);}}
+   }
+   const intervals=intervalsFromPcs(chordPcs),chordType=chordTypeFromIntervals(intervals);
+   chordPcs=intervals.map(n=>mod12(rootPc+n));
+   const symbol=chordType==='custom'?noteName(rootPc)+'['+intervals.join(',')+']':chordSymbol(rootPc,chordType);
+   return {degree:degree+1,degreeName:degreeName(degree+1,type),root:rootPc,rootName:noteName(rootPc),pcs:chordPcs,type:chordType,symbol,harmonization:pcs.length===7?'diatonic':chordType==='custom'?'scale-stack':'scale-contained'};
+  });
+ }
+ function chordMidi(chord,octave=4){const r=midi(chord.rootName,octave);return chord.pcs.map(pc=>{const offset=mod12(pc-chord.root);return r+((chord.type==='add9'||chord.type==='minAdd9')&&offset===2?14:offset);}).sort((a,b)=>a-b);}
+ function resolveDegrees(root,type,degrees,sevenths=false){const dia=diatonic(root,type,sevenths);return dia.length?degrees.map(d=>dia[((d-1)%dia.length+dia.length)%dia.length]):[];}
+ function resolveProgression(root,type,progression,sevenths=false){const p=typeof progression==='string'?PROGRESSIONS.find(x=>x.id===progression):progression;return resolveDegrees(root,type,p?.degrees||[1,4,5,1],sevenths);}
+ function scalePool(root,type,low=48,high=96){const allowed=new Set(scale(root,type)),out=[];for(let m=low;m<=high;m++)if(allowed.has(mod12(m)))out.push(m);return out;}
+ function classifyPitch(value,root,type,chord){const pc=mod12(value);if(chord?.pcs?.includes(pc))return 'chord';if(scale(root,type).includes(pc))return 'scale';return 'outside';}
+ function progressionCandidates(tags=[]){const wanted=new Set(tags);return PROGRESSIONS.map(p=>({...p,score:p.tags.reduce((s,t)=>s+(wanted.has(t)?1:0),0)})).sort((a,b)=>b.score-a.score);}
+ function nextChordCandidates(root,type,currentDegree){const dia=diatonic(root,type,false);const pref={1:[4,5,6,2],2:[5,7,4],3:[6,4,2],4:[5,1,2],5:[1,6,4],6:[4,2,5],7:[1,3,5]};return [...new Set((pref[currentDegree]||[1,4,5,6]).map(d=>(d-1)%dia.length))].map((d,i)=>({...dia[d],score:1-i*.12}));}
+ return window.ArcadiaTheory=Object.freeze({NOTE_NAMES,SCALE_TYPES,CHORD_TYPES,PROGRESSIONS,noteIndex,noteName,scale,scalePitchClasses:scale,scaleNotes,midi,rootMidi:midi,midiName,diatonic,degreeName,chordMidi,resolveDegrees,resolveProgression,scalePool,classifyPitch,progressionCandidates,nextChordCandidates});
+})();
 const TRACKS = [
  {name:"メロディー", inst:"Crystal lead", wave:"sawtooth"},
  {name:"カウンターメロディー", inst:"Celesta", wave:"triangle"},
@@ -562,7 +706,7 @@ function attachHiddenSampleStore(song,store=createEmptySampleStore()){
 function createSongState(name="新しい曲"){
  const song={
    name,genrePreset:"Action",workspaceMode:"library",progression:"Em-C-G-D",style:"snes",
-   bpm:168,key:"E minor",master:.75,selected:0,selectedPattern:"A",patternOrder:[...PATTERNS],
+   bpm:168,key:"E minor",theory:normalizeTheory(null),master:.75,selected:0,selectedPattern:"A",patternOrder:[...PATTERNS],
    arrangement:Array.from({length:7},()=>Array(12).fill(null)),
    tracks:TRACKS.map((_,i) => ({
      mute:false,solo:false,volume:.75,label:TRACKS[i].name,type:TRACK_TYPES[i]?.id||"lead",
@@ -642,19 +786,7 @@ Object.entries(EXTRA_STYLES).forEach(([id,p])=>{
  STYLE_GENERATION[id]={densityOffset:p[5],octave:0,arpStep:p[2],drumBoost:1};
  const option=document.createElement('option');option.value=id;option.textContent=p[0];$('#styleSel').append(option);
 });
-const SCALE_SEMITONES = {
- "E minor":[0,2,3,5,7,8,10],
- "A minor":[0,2,3,5,7,8,10],
- "D minor":[0,2,3,5,7,8,10],
- "G minor":[0,2,3,5,7,8,10]
-};
-function noteFromMidi(m){const names=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];return names[m%12]+(Math.floor(m/12)-1)}
-function tonicMidi(key){return {"E minor":64,"A minor":69,"D minor":62,"G minor":67}[key]||64}
-function scalePool(key, low=64, high=88){
- const root=tonicMidi(key), pcs=SCALE_SEMITONES[key]||SCALE_SEMITONES["E minor"], out=[];
- for(let m=low;m<=high;m++){ if(pcs.includes((m-root+120)%12)) out.push(m) }
- return out;
-}
+function noteFromMidi(m){return ArcadiaTheory.midiName(m);}
 function makeGeneratorRandom(seed){
  let value=(seed>>>0)||1;
  return ()=>{
@@ -670,7 +802,7 @@ function generateThematicPhrase(prog,pat,profile,styleProfile,pool,rng,theme){
  const nearest=(values,target)=>values.reduce((a,b)=>Math.abs(b-target)<Math.abs(a-target)?b:a,values[0]);
  let previous=nearest(pool,74+(styleProfile.octave||0));
  prog.forEach((symbol,bar)=>{
-   const pcs=(CHORDS[symbol]||CHORDS.Em).map(p=>midiOf(p)%12);
+   const pcs=chordNotes(symbol).map(p=>midiOf(p)%12);
    const anchors=pool.filter(m=>pcs.includes(m%12));
    const slots=pat==='BREAK'?[0,8]:pat==='INTRO'?[0,6,12]:rhythm;
    slots.forEach((offset,i)=>{
@@ -688,6 +820,30 @@ function generateThematicPhrase(prog,pat,profile,styleProfile,pool,rng,theme){
  });
  return notes;
 }
+// Optional pitch-only post-processing: preserve rhythm and seeded RNG consumption.
+function applyPhraseAssist(notes,prog,pool){
+ if(!notes.length||prog.length!==4||!pool.length)return notes;
+ const result=notes.map(n=>({...n}));
+ const bars=Array.from({length:4},(_,bar)=>result.filter(n=>Math.floor(n.step/16)===bar).sort((a,b)=>a.step-b.step));
+ const motif=bars[0];if(!motif.length)return result;
+ const nearest=(values,target)=>values.reduce((a,b)=>Math.abs(b-target)<Math.abs(a-target)?b:a,values[0]);
+ bars.forEach((barNotes,bar)=>{
+  if(!bar||!barNotes.length)return;
+  const pcs=chordNotes(prog[bar]).map(p=>midiOf(p)%12);
+  const anchors=pool.filter(m=>pcs.includes(m%12));
+  barNotes.forEach((n,i)=>{
+   const source=midiOf(motif[i%motif.length].pitch);
+   const target=bar===1?source-2:bar===2?source+2:midiOf(n.pitch);
+   n.pitch=noteFromMidi(nearest(i===0&&anchors.length?anchors:pool,target));
+  });
+  if(bar===3&&anchors.length){
+   const last=barNotes[barNotes.length-1],root=midiOf(chordNotes(prog[bar])[0])%12;
+   const roots=anchors.filter(m=>m%12===root);
+   last.pitch=noteFromMidi(nearest(roots.length?roots:anchors,midiOf(last.pitch)));
+  }
+ });
+ return result;
+}
 function coordinateGeneratedParts(pat,prog,styleProfile,rng){
  const parts=state.tracks.map(t=>t.patterns[pat]);
  const overlaps=n=>parts[0].some(m=>n.step<m.step+m.len&&m.step<n.step+n.len);
@@ -702,7 +858,7 @@ function coordinateGeneratedParts(pat,prog,styleProfile,rng){
  // Keep bass attacks with the kick, leaving space before the loop returns.
  const kicks=[...new Set(parts[6].filter(n=>n.pitch==='C5').map(n=>n.step))];
  const attacks=kicks.length?kicks:prog.map((_,bar)=>bar*16);
- parts[5]=attacks.map((step,i)=>({pitch:CHORDS[prog[Math.floor(step/16)]][0],step,len:Math.max(1,Math.min((attacks[i+1]??64)-step,8)-1),velocity:85+Math.floor(rng()*12)}));
+ parts[5]=attacks.map((step,i)=>({pitch:chordNotes(prog[Math.floor(step/16)])[0],step,len:Math.max(1,Math.min((attacks[i+1]??64)-step,8)-1),velocity:85+Math.floor(rng()*12)}));
  if(pat==='TURN')parts.forEach((notes,i)=>{parts[i]=notes.filter(n=>n.step<60).map(n=>({...n,len:Math.min(n.len,60-n.step)}));});
  parts.forEach((notes,i)=>state.tracks[i].patterns[pat]=notes);
 }
@@ -711,7 +867,7 @@ function generateMelodyPhrase(prog,pat,profile,styleProfile,pool,rng,phraseIndex
  const density=Math.max(1,Math.min(8,(pat==="CLIMAX"?profile.density+2:profile.density)+styleProfile.densityOffset));
  let previous=pool[Math.floor(rng()*pool.length)]||76;
  prog.forEach((chord,bar)=>{
-   const chordMidi=(CHORDS[chord]||CHORDS.Em).map(midiOf);
+   const chordMidi=chordNotes(chord).map(midiOf);
    const slots=[0,2,3,5,7,9,11,14].sort(()=>rng()-.5);
    const count=pat==="BREAK"?1:Math.max(1,Math.min(slots.length,Math.round(density/2)+((bar+phraseIndex)%2)));
    slots.slice(0,count).sort((a,b)=>a-b).forEach((offset,noteIndex)=>{
@@ -726,7 +882,7 @@ function generateMelodyPhrase(prog,pat,profile,styleProfile,pool,rng,phraseIndex
      const step=bar*16+offset;
      if(used.has(step))return;
      used.add(step);previous=target;
-     notes.push({pitch:noteFromMidi(clamp(target,64,88)),step,len:rng()<.25?1:(rng()<.45?3:2),velocity:82+Math.floor(rng()*38)});
+     notes.push({pitch:noteFromMidi(fitMidiToRoll(target)),step,len:rng()<.25?1:(rng()<.45?3:2),velocity:82+Math.floor(rng()*38)});
    });
  });
  return notes;
@@ -734,13 +890,13 @@ function generateMelodyPhrase(prog,pat,profile,styleProfile,pool,rng,phraseIndex
 function generateSupportingPhrase(trackIndex,prog,pat,styleProfile,rng,phraseIndex){
  const notes=[];
  prog.forEach((symbol,bar)=>{
-   const chord=(CHORDS[symbol]||CHORDS.Em).map(midiOf),base=bar*16;
+   const chord=chordNotes(symbol).map(midiOf),base=bar*16;
    if(trackIndex===1){
      if(pat==="BREAK"||rng()<.18)return;
      const count=rng()<.55?1:2;
      for(let i=0;i<count;i++){
        const step=base+(i?10:6)+(rng()<.25?2:0), target=chord[(bar+i+phraseIndex)%chord.length]+12;
-       notes.push({pitch:noteFromMidi(clamp(target,64,88)),step,len:i?2:3,velocity:68+Math.floor(rng()*28)});
+       notes.push({pitch:noteFromMidi(fitMidiToRoll(target)),step,len:i?2:3,velocity:68+Math.floor(rng()*28)});
      }
    }else if(trackIndex===2){
      chord.forEach((m,i)=>notes.push({pitch:noteFromMidi(m),step:base,len:16,velocity:48+Math.floor(rng()*18)}));
@@ -748,13 +904,13 @@ function generateSupportingPhrase(trackIndex,prog,pat,styleProfile,rng,phraseInd
      if(pat==="BREAK")return;
      [0,rng()<.5?8:10].forEach((offset,i)=>{
        const target=chord[(i+bar+phraseIndex)%chord.length]+(rng()<.35?12:0);
-       notes.push({pitch:noteFromMidi(clamp(target,64,88)),step:base+offset,len:2,velocity:82+Math.floor(rng()*30)});
+       notes.push({pitch:noteFromMidi(fitMidiToRoll(target)),step:base+offset,len:2,velocity:82+Math.floor(rng()*30)});
      });
    }else if(trackIndex===4){
      const stepSize=styleProfile.arpStep||2;
      for(let offset=0,n=0;offset<16;offset+=stepSize,n++){
        const target=chord[(n+bar+phraseIndex)%chord.length]+12;
-       notes.push({pitch:noteFromMidi(clamp(target,64,88)),step:base+offset,len:1,velocity:58+Math.floor(rng()*34)});
+       notes.push({pitch:noteFromMidi(fitMidiToRoll(target)),step:base+offset,len:1,velocity:58+Math.floor(rng()*34)});
      }
    }else if(trackIndex===5){
      const root=chord[0], fifth=chord[2]||root;
@@ -764,24 +920,307 @@ function generateSupportingPhrase(trackIndex,prog,pat,styleProfile,rng,phraseInd
  });
  return notes;
 }
-function transposeAllPatterns(fromKey,toKey){
- const delta=tonicMidi(toKey)-tonicMidi(fromKey);
- if(!delta)return;
- state.tracks.forEach((track,trackIndex)=>{
-   if(trackIndex===6)return;
-   Object.values(track.patterns||{}).forEach(notes=>notes.forEach(note=>{
-     note.pitch=noteFromMidi(clamp(midiOf(note.pitch)+delta,64,88));
-   }));
+function normalizeTheory(theory,key='E minor'){
+ const t=theory&&typeof theory==='object'?theory:{},legacy=String(key).match(/^([A-G](?:#|b)?)\s*(.*)$/);
+ const aliases={Db:'C#',Eb:'D#',Gb:'F#',Ab:'G#',Bb:'A#'},root=t.root||legacy?.[1]||'E';
+ return {root:ArcadiaTheory.NOTE_NAMES.includes(aliases[root]||root)?(aliases[root]||root):'E',
+  scale:Object.hasOwn(ArcadiaTheory.SCALE_TYPES,t.scale)?t.scale:(/major/i.test(legacy?.[2]||'')?'major':'naturalMinor'),
+  sevenths:t.sevenths===true,progressionId:ArcadiaTheory.PROGRESSIONS.some(p=>p.id===t.progressionId)?t.progressionId:'minor_epic',
+  phraseAssist:t.phraseAssist===true,smoothVoicing:t.smoothVoicing===true,showScaleGuide:t.showScaleGuide!==false,showChordGuide:t.showChordGuide!==false};
+}
+function ensureTheory(){state.theory=normalizeTheory(state.theory,state.key);return state.theory;}
+function theoryProgression(){
+ const t=ensureTheory();
+ return ArcadiaTheory.resolveProgression(t.root,t.scale,t.progressionId,t.sevenths);
+}
+function theoryChordNotes(chord,octave=4){return ArcadiaTheory.chordMidi(chord,octave).map(noteFromMidi);}
+// Deterministic accompaniment-only voicing: no RNG, no changes to harmony or bass.
+function smoothChordVoicings(prog){
+ let previous=null;
+ return prog.map(value=>{
+  const chord=harmonicChord(value);if(!chord)return [];
+  const baseline=chordNotes(chord).map(midiOf).sort((a,b)=>a-b);
+  const candidates=[];
+  function choose(index,notes){
+   if(index===chord.pcs.length){candidates.push(notes.slice().sort((a,b)=>a-b));return;}
+   for(let m=64;m<=88;m++)if(m%12===chord.pcs[index])choose(index+1,[...notes,m]);
+  }
+  choose(0,[]);
+  const target=previous||baseline;
+  const cost=notes=>notes.reduce((s,n,i)=>s+Math.abs(n-target[Math.min(i,target.length-1)]),0);
+  candidates.sort((a,b)=>cost(a)-cost(b)||a.reduce((s,n,i)=>s+n-baseline[i],0)-b.reduce((s,n,i)=>s+n-baseline[i],0)||a.join(',').localeCompare(b.join(',')));
+  previous=candidates[0]||baseline;return previous.slice();
  });
 }
-function progression(){
- return (state.progression||$("#progressionSel")?.value||"Em-C-G-D").split("-");
+// Strings are accepted only for legacy saved sections and the built-in demo.
+function harmonicChord(chord){
+ if(chord&&typeof chord==='object'&&Number.isInteger(chord.root)&&chord.root>=0&&chord.root<12&&Array.isArray(chord.pcs)&&chord.pcs.length>=3&&chord.pcs.every(n=>Number.isInteger(n)&&n>=0&&n<12)){
+  return {...chord,rootName:ArcadiaTheory.noteName(chord.root)};
+ }
+ const notes=CHORDS[chord];if(!notes)return null;
+ const midi=notes.map(midiOf),root=midi[0]%12;
+ return {symbol:chord,root,rootName:ArcadiaTheory.noteName(root),pcs:midi.map(n=>n%12),type:'legacy'};
+}
+function chordNotes(chord){const resolved=harmonicChord(chord);return resolved?ArcadiaTheory.chordMidi(resolved,4).map(m=>noteFromMidi(fitMidiToRoll(m))):[];}
+function patternProgression(){
+ const saved=state.generation?.progressions?.[state.selectedPattern];
+ if(Array.isArray(saved)&&saved.length===4){const chords=saved.map(harmonicChord);if(chords.every(Boolean))return chords;}
+ return theoryProgression();
+}
+function theoryScalePool(low=64,high=88){const t=ensureTheory();return ArcadiaTheory.scalePool(t.root,t.scale,low,high);}
+function genreTheoryTags(genre){
+ return {Action:['battle','boss','epic'],Boss:['battle','boss','epic'],Racing:['racing','battle'],Sports:['racing','battle'],Rhythm:['racing','battle'],Horror:['horror','dungeon'],Dungeon:['horror','dungeon'],Cozy:['town','bright'],Town:['town','bright'],Menu:['town','bright'],Platformer:['field','adventure'],'Sci-Fi':['field','epic']}[genre]||['town','bright'];
+}
+function initTheoryControls(){
+ const fill=(id,entries)=>entries.forEach(([value,label])=>{const o=document.createElement('option');o.value=value;o.textContent=label;$(id).appendChild(o);});
+ fill('#rootSel',ArcadiaTheory.NOTE_NAMES.map(r=>[r,r]));
+ fill('#scaleSel',Object.entries(ArcadiaTheory.SCALE_TYPES).map(([id,s])=>[id,s.label]));
+ fill('#degreeProgressionSel',ArcadiaTheory.PROGRESSIONS.map(p=>[p.id,p.name+' · '+p.degrees.join(' – ')]));
+}
+function renderTheoryAssist(){
+ const t=ensureTheory(),host=$('#diatonicGrid');if(!host)return;
+ $('#rootSel').value=t.root;$('#scaleSel').value=t.scale;$('#degreeProgressionSel').value=t.progressionId;
+ $('#seventhsToggle').checked=t.sevenths;$('#scaleGuideToggle').checked=t.showScaleGuide;$('#chordGuideToggle').checked=t.showChordGuide;
+ $('#smoothVoicingToggle').checked=t.smoothVoicing;
+ $('#phraseAssistToggle').checked=t.phraseAssist;
+ host.innerHTML='';
+ const chords=ArcadiaTheory.diatonic(t.root,t.scale,t.sevenths);
+ chords.forEach(c=>{
+  const b=document.createElement('button');b.type='button';b.className='btn';
+  b.textContent=c.degree+': '+c.symbol;b.title=theoryChordNotes(c).join(' / ');
+  b.onclick=()=>{saveUndo();const prog=patternProgression(),bar=+$('#theoryBarSel').value;prog[bar]=c;state.generation||={};state.generation.progressions||={};state.generation.progressions[state.selectedPattern]=prog;render();};host.appendChild(b);
+ });
+ $('#applyTheoryChordsBtn').disabled=!chords.length;
+ $('#theorySummary').textContent=state.selectedPattern+'：'+patternProgression().map(c=>c.symbol).join(' / ')+'。金色は各小節のコード音、青色はスケール音。'+(chords.length===7?'キー外の音も自由に入力できます。':'五・六・八音スケール：スケール内の既知の和音を優先し、作れない場合は独自の音階積み和音です。[ ]はルートからの半音間隔。度数は音階の音数で循環します。');
+ renderTheoryGuide();
+}
+function renderTheoryGuide(){
+ renderTheoryHistory();
+ const t=ensureTheory(),prog=patternProgression(),drums=state.selected===6;
+ $('#grid').querySelectorAll('.grid-row').forEach(row=>{
+  const midi=midiOf(row.dataset.pitch),types=Array.from({length:4},(_,i)=>ArcadiaTheory.classifyPitch(midi,t.root,t.scale,prog[i]));
+  const inScale=ArcadiaTheory.scale(t.root,t.scale).includes(midi%12);
+  const allChord=!drums&&t.showChordGuide&&types.every(k=>k==='chord');
+  row.classList.toggle('theory-scale',!drums&&t.showScaleGuide&&inScale&&!allChord);
+  row.classList.toggle('theory-chord',allChord);
+  row.querySelectorAll('.theory-bar').forEach(el=>el.remove());
+  // Per-bar overlays replace (rather than blend with) the row's scale tint.
+  row.style.backgroundColor=drums||allChord?'':'transparent';
+  if(!drums&&!allChord)types.forEach((kind,bar)=>{
+   const klass=t.showChordGuide&&kind==='chord'?'theory-chord':t.showScaleGuide&&inScale?'theory-scale':'';
+   if(!klass)return;
+   const el=document.createElement('span');el.className='theory-bar '+klass;el.style.left=bar*25+'%';row.appendChild(el);
+  });
+ });
+}
+function changeTheory(field,value){
+ saveUndo();const t=ensureTheory(),previousRoot=t.root;
+ if(field==='root'){
+  let delta=ArcadiaTheory.noteIndex(value)-ArcadiaTheory.noteIndex(previousRoot);if(delta>6)delta-=12;if(delta<-6)delta+=12;
+  state.tracks.forEach((track,i)=>{if(i===6)return;Object.values(track.patterns||{}).forEach(notes=>notes.forEach(n=>{n.pitch=noteFromMidi(fitMidiToRoll(midiOf(n.pitch)+delta));}));});
+ }
+ t[field]=value;
+ const dia=ArcadiaTheory.diatonic(t.root,t.scale,t.sevenths);
+ if(state.generation?.progressions)Object.keys(state.generation.progressions).forEach(p=>{
+  const old=state.generation.progressions[p];
+  if(!Array.isArray(old)||old.length!==4){delete state.generation.progressions[p];return;}
+  if(field==='progressionId'){state.generation.progressions[p]=theoryProgression();return;}
+  state.generation.progressions[p]=old.map((raw,i)=>{
+   const c=harmonicChord(raw);
+   if(c&&field==='root'){
+    const delta=ArcadiaTheory.noteIndex(value)-ArcadiaTheory.noteIndex(previousRoot);
+    const root=(c.root+delta+12)%12;
+    return {...c,root,rootName:ArcadiaTheory.noteName(root),pcs:c.pcs.map(pc=>(pc+delta+12)%12),symbol:ArcadiaTheory.noteName(root)+String(c.symbol).replace(/^[A-G](?:#|b)?/,'')};
+   }
+   return dia.length?dia[((c?.degree||ArcadiaTheory.PROGRESSIONS.find(p=>p.id===t.progressionId).degrees[i])-1)%dia.length]:c;
+  }).filter(Boolean);
+ });
+ state.key=t.root+' '+ArcadiaTheory.SCALE_TYPES[t.scale].label;
+ render();
+}
+function fitMidiToRoll(m){while(m<64)m+=12;while(m>88)m-=12;return m;}
+const lookupPitchClasses=new Set();
+function reverseLookup(pitches){
+ const selected=[...new Set(pitches)].filter(n=>Number.isInteger(n)&&n>=0&&n<12);
+ if(!selected.length)return {chords:[],scales:[]};
+ const chords=[],scales=[],suffix={major:'',minor:'m',diminished:'dim',augmented:'aug',maj7:'maj7',min7:'m7',dom7:'7',min7b5:'m7b5',dim7:'dim7',minMaj7:'m(maj7)',augMaj7:'augMaj7',sus2:'sus2',sus4:'sus4',add9:'add9',minAdd9:'m(add9)'};
+ ArcadiaTheory.NOTE_NAMES.forEach((rootName,root)=>{
+  Object.entries(ArcadiaTheory.CHORD_TYPES).forEach(([type,ints])=>{
+   const pcs=ints.map(n=>(root+n)%12);
+   if(selected.length===pcs.length&&selected.every(n=>pcs.includes(n)))chords.push({root,rootName,pcs,type,symbol:rootName+suffix[type]});
+  });
+  Object.entries(ArcadiaTheory.SCALE_TYPES).forEach(([type,def])=>{
+   const pcs=ArcadiaTheory.scale(rootName,type);
+   if(selected.every(n=>pcs.includes(n)))scales.push({root:rootName,type,label:rootName+' '+def.label,extra:pcs.length-selected.length});
+  });
+ });
+ scales.sort((a,b)=>a.extra-b.extra||a.label.localeCompare(b.label));
+ return {chords,scales};
+}
+function renderLookup(){
+ const keys=$('#lookupKeys');keys.innerHTML='';
+ ArcadiaTheory.NOTE_NAMES.forEach((name,pc)=>{
+  const b=document.createElement('button');b.type='button';b.className='btn'+(lookupPitchClasses.has(pc)?' primary':'');b.textContent=name;
+  b.setAttribute('aria-pressed',String(lookupPitchClasses.has(pc)));
+  b.onclick=()=>{lookupPitchClasses.has(pc)?lookupPitchClasses.delete(pc):lookupPitchClasses.add(pc);renderLookup();};keys.appendChild(b);
+ });
+ const result=reverseLookup([...lookupPitchClasses]);
+ $('#lookupResult').textContent=lookupPitchClasses.size?`一致コード ${result.chords.length}件／選択音をすべて含むスケール ${result.scales.length}件。コード候補のボタンで試聴できます。`:'上の音名を選んでください。';
+ const chords=$('#lookupChords');chords.innerHTML='';
+ result.chords.forEach(c=>{const b=document.createElement('button');b.type='button';b.className='btn';b.textContent=c.symbol+' ▶';b.title=theoryChordNotes(c).join(' / ');b.onclick=()=>previewTheoryChords([c]);chords.appendChild(b);});
+ const scales=$('#lookupScales');scales.innerHTML='';
+ result.scales.forEach(s=>{const span=document.createElement('span');span.className='preset-tag';span.textContent=s.label;scales.appendChild(span);});
+}
+function lookupFromCurrentNotes(){
+ if(state.selected===6)return toast('ドラムは音高の逆引き対象外です');
+ const notes=currentPatternNotes();lookupPitchClasses.clear();
+ (selectedNotes.size?[...selectedNotes].map(i=>notes[i]).filter(Boolean):notes).forEach(n=>lookupPitchClasses.add(midiOf(n.pitch)%12));renderLookup();
+}
+let theoryPreviewVoices=[],theoryPreviewTimer=null,theoryPreviewRequest=0;
+function stopTheoryPreview(){
+ theoryPreviewRequest++;clearTimeout(theoryPreviewTimer);theoryPreviewTimer=null;
+ theoryPreviewVoices.forEach(({osc,gain})=>{try{osc.stop();}catch{}osc.disconnect();gain.disconnect();});theoryPreviewVoices=[];
+ const status=$('#theoryPreviewStatus');if(status)status.textContent='試聴停止。音符・音色は変更していません。';
+}
+async function previewTheoryChords(progression){
+ const chords=progression.map(harmonicChord);if(!chords.length||chords.some(c=>!c))return toast('試聴できる和音がありません');
+ stopPlayback();stopTheoryPreview();const request=theoryPreviewRequest;
+ try{
+  ensureAudio();if(audio.state==='suspended')await audio.resume();if(request!==theoryPreviewRequest)return;
+  const barSeconds=240/clamp(+state.bpm||120,50,500),start=audio.currentTime+.04;
+  const volume=clamp(+state.master||0,0,1)*.15;
+  const voiced=ensureTheory().smoothVoicing?smoothChordVoicings(chords):chords.map(c=>ArcadiaTheory.chordMidi(c,4));
+  chords.forEach((c,bar)=>voiced[bar].forEach(m=>{
+   const osc=audio.createOscillator(),gain=audio.createGain(),at=start+bar*barSeconds,end=at+barSeconds*.9;
+   osc.type='triangle';osc.frequency.value=freq(m);gain.gain.setValueAtTime(0,at);gain.gain.linearRampToValueAtTime(volume/c.pcs.length,at+.02);gain.gain.setValueAtTime(volume/c.pcs.length,Math.max(at+.02,end-.08));gain.gain.linearRampToValueAtTime(0,end);
+   osc.connect(gain);gain.connect(audio.destination);theoryPreviewVoices.push({osc,gain});osc.start(at);osc.stop(end+.01);
+  }));
+  $('#theoryPreviewStatus').textContent=`試聴中：${chords.map(c=>c.symbol).join(' / ')}（BPM ${state.bpm}）`;
+  theoryPreviewTimer=setTimeout(()=>{if(request===theoryPreviewRequest)stopTheoryPreview();},(chords.length*barSeconds+.1)*1000);
+ }catch(error){stopTheoryPreview();$('#theoryPreviewStatus').textContent='試聴できませんでした：'+(error.message||'音声エラー');}
+}
+function saveTheoryHistory(){
+ const chords=patternProgression();if(chords.length!==4)return;
+ saveUndo();const entry={theory:{...ensureTheory()},chords:JSON.parse(JSON.stringify(chords)),createdAt:new Date().toISOString()};
+ const history=Array.isArray(state.theoryHistory)?state.theoryHistory:[];
+ state.theoryHistory=[entry,...history.filter(h=>JSON.stringify(h.chords)!==JSON.stringify(entry.chords)||JSON.stringify(h.theory)!==JSON.stringify(entry.theory))].slice(0,20);
+ autoSave();renderTheoryHistory();toast('この曲の進行履歴に保存しました');
+}
+function restoreTheoryHistory(index){
+ const entry=state.theoryHistory?.[index];if(!entry||!Array.isArray(entry.chords)||entry.chords.length!==4||!entry.chords.every(c=>harmonicChord(c)))return toast('履歴の和音を読み込めません');
+ saveUndo();stopPlayback();state.theory=normalizeTheory(entry.theory);state.key=state.theory.root+' '+ArcadiaTheory.SCALE_TYPES[state.theory.scale].label;
+ state.generation||={};state.generation.progressions||={};state.generation.progressions[state.selectedPattern]=JSON.parse(JSON.stringify(entry.chords));render();
+}
+function renderTheoryHistory(){
+ const host=$('#theoryHistory');if(!host)return;host.innerHTML='';
+ const history=Array.isArray(state.theoryHistory)?state.theoryHistory:[];
+ history.slice(0,20).forEach((entry,index)=>{
+  if(!Array.isArray(entry?.chords)||entry.chords.length!==4)return;
+  const row=document.createElement('div'),label=document.createElement('span');label.textContent=entry.chords.map(c=>c.symbol||'?').join(' / ')+' ';
+  const preview=document.createElement('button');preview.type='button';preview.className='btn';preview.textContent='試聴';preview.onclick=()=>previewTheoryChords(entry.chords);
+  const restore=document.createElement('button');restore.type='button';restore.className='btn';restore.textContent='設定を復元';restore.onclick=()=>restoreTheoryHistory(index);
+  row.append(label,preview,restore);host.appendChild(row);
+ });
+ if(!history.length)host.textContent='保存された進行はまだありません。';
+}
+let geminiDraft=null;
+let geminiPlan=null;
+function geminiAvailable(){return !!(window.LanguageModel?.create||window.ai?.languageModel?.create);}
+function geminiLog(message){const el=$('#geminiLog');if(!el)return;const stamp=new Date().toLocaleTimeString();el.textContent=(el.textContent==='ログ：待機中'?'':el.textContent+'\n')+`${stamp}  ${message}`;el.scrollTop=el.scrollHeight;}
+async function geminiCreateSession(systemPrompt){
+ const api=window.LanguageModel||window.ai?.languageModel;
+ if(!api?.create)throw Error('LanguageModel APIが見つかりません');
+ geminiLog(`API検出：${window.LanguageModel?'LanguageModel':'window.ai.languageModel'}`);
+ let availability='unknown';
+ if(typeof api.availability==='function'){
+  availability=await api.availability({expectedOutputLanguages:['ja']});
+  geminiLog(`モデル利用可否：${availability}`);
+  if(availability==='unavailable')throw Error('この端末ではBuilt-in AIモデルを利用できません');
+ }
+ geminiLog('セッションを準備中');
+ const waitMs=(availability==='downloading'||availability==='downloadable')?300000:15000;
+ if(waitMs>15000)geminiLog('モデル準備を待っています（最大5分）');
+ let lastProgress=-1;
+ const options={systemPrompt,expectedOutputLanguages:['ja'],monitor(m){
+   const raw=typeof m==='number'?m:(m?.downloadProgress??m?.progress??(m?.loaded&&m?.total?m.loaded/m.total:null));
+   const progress=Number(raw);
+   if(!Number.isFinite(progress))return;
+   const pct=Math.max(0,Math.min(100,Math.round(progress<=1?progress*100:progress)));
+   if(pct!==lastProgress){lastProgress=pct;geminiLog(`モデルダウンロード進捗：${pct}%`);}
+ }};
+ let lastAvailability=availability;
+ const poll=setInterval(async()=>{try{if(typeof api.availability!=='function')return;const next=await api.availability({expectedOutputLanguages:['ja']});if(next!==lastAvailability){lastAvailability=next;geminiLog(`モデル利用可否（再確認）：${next}`);}}catch{ }},5000);
+ try{return await Promise.race([api.create(options),new Promise((_,reject)=>setTimeout(()=>reject(Error(`Geminiセッションの準備がタイムアウトしました（${Math.round(waitMs/1000)}秒）。ダウンロード進捗が更新されない場合はChromeのモデル準備状態を確認してください。`)),waitMs))]);}
+ finally{clearInterval(poll);}
+}
+function geminiPromptText(){
+ const t=ensureTheory(),p=theoryProgression();
+ return `あなたはゲーム音楽の作曲アシスタントです。ユーザー要望:${$('#geminiPrompt').value.trim()||'印象的なゲームBGM'}。作曲モード:${$('#geminiMode').value}。主旋律モチーフ保持:${$('#geminiKeepMotif').checked}。現在の設定: ROOT=${t.root}, SCALE=${t.scale}, 進行=${p.map(c=>c.symbol).join('-')}。現在パターンは8小節です。JSONだけを返してください。形式は{"melody":[{"note":"E5","step":0,"length":2,"velocity":100}],"bass":[...],"arpeggio":[...]}。stepは0から63、noteはE4からE6の範囲、lengthは1から16、各配列は最大32個。スケールとコード音を優先し、ドラムや説明文は出力しないでください。`;
+}
+async function requestGeminiPlan(){
+ const status=$('#geminiStatus');if(!geminiAvailable()){status.textContent='このChromeでは内蔵Geminiが利用できません。';return;}
+ status.textContent='曲の設計図を作成中です…';geminiLog('設計図リクエストを開始');
+ try{const session=await geminiCreateSession('Return only valid JSON.');geminiLog('設計図の応答を待っています');
+  const text=await Promise.race([session.prompt(`ゲームBGMの設計図をJSONだけで作成してください。要望:${$('#geminiPrompt').value.trim()||'印象的なゲームBGM'}。形式:{"title":"","motif":["E5","G5","B5","A5"],"sections":[{"name":"INTRO","bars":4,"intensity":20,"role":""},{"name":"A","bars":8,"intensity":45,"role":""},{"name":"CLIMAX","bars":8,"intensity":90,"role":""},{"name":"LOOP","bars":4,"intensity":50,"role":""}]}`),new Promise((_,reject)=>setTimeout(()=>reject(Error('Geminiの応答がタイムアウトしました。')),60000))]);
+  geminiLog('設計図を受信。解析中');const m=String(text).match(/\{[\s\S]*\}/);geminiPlan=JSON.parse(m?.[0]||'{}');state.generation||={};state.generation.geminiPlan=geminiPlan;autoSave();status.textContent=`設計図を保存しました：${geminiPlan.title||'無題'}（${geminiPlan.sections?.length||0}セクション）`;geminiLog('設計図を保存しました');session.destroy?.();
+ }catch(error){status.textContent=`設計図を作成できませんでした：${error.message||'応答エラー'}`;geminiLog(`エラー：${error.message||'応答エラー'}`);}
+}
+function parseGeminiJson(text){
+ const match=String(text).match(/\{[\s\S]*\}/);if(!match)throw Error('JSONが見つかりません');
+ const data=JSON.parse(match[0]),valid={};
+ for(const key of ['melody','bass','arpeggio']){
+  if(!Array.isArray(data[key])){valid[key]=[];continue;}
+  valid[key]=data[key].slice(0,32).map(n=>({pitch:String(n.note||n.pitch),step:clamp(Math.round(+n.step||0),0,63),len:clamp(Math.round(+n.length||n.len||1),1,16),velocity:clamp(Math.round(+n.velocity||100),1,127)})).filter(n=>noteNames.includes(n.pitch)&&n.step+n.len<=64);
+ }
+ if(!Object.values(valid).some(a=>a.length))throw Error('有効な音符がありません');
+ return valid;
+}
+async function requestGeminiComposition(){
+ const status=$('#geminiStatus'),btn=$('#geminiComposeBtn');
+ if(!geminiAvailable()){status.textContent='このChromeでは内蔵Geminiが利用できません。Chromeの対応環境で開いてください。';return;}
+ btn.disabled=true;status.textContent='Geminiが作曲中です…';geminiLog('作曲リクエストを開始');
+ try{
+  const factory=window.LanguageModel?.create||window.ai?.languageModel?.create;
+  // Chrome's current LanguageModel API ignores/deprecates temperature; omit it.
+  geminiLog('セッションを準備中');
+  const session=await geminiCreateSession('Return only valid JSON. Never use markdown fences.');
+  geminiLog('プロンプトを送信。応答を待っています');
+  const answer=await Promise.race([
+   session.prompt(geminiPromptText()),
+   new Promise((_,reject)=>setTimeout(()=>reject(Error('Geminiの応答がタイムアウトしました。もう一度お試しください。')),60000))
+  ]);
+  geminiLog('応答を受信。JSONを解析中');geminiDraft=parseGeminiJson(answer);$('#geminiApplyBtn').disabled=false;
+  status.textContent=`結果を受信しました（メロディ ${geminiDraft.melody.length}音 / ベース ${geminiDraft.bass.length}音 / アルペジオ ${geminiDraft.arpeggio.length}音）`;
+  session.destroy?.();
+ }catch(error){geminiDraft=null;$('#geminiApplyBtn').disabled=true;status.textContent=`作曲できませんでした：${error.message||'応答エラー'}`;geminiLog(`エラー：${error.message||'応答エラー'}`);}
+ finally{btn.disabled=false;}
+}
+function applyGeminiDraft(){
+ if(!geminiDraft)return;
+ saveUndo();ensurePatterns();const pat=state.selectedPattern;
+ [[0,'melody'],[5,'bass'],[4,'arpeggio']].forEach(([ti,key])=>{state.tracks[ti].patterns[pat]=geminiDraft[key].map(n=>({...n}));});
+ state.generation||={};state.generation.gemini||={};state.generation.gemini[pat]={prompt:$('#geminiPrompt').value,createdAt:new Date().toISOString(),theory:{...ensureTheory()}};
+ render();toast('Geminiの作曲結果を現在パターンへ反映しました');
+}
+function generateTheoryPart(trackIndex){
+ const prog=patternProgression();if(prog.length!==4)return toast('和音を解決できません');
+ saveUndo();stopPlayback();ensurePatterns();
+ const pat=state.selectedPattern,genre=$('#genrePresetSel').value||state.genrePreset,style=$('#styleSel').value||state.style;
+ const profile=GENRE_PRESETS[genre]||GENRE_PRESETS.Action,styleProfile=STYLE_GENERATION[style]||STYLE_GENERATION.snes;
+ const seed=$('#freshSeed').checked?(crypto.getRandomValues(new Uint32Array(1))[0]||1):(Number($('#generationSeed').value)>>>0)||1;
+ $('#generationSeed').value=seed;
+ const rng=makeGeneratorRandom(seed),theme=Array.from({length:6},()=>Math.floor(rng()*9)-4);
+ state.tracks[trackIndex].patterns[pat]=trackIndex===0?generateThematicPhrase(prog,pat,profile,styleProfile,theoryScalePool(),rng,theme):generateSupportingPhrase(trackIndex,prog,pat,styleProfile,rng,PATTERNS.indexOf(pat));
+ if(trackIndex===0&&ensureTheory().phraseAssist)state.tracks[0].patterns[pat]=applyPhraseAssist(state.tracks[0].patterns[pat],prog,theoryScalePool());
+ state.generation||={};state.generation.progressions||={};state.generation.progressions[pat]=prog;
+ state.generation.parts||={};state.generation.parts[pat]||={};state.generation.parts[pat][trackIndex]={seed,genre,style,theory:{...ensureTheory()}};
+ state.selected=trackIndex;clearSelection();render();toast(`${pat} の ${TRACKS[trackIndex].name} だけを生成しました`);
 }
 function renderChords(){
  const host=$("#chordGrid"); if(!host)return; host.innerHTML="";
- progression().forEach((c,i)=>{
+ patternProgression().forEach((c,i)=>{
   const d=document.createElement("div");d.className="chord-box";
-  d.innerHTML=`<b>${c}</b><span>Bar ${i+1}</span>`;host.appendChild(d);
+  d.innerHTML=`<b>${escapeHtml(c.symbol)}</b><span>Bar ${i+1}</span>`;d.title=theoryChordNotes(c).join(' / ');host.appendChild(d);
  });
 }
 function escapeHtml(text){
@@ -842,6 +1281,14 @@ function serializeSong(song){
 function normalizeSongShape(song){
  const base=createSongState(song?.name||song?.title||"曲");
  const merged=Object.assign(base,JSON.parse(JSON.stringify(song||{})));
+ merged.theory=normalizeTheory(song?.theory,song?.key);
+ merged.key=merged.theory.root+' '+(merged.theory.scale==='naturalMinor'?'minor':merged.theory.scale==='major'?'major':ArcadiaTheory.SCALE_TYPES[merged.theory.scale].label);
+ if(!song?.theory&&!song?.generation?.progressions&&typeof song?.progression==='string'){
+  const legacy=song.progression.split('-');
+  if(legacy.length===4&&legacy.every(c=>CHORDS[c])){
+   merged.generation={...(merged.generation||{}),progressions:Object.fromEntries(merged.patternOrder.map(p=>[p,[...legacy]]))};
+  }
+ }
  delete merged.sampleStore;
  if(Array.isArray(song?.tracks)) merged.tracks=song.tracks;
  if(Array.isArray(song?.arrangement)) merged.arrangement=song.arrangement;
@@ -907,6 +1354,7 @@ function updateDuration(){
  $("#duration").textContent=format(arrangementDurationSteps()*(60/state.bpm/4));
 }
 function setActiveSong(index){
+ stopPlayback();selectedNotes.clear();undoStack=[];
  const next=clamp(index,0,project.songs.length-1);
  project.activeSongIndex=next;
  state=project.songs[next];
@@ -1023,17 +1471,19 @@ function newProject(){
  toast("新しいプロジェクトを作成しました");
 }
 function applyChordBacking(){
+ if(!theoryProgression().length)return toast('和音を解決できません。設定を確認してください');
  saveUndo();ensurePatterns();
- const prog=progression(), pat=state.selectedPattern;
+ const prog=patternProgression(), pat=state.selectedPattern;
+ const voiced=ensureTheory().smoothVoicing?smoothChordVoicings(prog):null;
  state.tracks[2].patterns[pat]=[];state.tracks[3].patterns[pat]=[];state.tracks[5].patterns[pat]=[];
  prog.forEach((c,bar)=>{
-  const chord=CHORDS[c]||CHORDS["Em"], s=bar*16;
-  chord.forEach((p,i)=>state.tracks[2].patterns[pat].push({pitch:p,step:s+i*2,len:6}));
+  const chord=chordNotes(c), s=bar*16;
+  (voiced?voiced[bar].map(noteFromMidi):chord).forEach((p,i)=>state.tracks[2].patterns[pat].push({pitch:p,step:s+i*2,len:6}));
   state.tracks[3].patterns[pat].push({pitch:chord[0],step:s,len:8});
   state.tracks[3].patterns[pat].push({pitch:chord[2],step:s+8,len:8});
   state.tracks[5].patterns[pat].push({pitch:chord[0],step:s,len:12});
  });
- render();toast(`${pat} にコード進行を反映しました`);
+ render();autoSave();toast(`${pat} にコード進行を反映しました`);
 }
 function setWorkspaceMode(mode){
  state.workspaceMode=mode;
@@ -1051,7 +1501,6 @@ function applyGenrePreset(name=$("#genrePresetSel")?.value||state.genrePreset||"
  state.progression=p.progression;
  state.style=p.style;
  if($("#bpm"))$("#bpm").value=state.bpm;
- if($("#progressionSel"))$("#progressionSel").value=state.progression;
  if($("#styleSel"))$("#styleSel").value=state.style;
  applyStylePreset();
  const selected=state.selected;
@@ -1060,14 +1509,15 @@ function applyGenrePreset(name=$("#genrePresetSel")?.value||state.genrePreset||"
  if($("#genrePresetSel"))$("#genrePresetSel").value=name;
  render();
  if(regenerate)autoComposeBattle();
- else toast(`${name} のBPM・進行・音色・FX設定を適用しました`);
+ else toast(`${name} のBPM・音色・FX設定を適用しました（Degree進行は保持）`);
 }
 function autoComposeBattle(){
+ if(!theoryProgression().length){toast('和音を解決できません。既存の曲は変更していません。');return;}
  saveUndo();stopPlayback();
  state.genrePreset=$('#genrePresetSel').value;
- state.progression=$('#progressionSel').value;
  state.style=$('#styleSel').value;
  applyStylePreset();
+ state.patternOrder=[...new Set([...(state.patternOrder||[]),'INTRO','A','B','BREAK','CLIMAX','TURN'])];
  ensurePatterns();
  const profile=GENRE_PRESETS[state.genrePreset]||GENRE_PRESETS.Action;
  const styleProfile=STYLE_GENERATION[state.style]||STYLE_GENERATION.snes;
@@ -1075,10 +1525,13 @@ function autoComposeBattle(){
  $('#generationSeed').value=seed;
  const rng=makeGeneratorRandom(seed),mode=$('#generationMode').value;
  state.generation={seed,mode,style:state.style,genre:state.genrePreset};
- const choices=Array.from($('#progressionSel').options).map(o=>o.value).filter(v=>v.split('-').every(c=>CHORDS[c]));
- if(mode==='auto')state.progression=choices[Math.floor(rng()*choices.length)];
- if(mode==='minimal'){const c=state.progression.split('-');state.progression=[c[0],c[0],c[1]||c[0],c[0]].join('-');}
- $('#progressionSel').value=state.progression;
+ const theory=ensureTheory(),ranked=ArcadiaTheory.progressionCandidates(genreTheoryTags(state.genrePreset));
+ const matching=ranked.filter(p=>p.score>0),choices=matching.length?matching:ranked;
+ const chosen=mode==='auto'?choices[Math.floor(rng()*choices.length)].id:theory.progressionId;
+ let mainProgression=ArcadiaTheory.resolveProgression(theory.root,theory.scale,chosen,theory.sevenths);
+ if(mode==='minimal')mainProgression=[mainProgression[0],mainProgression[0],mainProgression[1],mainProgression[0]];
+ state.generation.progressionId=chosen;
+ state.progression=mainProgression.map(c=>c.symbol).join('-'); // Legacy display/export only.
  const spec=EXTRA_STYLES[state.style];
  state.bpm=generationTempo(state.genrePreset,state.style,rng);
  state.generation.bpm=state.bpm;
@@ -1087,15 +1540,11 @@ function autoComposeBattle(){
  voices.forEach((voice,i)=>{state.selected=i;applySoundPreset(voice,true);const sound=state.tracks[i].sound;sound.filter=clamp(Math.round(sound.filter*shape.filter),200,12000);sound.reverb=clamp(sound.reverb*shape.reverb,0,1);sound.delay=clamp(sound.delay*shape.delay,0,0.7);sound.pan=clamp((i%2?1:-1)*shape.pan, -1,1);if(spec&&i===0)sound.wave=spec[3]==='snes'?'pulse':spec[3]==='pluck'?'triangle':sound.wave;state.tracks[i].volume=[.78,.35,.38,.3,.32,.68,.6][i];});state.selected=selected;
  const theme=Array.from({length:6},()=>Math.floor(rng()*9)-4);
  state.tracks.forEach(t=>PATTERNS.forEach(p=>t.patterns[p]=[]));
- const mainProg=progression(),sectionProgressions={};
+ const mainProg=mainProgression,sectionProgressions={};
  PATTERNS.forEach((pat,pi)=>{
-   const prog=(mode==='develop'&&(pat==='B'||pat==='CLIMAX'))?choices[Math.floor(rng()*choices.length)].split('-'):mainProg;
+   const prog=(mode==='develop'&&(pat==='B'||pat==='CLIMAX'))?ArcadiaTheory.resolveProgression(theory.root,theory.scale,choices[Math.floor(rng()*choices.length)],theory.sevenths):mainProg;
    sectionProgressions[pat]=prog;
-   const pcs=new Set(prog.flatMap(c=>CHORDS[c].map(p=>midiOf(p)%12)));
-   const pool=Array.from({length:25},(_,i)=>64+i).filter(m=>pcs.has(m%12));
-   prog.forEach((c,bar)=>{
-     const chord=CHORDS[c]||CHORDS["Em"], base=bar*16;
-   });
+   const pool=theoryScalePool();
    const lead=generateThematicPhrase(prog,pat,profile,styleProfile,pool,rng,theme);
    state.tracks[0].patterns[pat].push(...lead);
    [1,2,3,4,5].forEach(ti=>state.tracks[ti].patterns[pat].push(...generateSupportingPhrase(ti,prog,pat,styleProfile,rng,pi)));
@@ -1114,21 +1563,23 @@ function autoComposeBattle(){
    [2,3,4,5].forEach(ti=>{tracks[ti].patterns[pat]=tracks[ti].patterns[pat].filter(()=>rng()>(pat==='INTRO'?.38:.12));});
    if(spec){
      tracks[5].patterns[pat]=[];
-     sectionProgressions[pat].forEach((c,bar)=>{for(let s=0;s<16;s+=spec[2])tracks[5].patterns[pat].push({pitch:CHORDS[c][0],step:bar*16+s,len:Math.min(spec[2],16-s),velocity:65+Math.floor(rng()*30)});});
+     sectionProgressions[pat].forEach((c,bar)=>{for(let s=0;s<16;s+=spec[2])tracks[5].patterns[pat].push({pitch:chordNotes(c)[0],step:bar*16+s,len:Math.min(spec[2],16-s),velocity:65+Math.floor(rng()*30)});});
      if(spec[4]==='none'){tracks[3].patterns[pat]=[];tracks[4].patterns[pat]=tracks[4].patterns[pat].filter((_,i)=>i%3===0);}
      if(state.style==='dnb')tracks[6].patterns[pat].push(...[6,22,38,54,58].map(step=>({pitch:'C5',step,len:1,velocity:85})));
    }
  });
  PATTERNS.forEach(pat=>coordinateGeneratedParts(pat,sectionProgressions[pat],styleProfile,rng));
+ if(theory.phraseAssist)PATTERNS.forEach(pat=>{state.tracks[0].patterns[pat]=applyPhraseAssist(state.tracks[0].patterns[pat],sectionProgressions[pat],theoryScalePool());});
  state.tracks[6].sound={...SOUND_DEFAULTS[6],filter:12000,reverb:.06};
  state.selectedPattern="INTRO";
  state.generation.progressions=sectionProgressions;
+ state.generation.theory={...ensureTheory()};
  standardArrangement();
  render();toast(`${state.genrePreset} の曲を48小節へ自動生成しました`);
 }
 function applyChordBackingCore(prog){
  prog.forEach((c,bar)=>{
-  const chord=CHORDS[c]||CHORDS["Em"], s=bar*16;
+  const chord=chordNotes(c), s=bar*16;
   chord.forEach((p,i)=>state.tracks[2].patterns[state.selectedPattern].push({pitch:p,step:s+i*2,len:6}));
   state.tracks[3].patterns[state.selectedPattern].push({pitch:chord[0],step:s,len:8});
   state.tracks[3].patterns[state.selectedPattern].push({pitch:chord[2],step:s+8,len:8});
@@ -1266,7 +1717,7 @@ async function exportWav(){
 function ensurePatterns(){
   const corePatterns=["INTRO","A","B","BREAK","CLIMAX","TURN"];
   if(Array.isArray(state.patternOrder) && state.patternOrder.length){
-    PATTERNS=[...new Set([...corePatterns,...state.patternOrder])];
+    PATTERNS=[...new Set(state.patternOrder)];
     state.patternOrder=[...PATTERNS];
   } else {
     PATTERNS=[...corePatterns];
@@ -1341,6 +1792,26 @@ function syncPatternTabs(){
  document.querySelectorAll(".pattern-tab").forEach(tab=>tab.classList.toggle("active",tab.dataset.pattern===state.selectedPattern));
 }
 function patternLabel(p){ return p || "OFF"; }
+function renameCurrentPattern(next){
+ next=String(next||'').trim();const old=state.selectedPattern;
+ if(!next||next===old)return;
+ if(PATTERNS.includes(next))return toast('同じ名前のパターンが存在します');
+ saveUndo();
+ state.patternOrder=PATTERNS.map(p=>p===old?next:p);
+ state.tracks.forEach(t=>{t.patterns[next]=t.patterns[old];delete t.patterns[old];});
+ state.arrangement=state.arrangement.map(row=>row.map(p=>p===old?next:p));
+ ['progressions','parts'].forEach(key=>{const map=state.generation?.[key];if(map&&Object.hasOwn(map,old)){map[next]=map[old];delete map[old];}});
+ state.selectedPattern=next;clearSelection();render();autoSave();
+}
+function deleteCurrentPattern(){
+ if(PATTERNS.length<=1)return toast('最後のパターンは削除できません');
+ const remove=state.selectedPattern;saveUndo();
+ state.patternOrder=PATTERNS.filter(p=>p!==remove);
+ state.tracks.forEach(t=>delete t.patterns[remove]);
+ state.arrangement=state.arrangement.map(row=>row.map(p=>p===remove?null:p));
+ ['progressions','parts'].forEach(key=>{if(state.generation?.[key])delete state.generation[key][remove];});
+ state.selectedPattern=state.patternOrder[0];clearSelection();render();autoSave();
+}
 
 function ensureArrangement(){
  ensurePatterns();
@@ -1520,10 +1991,11 @@ function parseMidi(buf){
 }
 
 function demo(){
+ state.patternOrder=[...new Set([...(state.patternOrder||[]),'INTRO','A','B','BREAK','CLIMAX','TURN'])];
  ensurePatterns();
  state.tracks.forEach(t=>PATTERNS.forEach(p=>t.patterns[p]=[]));
  const add=(t,pat,p,s,l=2,v=100)=>state.tracks[t].patterns[pat].push({pitch:p,step:s,len:l,velocity:v});
- state.bpm=172;state.key='E minor';state.progression='Em-C-G-D';state.selectedPattern='INTRO';
+ state.bpm=172;state.key='E minor';state.theory=normalizeTheory(null);state.generation={};state.progression='Em-C-G-D';state.selectedPattern='INTRO';
  const baseSeq=[['E5',0,3],['B5',3,1],['D6',6,2],['B5',8,4],['G5',14,2],['E5',16,3],['G5',19,1],['C6',22,2],['B5',24,3],['G5',28,2],['E5',30,2],['G5',32,3],['A5',35,1],['B5',38,2],['D6',40,6],['B5',46,2],['A5',48,3],['F#5',51,1],['D5',54,2],['F#5',56,2],['A5',58,2],['B5',60,3]];
  const bridge=[['B5',0,6],['A5',8,2],['G5',12,4],['G5',16,3],['E5',20,3],['C6',24,6],['D6',32,3],['B5',36,3],['G5',40,6],['A5',48,4],['F#5',54,2],['D6',56,4],['B5',62,2]];
  PATTERNS.forEach((pat,pi)=>{
@@ -1580,6 +2052,7 @@ function initGrid(){
   const k=document.createElement("div");k.className="key"+(black(n)?" black":"");k.textContent=n;$("#keys").appendChild(k);
   const row=document.createElement("div");row.className="grid-row"+(black(n)?" black":"");row.dataset.pitch=n;$("#grid").appendChild(row);
  });
+ renderTheoryGuide();
  $("#grid").onclick=e=>{
   if(e.target.id==="playhead")return; if(e.target.closest(".note"))return;
   const rect=$("#grid").getBoundingClientRect(), x=e.clientX-rect.left, y=e.clientY-rect.top;
@@ -1764,6 +2237,7 @@ function renderNotes(){
  $("#rollTitle").textContent=`${state.tracks[state.selected].label||activeType.label}・${state.selectedPattern} パターン`;
  $("#noteStatus").textContent=`${activeType.inst} · ${state.selectedPattern} · ${notes.length} 音符`;
  updateSelectionStatus();
+ renderChords();renderTheoryAssist();
 }
 
 let marquee=null, marqueeStart=null;
@@ -1873,10 +2347,9 @@ function applyTrackType(typeId){
 }
 
 function render(){
- ensurePatterns();
- $("#bpm").value=state.bpm;$("#bpmCtl").value=state.bpm;$("#keySel").value=state.key;$("#masterVol").value=state.master;$("#masterText").textContent=Math.round(state.master*100)+"%";
+ ensureTheory();ensurePatterns();
+ $("#bpm").value=state.bpm;$("#bpmCtl").value=state.bpm;$("#masterVol").value=state.master;$("#masterText").textContent=Math.round(state.master*100)+"%";
  if($("#genrePresetSel"))$("#genrePresetSel").value=state.genrePreset||"Action";
- if($("#progressionSel"))$("#progressionSel").value=state.progression||"Em-C-G-D";
  if($("#styleSel"))$("#styleSel").value=state.style||"snes";
  if($("#workspaceModeSel"))$("#workspaceModeSel").value=state.workspaceMode||"library";
  renderSongLibrary();initTracks();renderNotes();renderChords();renderDrums();renderArrangement();renderSoundControls();renderSamplerControls();updateArrangementHighlight();updateDuration();
@@ -2238,8 +2711,9 @@ function tick(){
    pause(); $("#time").textContent="00:00"; $("#barBadge").textContent="1 / 48 小節"; updateArrangementHighlight();
  }
 }
-function play(){
- ensureAudio(); if(audio.state==="suspended")audio.resume();
+async function play(){
+ stopTheoryPreview();
+ ensureAudio(); const mode=$("#playbackMode")?.value||"auto";const mobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);if(audio.state==="suspended"&&(mode==="stable"||(mode==="auto"&&mobile)))await audio.resume();
  if(playing){pause();return}
  if($("#loopToggle").checked){
    const lb=getLoopBounds();
@@ -2252,6 +2726,7 @@ function play(){
  updateArrangementHighlight();
 }
 function pause(){
+ stopTheoryPreview();
  playing=false;clearInterval(timer);timer=null;$("#playBtn").textContent="▶";$("#autoPlayBtn").textContent="▶ Play";updateArrangementHighlight();
 }
 function stopPlayback(){
@@ -2281,7 +2756,46 @@ function moveLibraryAboveComposer(){
  if(toggle)toggle.textContent="開く";
  composer.parentElement.insertBefore(panel,composer);
 }
+function moveTheoryBelowPiano(){
+ const theory=$("#theoryAssist"), piano=$("#pianoPanel");
+ if(!theory||!piano||!piano.parentElement||!piano.parentElement.insertBefore)return;
+ piano.parentElement.insertBefore(theory,piano.nextSibling||null);
+}
+function initComposerTabs(){
+ const composer=$("#composerPanel"), theory=$("#theoryAssist"), gemini=$("#geminiAssist"), main=composer?.parentElement;
+ if(!composer||!theory||!gemini||!main||$("#composerTabs"))return;
+ const tabs=document.createElement('div');tabs.id='composerTabs';tabs.className='composer-tabs';
+ [['generator','GENERATOR',composer],['theory','THEORY ASSIST',theory],['gemini','CHROME GEMINI',gemini]].forEach(([id,label,panel])=>{
+  const button=document.createElement('button');button.type='button';button.className='composer-tab';button.dataset.panel=id;button.textContent=label;
+  button.onclick=()=>{tabs.querySelectorAll('.composer-tab').forEach(b=>b.classList.toggle('active',b===button));[composer,theory,gemini].forEach(p=>p.classList.add('composer-tab-panel-hidden'));panel.classList.remove('composer-tab-panel-hidden');if(panel.tagName==='DETAILS')panel.open=true;};tabs.appendChild(button);
+ });
+ const anchor=composer||$("#arrangementPanel");
+ main.insertBefore(tabs,anchor);
+ main.insertBefore(theory,anchor);
+ main.insertBefore(gemini,anchor);
+ tabs.querySelector('[data-panel="generator"]').click();
+}
+function initWorkspaceTabs(){
+ const piano=$("#pianoPanel"), sound=$("#soundPanel"), sampler=$("#samplerPanel"), main=piano?.parentElement;
+ if(!piano||!sound||!sampler||!main||$("#workspaceTabs"))return;
+ const tabs=document.createElement('div');tabs.id='workspaceTabs';tabs.className='workspace-tabs';
+ [['piano','PIANO ROLL',piano],['sound','SOUND DESIGN',sound],['sampler','PCM SAMPLER',sampler]].forEach(([id,label,panel])=>{
+  const button=document.createElement('button');button.type='button';button.className='composer-tab';button.dataset.panel=id;button.textContent=label;
+  button.onclick=()=>{tabs.querySelectorAll('.composer-tab').forEach(b=>b.classList.toggle('active',b===button));[piano,sound,sampler].forEach(p=>p.classList.add('composer-tab-panel-hidden'));panel.classList.remove('composer-tab-panel-hidden');};tabs.appendChild(button);
+ });
+ main.insertBefore(tabs,piano);
+ tabs.querySelector('[data-panel="piano"]').click();
+}
 function bindUi(){
+ $('#helpBtn').onclick=()=>$('#helpModal').showModal();$('#helpCloseBtn').onclick=()=>$('#helpModal').close();
+ renderLookup();
+ $('#lookupFromNotesBtn').onclick=lookupFromCurrentNotes;
+ $('#lookupClearBtn').onclick=()=>{lookupPitchClasses.clear();renderLookup();};
+ $('#previewProgressionBtn').onclick=()=>previewTheoryChords(patternProgression());
+ $('#stopTheoryPreviewBtn').onclick=stopTheoryPreview;
+ $('#saveProgressionBtn').onclick=saveTheoryHistory;
+ document.querySelectorAll('.panel-title>.collapse-toggle').forEach(button=>{const parent=button.parentElement;if(parent&&parent.firstChild!==button)parent.insertBefore(button,parent.firstChild);});
+ document.querySelectorAll('.collapse-toggle').forEach(button=>{const target=$(button.dataset.collapse);const collapsed=target?.classList.contains('collapsed')||target?.classList.contains('collapsed-library')||target?.classList.contains('collapsed-arrangement');button.textContent='';button.classList.toggle('is-collapsed',!!collapsed);});
  document.querySelectorAll(".collapse-toggle").forEach(button=>button.onclick=()=>{
    const target=$(button.dataset.collapse);
    if(!target)return;
@@ -2290,7 +2804,8 @@ function bindUi(){
      : target.id==="arrangementBody"
        ? target.classList.toggle("collapsed-arrangement")
        : target.classList.toggle("collapsed");
-   button.textContent=collapsed?"開く":"折りたたむ";
+   button.textContent='';
+   button.classList.toggle('is-collapsed',collapsed);
  });
  const genreSel=$("#genrePresetSel");
  if(genreSel){
@@ -2333,13 +2848,21 @@ function bindUi(){
  $("#stopBtn").onclick=stopPlayback;
  $("#bpm").oninput=()=>{state.bpm=clamp(+$("#bpm").value||168,50,500);$("#bpm").value=state.bpm;$("#bpmCtl").value=state.bpm;updateDuration();autoSave();};
  $("#bpmCtl").oninput=()=>{state.bpm=clamp(+$("#bpmCtl").value||168,50,500);$("#bpm").value=state.bpm;updateDuration();autoSave();};
- $("#keySel").onchange=()=>{
-   const next=$("#keySel").value,previous=state.key||next;
-   transposeAllPatterns(previous,next);
-   state.key=next;
-   render();autoSave();
-   if(previous!==next)toast(`${next} に移調しました`);
- };
+ $('#rootSel').onchange=e=>changeTheory('root',e.target.value);
+ $('#scaleSel').onchange=e=>changeTheory('scale',e.target.value);
+ $('#degreeProgressionSel').onchange=e=>changeTheory('progressionId',e.target.value);
+ $('#seventhsToggle').onchange=e=>changeTheory('sevenths',e.target.checked);
+ $('#smoothVoicingToggle').onchange=e=>{stopTheoryPreview();saveUndo();ensureTheory().smoothVoicing=e.target.checked;autoSave();};
+ $('#phraseAssistToggle').onchange=e=>{saveUndo();ensureTheory().phraseAssist=e.target.checked;autoSave();};
+ $('#smoothVoicingPreviewBtn').onclick=()=>previewTheoryChords(patternProgression());
+ $('#scaleGuideToggle').onchange=e=>{ensureTheory().showScaleGuide=e.target.checked;renderTheoryGuide();autoSave();};
+ $('#chordGuideToggle').onchange=e=>{ensureTheory().showChordGuide=e.target.checked;renderTheoryGuide();autoSave();};
+ $('#applyTheoryChordsBtn').onclick=()=>{if(confirm('現在パターンのストリングス・ブラス・ベースを表示中のコードで置き換えますか？'))applyChordBacking();};
+ $('#geminiComposeBtn').onclick=requestGeminiComposition;
+ $('#geminiPlanBtn').onclick=requestGeminiPlan;
+ $('#geminiApplyBtn').onclick=()=>{if(confirm('現在パターンのメロディ・ベース・アルペジオをGeminiの結果で置き換えますか？'))applyGeminiDraft();};
+ $('#geminiStatus').textContent=geminiAvailable()?'Chrome内蔵Geminiを利用できます。':'Chrome内蔵Geminiが未対応です。既存機能はそのまま使えます。';
+ [['#generateTheoryMelodyBtn',0],['#generateTheoryBassBtn',5],['#generateTheoryArpBtn',4]].forEach(([id,ti])=>{$(id).onclick=()=>{if(confirm(`現在パターンの${TRACKS[ti].name}だけを置き換えますか？`))generateTheoryPart(ti);};});
  $("#masterVol").oninput=()=>{state.master=+$("#masterVol").value;$("#masterText").textContent=Math.round(state.master*100)+"%";autoSave();};
  $("#loopToggle").onchange=()=>{state.loopEnabled=$("#loopToggle").checked;autoSave();};
  $("#loopStart").oninput=()=>{state.loopStart=+$("#loopStart").value||1;autoSave();};
@@ -2358,7 +2881,6 @@ function bindUi(){
    if(ok)autoComposeBattle();
  };
  $("#autoPlayBtn").onclick=()=>{if(!playing){play();$("#autoPlayBtn").textContent="■ Stop";}else stopPlayback();};
- $("#progressionSel").onchange=()=>{state.progression=$("#progressionSel").value;renderChords();autoSave();};
  $("#styleSel").onchange=()=>{state.style=$("#styleSel").value;autoSave();};
  $("#sourceSel").onchange=()=>{state.tracks[state.selected].sound={...(state.tracks[state.selected].sound||SOUND_DEFAULTS[state.selected]),source:$("#sourceSel").value};autoSave();};
  $("#trackTypeSel").onchange=e=>applyTrackType(e.target.value);
@@ -2394,9 +2916,9 @@ function bindUi(){
  $("#clearDrumsBtn").onclick=()=>{project.songs.forEach(song=>{const store=getSampleStore(song);store.drums={kick:null,snare:null,hat:null};});autoSave();toast("ドラムサンプルを解除しました");};
  $("#patternSel").onchange=setPatternFromSelect;
  $("#copyPatternBtn").onclick=()=>{const notes=currentPatternNotes().map(n=>({...n})); noteClipboard=notes; toast("パターンを複製しました");};
- $("#renamePatternBtn").onclick=()=>{const next=prompt("新しいパターン名",state.selectedPattern); if(!next)return; ensurePatterns(); state.patternOrder=state.patternOrder.map(p=>p===state.selectedPattern?next:p); PATTERNS=state.patternOrder; ensurePatterns(); render(); autoSave();};
+ $("#renamePatternBtn").onclick=()=>renameCurrentPattern(prompt("新しいパターン名",state.selectedPattern));
  $("#addPatternBtn").onclick=()=>{const next=prompt("パターン名",`P${PATTERNS.length+1}`); if(!next)return; ensurePatterns(); if(!PATTERNS.includes(next)){PATTERNS.push(next); state.patternOrder=[...PATTERNS]; state.tracks.forEach(t=>t.patterns[next]=[]); state.selectedPattern=next; render(); autoSave();}};
- $("#deletePatternBtn").onclick=()=>{if(PATTERNS.length<=1)return toast("最後のパターンは削除できません"); if(!confirm(`パターン ${state.selectedPattern} を削除しますか？`))return; ensurePatterns(); const remove=state.selectedPattern; PATTERNS=PATTERNS.filter(p=>p!==remove); state.patternOrder=[...PATTERNS]; state.tracks.forEach(t=>delete t.patterns[remove]); state.selectedPattern=PATTERNS[0]||""; render(); autoSave();};
+ $("#deletePatternBtn").onclick=()=>{if(confirm(`パターン ${state.selectedPattern} を削除しますか？`))deleteCurrentPattern();};
  $("#clearPatternBtn").onclick=()=>{saveUndo();state.tracks[state.selected].patterns[state.selectedPattern]=[];renderNotes();autoSave();};
  $("#quantizeBtn").onclick=quantizeSelected;
  $("#transposeDownBtn").onclick=()=>transposeSelected(-1);
@@ -2412,6 +2934,10 @@ function bindUi(){
  document.querySelectorAll(".control input,.control select").forEach(el=>{if(!el.oninput&&!el.onchange) el.onchange=autoSave;});
 }
 moveLibraryAboveComposer();
+moveTheoryBelowPiano();
+initComposerTabs();
+initWorkspaceTabs();
+initTheoryControls();
 initGrid();
 const loadedAutoSave=loadAutoSavedProject();
 if(!loadedAutoSave){
