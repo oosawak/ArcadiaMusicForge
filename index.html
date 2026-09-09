@@ -1538,6 +1538,10 @@ function autoComposeBattle(){
  const matching=ranked.filter(p=>p.score>0),choices=matching.length?matching:ranked;
  const chosen=mode==='auto'?choices[Math.floor(rng()*choices.length)].id:theory.progressionId;
  let mainProgression=ArcadiaTheory.resolveProgression(theory.root,theory.scale,chosen,theory.sevenths);
+ const selectedGeneratorProgression=$('#progressionSel')?.selectedOptions?.[0]?.textContent||'';
+ const generatorSymbols=selectedGeneratorProgression.match(/[A-G][#b]?m?(?:maj7|m7|7|dim)?/g)||[];
+ const generatorChords=generatorSymbols.map(harmonicChord);
+ if(mode==='fixed'&&generatorChords.length===4&&generatorChords.every(Boolean))mainProgression=generatorChords;
  if(mode==='minimal')mainProgression=[mainProgression[0],mainProgression[0],mainProgression[1],mainProgression[0]];
  state.generation.progressionId=chosen;
  state.progression=mainProgression.map(c=>c.symbol).join('-'); // Legacy display/export only.
