@@ -565,7 +565,136 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
   </section>
 </div>
 <div class="toast" id="toastMessage"></div>
-<dialog class="help-modal" id="helpModal"><div class="help-modal-body"><button class="btn help-close" id="helpCloseBtn" type="button">閉じる</button><h2>Arcadia Music Forge の使い方</h2><h3>基本操作</h3><div>再生・停止、BPM、ROOT、SCALEを設定します。曲は48小節、7トラックで構成されます。</div><h3>COMPOSER TOOLS</h3><div>GENERATORでジャンル・スタイル・SEEDを指定して自動生成します。THEORY ASSISTではコード配置、メロディ生成、フレーズ補助、逆引きが使えます。</div><h3>ピアノロール</h3><div>グリッドをクリックして音符を追加し、音符設定・補正・管理・編集から編集します。パターンはA、B、BREAK、CLIMAX、TURNを切り替えられます。</div><h3>保存と書き出し</h3><div>「保存／読込」はプロジェクト、「MIDI保存」はMIDIファイルを扱います。変更はUndoで戻せます。</div><h3>Gemini</h3><div>CHROME GEMINIタブから設計図や作曲を依頼します。モデル準備中はログに状態が表示されます。Chromeの内蔵Geminiを使うには、対応するChromeとPrompt API for Gemini Nanoを有効にします。初回はモデルのダウンロードに時間がかかります。<code>LanguageModel.availability()</code>で状態を確認できます。<code>available</code>は利用可能、<code>downloading</code>は準備中、<code>unavailable</code>は非対応です。</div></div></dialog>
+<dialog class="help-modal" id="helpModal"><div class="help-modal-body"><button class="btn help-close" id="helpCloseBtn" type="button">閉じる</button>
+<h3>Arcadia Music Forge 機能・操作ガイド</h3>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">確認日：2026年9月9日  </div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">確認対象：ローカル main、コミット ca565f4 の index.html、README、統合資料、回帰テスト。GitHub公開版の反映状態は別途確認が必要です。</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<h3>1. どんなツールか</h3>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">Arcadia Music Forgeは、ブラウザ上でゲームBGMのたたき台を生成し、音符・音色・曲構成を編集して、プロジェクト、MIDI、WAVとして保存するツールです。単一HTMLに画面と生成・音声処理を収めています。</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">中心となる単位は「4小節のパターン」と「48小節のアレンジメント」です。音楽制作ソフトのように無制限のトラックを追加する構成ではなく、7パートを組み合わせて曲を作ります。</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">|トラック|主な役割|</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">|---|---|</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">|メロディー|主旋律|</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">|カウンターメロディー|主旋律に対する補助旋律|</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">|ストリングス|和音・持続する伴奏|</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">|ブラス|アクセントや伴奏|</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">|アルペジオ|和音を分散した動き|</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">|ベース|低音の支え|</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">|ドラム|リズム|</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">実機ファミコン／スーファミの音源エミュレーターではありません。7トラックは同時発音数の上限ではなく、1トラックに和音を置けば複数の音が同時に鳴ります。</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<h3>2. 最初の曲を作る手順</h3>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">1. 新規プロジェクトまたは曲ライブラリで曲を用意します。</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">2. ROOTとSCALEを設定します。</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">3. GENERATORでジャンル、STYLE、進行、進行モードを選びます。選んだコード進行を使う場合は「指定進行」を選びます。</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">4. SEEDを指定します。同じ条件で比較するときは「毎回変更」を外します。</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">5. 「自動生成」でパターンと48小節の配置を生成します。BPMや音色も更新されます。</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">6. 再生して、アレンジメントの音量・ミュート・ソロを調整します。</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">7. ピアノロールで音符を編集し、必要に応じてSOUND DESIGNやPCM SAMPLERを使います。</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">8. まずプロジェクトを保存し、その後にMIDIやWAVを書き出します。</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">自動生成は既存の生成対象パターンや配置を更新します。大切な編集は先に保存、または曲を複製してください。</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<h3>3. 画面ごとの機能</h3>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<h3>曲ライブラリ</h3>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">複数曲をプロジェクト内で管理します。曲名変更、追加、複製、削除、曲の切り替えに対応します。ブラウザ内の自動保存に加え、プロジェクトファイルとして保存できます。曲を切り替えるとUndo履歴はクリアされます。</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<h3>GENERATOR</h3>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">ゲームBGMをルールベースで自動生成します。Geminiの接続は不要です。</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">|設定|現在の実装での働き|</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">|---|---|</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">|GAME GENRE|テンポ範囲、生成傾向、ドラム、音色セット、フィルター・残響・定位の調整|</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">|STYLE|テンポ補正、音域、音数、アルペジオの刻み、ドラムや追加スタイル処理|</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">|進行|「指定進行」時にGENERATORの選択を使用。解釈可能な4コードの場合に適用|</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">|指定進行|選択した進行を基本に生成|</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">|おまかせ|ジャンルタグに合うDegree進行候補を選択|</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">|展開あり|BやCLIMAXの進行を変化させる|</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">|コード少なめ|和音の切り替えを減らす|</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">|SEED|生成用乱数の起点。同じ条件での再現・比較に使用|</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">ジャンルはAction、Puzzle、Racing、Horror、Cozy、Sci-Fi、Platformer、Boss、Menu、Town、Dungeon、Sports、Rhythmの13種類です。</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">STYLEはSNES風、NES風、オーケストラ風、FM音源、ピアノ、アンビエント、ロック、ファンク、ジャズ、ボサノバ、ハウス、テクノ、ドラムンベース、シンセウェーブ、和風、民族音楽風の16種類です。機種別のチャンネル制限はありません。</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">進行一覧には基本進行と、カノン、小室、王道、織田哲郎、循環、ポップパンク、アンダルシア風、冒険系、切ないゲーム系、ボス戦系、ホラー系、SF系などがあります。名称はアプリ内ラベルであり、音楽理論上の名称の正確さを保証するものではありません。</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<h3>THEORY ASSIST</h3>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">ROOT／SCALEから和音を計算し、手動で音楽を組み立てる補助機能です。</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">- 12のROOT、17のスケール、Triad／7th切り替え。</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">- Degree進行、配置先小節の指定、コード配置。</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">- メロディー、ベース、アルペジオの個別生成。</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">- 和音試聴、コード／スケール逆引き、進行履歴の保存・復元。</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">- ピアノロールのScale Tone／Chord Tone表示。</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">- 滑らかな和音配置：手動配置時のストリングスのボイシングを調整。初期OFF。</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">- フレーズ補助：生成後の主旋律を4小節の主題・応答・変化・結びとして整える。初期OFF。</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">コード配置は現在パターンのストリングス・ブラス・ベースを置き換えます。個別生成は対象パートを更新します。ROOT変更は既存の非ドラム音符も移調します。SCALEや進行の変更だけで既存音符全体を作り直すわけではありません。</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">逆引きは音の集合に合う候補を探す機能です。曲の調やコードを一意に断定するものではありません。</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<h3>アレンジメント</h3>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">48小節を4小節×12ブロックで扱い、各トラックにパターンを配置します。クリックでパターン切り替え、右クリックでOFF、ドラッグで移動・コピーする処理があります。標準構成の配置、配置クリア、トラックごとの音量・ミュート・ソロに対応します。</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">スマホ幅では横スクロール用の幅指定があります。ただし、タッチ端末でのドラッグや実際のスクロール操作は端末ごとの確認が必要です。</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<h3>PIANO ROLL</h3>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">4小節・64ステップのグリッドを使い、音符を追加・選択・編集します。表示音域はE4～E6です。音価、ベロシティ、クオンタイズ、半音移調、ヒューマナイズ、音符コピー／貼り付け／削除、パターンの追加・複製・改名・削除を備えます。</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">INTRO、A、B、BREAK、CLIMAX、TURNなどのパターンを切り替えて編集し、アレンジメントへ配置します。Undo履歴は最大30件です。すべての操作にUndoが付くとは限りません。</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<h3>SOUND DESIGN</h3>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">選択トラックの音色・エンベロープ・フィルター・パン・LFOなどを調整し、音色プリセットの保存・読込・試聴を行います。</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">「FX全オフ」はライブ再生のリバーブとディレイをバイパスします。フィルター、エンベロープ、LFOなど音作り全体を無効にするスイッチではありません。現在はスマホ判定時に初期ON、PCでは初期OFFです。</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<h3>PCM SAMPLER</h3>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">音声ファイルをトラック用またはドラム用サンプルとして読み込みます。基準音、音量、ループ開始／終了、ワンショット、フェードを調整できます。波形表示、トリミング、ノーマライズ、逆再生を備えます。音声形式の対応はブラウザのデコード能力に依存します。</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<h3>CHROME GEMINI（オプション）</h3>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">文章で曲の設計図や音符生成を依頼する補助機能です。設計図は保存されますが、それだけで48小節の曲へ自動配置される機能ではありません。作曲結果は別の「結果を現在パターンへ反映」で適用します。</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">Chrome内蔵LanguageModel APIとモデルの準備が必要です。この環境ではダウンロード／セッション準備が完了しない事象があり、実用動作は未確認です。通常のGENERATORはGeminiなしで利用できます。</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<h3>4. 再生と保存</h3>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">|項目|内容|</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">|---|---|</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">|軽量再生|従来のタイマー方式。安定再生とは別方式です|</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">|安定再生（初期値）|AudioContextの時刻で先行予約する方式|</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">|先読み|50／100／200／400ms。初期200ms。安定再生に適用|</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">|LOOP|開始・終了小節を指定|</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">|MASTER|全体の再生音量|</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">|プロジェクト保存／読込|曲・音符・音色・配置・サンプルデータなどを保持するための形式|</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">|MIDI保存|48小節の音符、ベロシティ、テンポをファイル化。アプリの音色・FXそのものは保存しない|</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">|MIDI読込|MIDI解析・取り込み処理あり。外部ソフトの全情報を完全再現するものではない|</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">|WAV|44.1kHz、ステレオ、16bit PCMへオフライン音声化|</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">WAVはライブ再生とは別処理です。現在のWAV処理にはライブ用リバーブ・ディレイ接続がなく、再生音と完全一致しません。</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<h3>5. 活用に向く場面</h3>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">ゲームBGMのアイデア出し、短いフレーズの比較、コードとメロディーの学習、音色・サンプルの試作、DAWへ渡すMIDI素材作りに向きます。実機音源の厳密な再現や、長時間・高負荷のライブ運用については追加の実装・検証が必要です。</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+</div></dialog>
 
 <script>
 (() => {
@@ -2871,6 +3000,7 @@ function initWorkspaceTabs(){
  tabs.querySelector('[data-panel="piano"]').click();
 }
 function bindUi(){
+ $('#helpBtn').textContent='操作ガイド';
  $('#helpBtn').onclick=()=>$('#helpModal').showModal();$('#helpCloseBtn').onclick=()=>$('#helpModal').close();
  const fxBypass=$('#fxBypassToggle');if(fxBypass)fxBypass.checked=typeof navigator!=='undefined'&&/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
  renderLookup();
