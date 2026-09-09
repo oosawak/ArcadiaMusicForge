@@ -167,6 +167,43 @@ assert.deepEqual(plain(api.state.tracks),preservedTracks);
 assert.deepEqual(plain(api.state.arrangement),preservedArrangement);
 const historyProject=api.normalizeProjectShape(plain(api.exportProjectPayload()));
 assert.deepEqual(plain(historyProject.songs[0].theoryHistory),plain(api.state.theoryHistory));
+api.bindUi();
+assert.equal(api.normalizeTheory(null).phraseAssist,false);
+assert.equal(api.normalizeTheory({phraseAssist:'true'}).phraseAssist,false);
+const rhythm=notes=>notes.map(({pitch,...rest})=>rest);
+for(const scale of Object.keys(T.SCALE_TYPES)){
+ const off=compose(scale,'develop');
+ api.state.theory.phraseAssist=true;api.autoComposeBattle();
+ const on=plain(api.state);
+ assert.notDeepEqual(on.tracks[0].patterns,off.tracks[0].patterns);
+ assert.deepEqual(on.tracks.slice(1),off.tracks.slice(1),'assist must preserve every other track and sound');
+ assert.deepEqual(on.arrangement,off.arrangement);
+ assert.equal(on.bpm,off.bpm);
+ for(const [pat,notes] of Object.entries(on.tracks[0].patterns)){
+  assert.deepEqual(rhythm(notes),rhythm(off.tracks[0].patterns[pat]));
+  assert.deepEqual(notes.filter(n=>n.step<16),off.tracks[0].patterns[pat].filter(n=>n.step<16));
+  assert.ok(notes.every(n=>T.scale('E',scale).includes(T.noteIndex(n.pitch.replace(/\d+$/,'')))));
+ }
+ api.autoComposeBattle();assert.deepEqual(plain(api.state.tracks),on.tracks,'ON is deterministic');
+ api.state.theory.phraseAssist=false;api.autoComposeBattle();
+ assert.deepEqual(plain(api.state.tracks),off.tracks,'OFF restores original seeded output');
+}
+compose();api.selectPattern('A');api.generateTheoryPart(0);
+const partOff=plain(api.state);
+nodes.get('#phraseAssistToggle').onchange({target:{checked:true}});
+assert.ok(api.undo.length);assert.equal(api.state.theory.phraseAssist,true);
+nodes.get('#undoBtn').onclick();assert.equal(api.state.theory.phraseAssist,false);
+nodes.get('#phraseAssistToggle').onchange({target:{checked:true}});
+api.renderTheoryAssist();assert.equal(nodes.get('#phraseAssistToggle').checked,true);
+api.generateTheoryPart(0);
+assert.deepEqual(plain(api.state.tracks.slice(1)),partOff.tracks.slice(1));
+assert.deepEqual(rhythm(plain(api.state.tracks[0].patterns.A)),rhythm(partOff.tracks[0].patterns.A));
+assert.notDeepEqual(plain(api.state.tracks[0].patterns.A),partOff.tracks[0].patterns.A);
+assert.equal(api.normalizeProjectShape(plain(api.exportProjectPayload())).songs[0].theory.phraseAssist,true);
+nodes.get('#undoBtn').onclick();assert.deepEqual(plain(api.state.tracks),partOff.tracks,'undo restores pre-assist notes');
+console.log('PASS: phrase assist default OFF, UI, undo snapshot, save/load, all scales, deterministic ON/OFF, rhythm and other-track preservation.');
+console.log('PASS: full-script syntax, UI bindings, '+chordCases+' chord cases, '+generatedCases+' generator cases, deterministic seeds, migration, transpose, save/load, backing, arrangement and guide logic.');
+
 (async()=>{
  const before=plain(api.state);await api.previewTheoryChords(api.patternProgression());
  const starts=auditionEvents.filter(e=>e[0]==='start');assert.equal(starts.length,12);
@@ -176,4 +213,3 @@ assert.deepEqual(plain(historyProject.songs[0].theoryHistory),plain(api.state.th
  assert.ok(auditionEvents.some(e=>e[0]==='stop'&&e[1]===undefined));
  console.log('PASS: reverse lookup, history deduplication/restore/serialization, preview scheduling/stop and non-destructive audition.');
 })().catch(error=>{console.error(error);process.exitCode=1;});
-console.log('PASS: full-script syntax, UI bindings, '+chordCases+' chord cases, '+generatedCases+' generator cases, deterministic seeds, migration, transpose, save/load, backing, arrangement and guide logic.');

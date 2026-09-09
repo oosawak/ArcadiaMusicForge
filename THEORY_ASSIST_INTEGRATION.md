@@ -57,3 +57,11 @@ Regression tests cover exact-vs-inclusive lookup, deduplication, restore scope, 
 - Deterministic register selection enumerates one pitch per chord pitch class within MIDI 64–88 and minimizes adjacent sorted-voice movement. This is a local heuristic, not full classical voice-leading or loop-boundary optimization.
 - Chord placement still replaces strings/brass/bass notes after confirmation. Audition does not replace notes. The preview uses a neutral sound, not the track instruments.
 - Tests cover all roots/scales/triad and seventh settings, pitch-class preservation, determinism, default OFF, unaffected tracks, and project persistence. Actual browser audio quality requires listening verification.
+
+## Optional phrase assist
+
+- `song.theory.phraseAssist` defaults to false, including old projects. The checkbox supports undo and project save/load.
+- Applies only to generated melody, after `generateThematicPhrase` for individual generation and after existing section development and `coordinateGeneratedParts` for full generation. No RNG calls are added. OFF bypasses the post-processing completely.
+- Bar 1 preserves the theme; bar 2 reuses its contour lower as a response; bar 3 varies it upward; bar 4 ends on the current chord root in the available scale/register. Pitches are selected from the scale, with chord anchors on the first note of each later bar. Timing, lengths, velocities, other tracks, sounds and arrangement stay intact, including TURN's ending rest.
+- Inspired by Open Music Theory's [The sentence](https://openmusictheory.github.io/sentence): basic idea, varied repetition, continuation and cadential closure. This is a compact four-bar melodic adaptation, not a complete implementation of classical sentence form or harmonic cadence rules.
+- Regression checks cover all 17 scales, deterministic ON/OFF output, unchanged first-bar theme/rhythm/accompaniment, individual melody scope, UI, actual undo and project persistence. Browser playback and subjective musical quality remain to be checked interactively.

@@ -34,7 +34,7 @@ button,input,select{font:inherit}button{cursor:pointer}
 .workspace{display:grid;grid-template-columns:1fr;gap:15px}
 .workspace>.tracks{display:none}
 .panel{background:linear-gradient(180deg,rgba(23,26,35,.95),rgba(12,14,19,.95));border:1px solid var(--line);border-radius:12px;overflow:hidden}
-.panel-title{padding:13px 15px;border-bottom:1px solid var(--line);font-size:12px;letter-spacing:.18em;color:#b4bac9;text-transform:uppercase}
+.panel-title{padding:13px 15px;border-bottom:1px solid var(--line);font-size:12px;letter-spacing:.18em;color:#b4bac9;text-transform:uppercase;display:flex;align-items:center;gap:0}.panel-title>span:last-child{margin-left:auto}
 .library-body{padding:12px;display:grid;gap:10px}
 .library-actions{display:flex;gap:8px;flex-wrap:wrap}
 .song-name-field{display:grid;gap:6px}
@@ -95,6 +95,20 @@ background-size:calc(100% / 64) 100%}
 .gemini-assist{display:grid;gap:8px;padding:12px 0;border-top:1px solid var(--line)}
 .gemini-assist textarea{width:100%;min-height:76px;resize:vertical;background:#11141b;color:#fff;border:1px solid #363c4c;border-radius:7px;padding:9px}
 .gemini-status{font-size:12px;color:var(--muted)}
+.gemini-log{font-size:11px;color:#9ea6ba;background:#0d1016;border:1px solid #292f3d;border-radius:6px;padding:7px 9px;max-height:110px;overflow:auto;white-space:pre-line}
+.gemini-title{display:flex;align-items:center;justify-content:space-between;gap:12px}.gemini-title .gemini-status{font-weight:400;letter-spacing:0;text-transform:none;text-align:right}
+.composer-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:0}
+.workspace-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:0}
+.composer-tab{border:1px solid #3a4051;background:#12151c;color:#aeb6c8;border-radius:7px;padding:8px 13px;cursor:pointer}
+.composer-tab.active{background:var(--red2);border-color:var(--red);color:#fff;font-weight:800}
+.composer-tab-panel-hidden{display:none!important}
+.collapse-toggle{font-size:0}.collapse-toggle::before{content:'▼';font-size:12px}.collapse-toggle.is-collapsed::before{content:'▶'}
+details>summary{list-style:none}details>summary::-webkit-details-marker{display:none}details>summary::before{content:'▶';display:inline-block;margin-right:4px;color:#9bb7dd;font-size:11px}details[open]>summary::before{content:'▼'}
+.gemini-assist>summary.panel-title,#theoryAssist>summary.panel-title{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:#b4bac9}
+.main>#theoryAssist{padding:0 14px 14px}.main>#theoryAssist>summary{margin:0 -14px 10px;padding:13px 15px;border-bottom:1px solid var(--line)}
+.tool-group-collapsible>summary::after{content:''!important}
+.help-modal{border:1px solid var(--line);border-radius:12px;background:#11131a;color:var(--text);max-width:680px;width:calc(100% - 32px);padding:0;box-shadow:0 18px 60px #000b}
+.help-modal::backdrop{background:#0009}.help-modal-body{padding:18px;line-height:1.65}.help-modal h2{margin:0 0 10px}.help-modal h3{font-size:13px;color:var(--gold);margin:14px 0 3px}.help-close{float:right}
 .note{position:absolute;height:20px;margin-top:3px;border-radius:4px;background:linear-gradient(#ef5262,#bb2638);border:1px solid #ff7784;box-shadow:0 0 12px rgba(217,52,69,.2);pointer-events:none}
 .playhead{position:absolute;top:0;bottom:0;width:2px;background:#f8d990;box-shadow:0 0 10px #f8d990;z-index:5;pointer-events:none}
 .status{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:10px 14px;color:#7f8799;font-size:11px;border-top:1px solid var(--line)}
@@ -105,6 +119,8 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
  .workspace{grid-template-columns:1fr}.tracks{max-height:285px;overflow:auto}
  .transport{grid-template-columns:auto auto 1fr}.transport .control{display:none}
  .app{padding:12px}.sections{height:65px}
+ .arr{overflow-x:auto;-webkit-overflow-scrolling:touch}
+ .arr-grid{min-width:980px}
 }
 @media(max-width:1200px){
  .top{grid-template-columns:1fr}.actions{justify-content:flex-start}
@@ -169,10 +185,12 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
 
 .note.selected{outline:2px solid #f8d990;box-shadow:0 0 12px rgba(248,217,144,.45)}
 .selection-box{position:absolute;border:1px dashed #f8d990;background:rgba(248,217,144,.08);z-index:8;pointer-events:none}
-.collapse-toggle{border:1px solid #3a4051;background:#12151c;color:#b8bfd0;border-radius:5px;padding:5px 10px;font-size:11px;cursor:pointer;white-space:nowrap}
+.collapse-toggle{border:0;background:transparent;color:#9bb7dd;border-radius:0;padding:0;margin-right:4px;font-size:11px;line-height:1;cursor:pointer;white-space:nowrap}
 .collapsible-panel.collapsed> :not(.panel-title):not(.roll-head){display:none!important}
 .library-body.collapsed-library{display:none}
 .main>#composerPanel{order:1}.main>#arrangementPanel{order:2}.main>#pianoPanel{order:3}.main>#soundPanel{order:4}.main>#samplerPanel{order:5}.main>#drumPanel{order:6}
+.main>#libraryPanel{order:0}.main>#composerTabs{order:1}.main>#theoryAssist,.main>#geminiAssist{order:2}.main>#composerPanel{order:3}.main>#arrangementPanel{order:4}.main>#pianoPanel{order:5}
+.main>#workspaceTabs{order:5}.main>#pianoPanel,.main>#soundPanel,.main>#samplerPanel{order:6}
 
 .velocity-lane{border-top:1px solid #2a2f3d;padding:8px 12px;background:#0f1218}
 .velocity-bars{display:flex;align-items:end;gap:2px;height:80px;overflow-x:auto}
@@ -205,7 +223,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
       <button class="btn" id="saveBtn" title="プロジェクトを保存">保存</button>
       <button class="btn" id="loadBtn" title="プロジェクトを読み込み">読込</button>
       <input id="fileInput" type="file" accept=".amfproj,.json,application/json" hidden>
-      <button class="btn" id="midiImportBtn" title="MIDIを読み込み">MIDI読込</button><input id="midiInput" type="file" accept=".mid,.midi,audio/midi" hidden><button class="btn" id="midiBtn" title="MIDIファイルを保存">MIDI保存</button>
+      <button class="btn" id="midiImportBtn" title="MIDIを読み込み">MIDI読込</button><input id="midiInput" type="file" accept=".mid,.midi,audio/midi" hidden><button class="btn" id="midiBtn" title="MIDIファイルを保存">MIDI保存</button><button class="btn" id="helpBtn" type="button">使い方</button>
     </div>
   </header>
 
@@ -217,6 +235,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
     <label class="control transport-stack"><span>BPM</span><span class="value-fields"><input id="bpm" type="number" min="50" max="500" value="168"><input id="bpmCtl" type="range" min="50" max="500" value="168" aria-label="BPMスライダー"></span></label>
     <label class="control">ROOT <select id="rootSel"></select></label>
     <label class="control">SCALE <select id="scaleSel"></select></label>
+    <label class="control">再生モード <select id="playbackMode"><option value="auto">自動（スマホは安定再生）</option><option value="standard">標準（現在の方式）</option><option value="stable">安定再生</option></select></label>
     <label class="control transport-stack"><span>MASTER</span><span class="value-fields"><input id="masterVol" type="range" min="0" max="1" step=".01" value=".75"><span id="masterText">75%</span></span></label>
   </section>
 
@@ -254,26 +273,11 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
             <button class="btn" id="arrDemoBtn">標準構成</button>
             <span>クリックでパターン切替 · 右クリックでOFF · ドラッグ＆ドロップでブロック移動/コピー</span>
           </div>
-          <div class="gemini-assist" id="geminiAssist">
-            <div class="panel-title" style="padding-left:0">CHROME GEMINI 作曲アシスト（オプション）</div>
-            <textarea id="geminiPrompt" placeholder="例：町の夜。少し寂しいが安心できる、8小節のゲームBGMを作って"></textarea>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-              <label class="control">作曲モード <select id="geminiMode"><option value="motif">モチーフを育てる</option><option value="variation">大きく展開する</option><option value="contrast">意外性を入れる</option></select></label>
-              <label class="control"><input id="geminiKeepMotif" type="checkbox" checked>主旋律モチーフを保持</label>
-              <button class="btn" id="geminiPlanBtn" type="button">曲の設計図を作る</button>
-            </div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-              <button class="btn" id="geminiComposeBtn" type="button">Geminiに作曲を依頼</button>
-              <button class="btn" id="geminiApplyBtn" type="button" disabled>結果を現在パターンへ反映</button>
-              <span class="gemini-status" id="geminiStatus"></span>
-            </div>
-          </div>
+          <div class="gemini-assist" id="geminiAssistPlaceholder" style="display:none"></div>
           <div class="arr-grid" id="arrGrid"></div>
         </div>
         </div>
       </section>
-
-
       <section class="panel collapsible-panel" id="composerPanel">
         <div class="panel-title">COMPOSER TOOLS <button class="collapse-toggle" data-collapse="#composerPanel">折りたたむ</button><span style="float:right;margin-right:90px">Battle Generator</span></div>
         <div style="padding:14px;display:grid;gap:12px">
@@ -287,8 +291,8 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
             <span id="workspaceModeHint" style="color:#7f8799;font-size:11px">既存曲を選び、パターンと48小節配置を手動編集します。</span>
           </div>
           <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px" id="chordGrid"></div>
-          <div id="theoryAssist" style="display:grid;gap:10px">
-            <div class="panel-title" style="padding-left:0">THEORY ASSIST</div>
+          <details id="theoryAssist" class="panel gemini-assist" style="display:grid;gap:10px">
+            <summary class="panel-title" style="padding-left:15px;cursor:pointer">THEORY ASSIST</summary>
             <div id="diatonicGrid" style="display:flex;gap:6px;flex-wrap:wrap"></div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
               <label class="control">DEGREE PROGRESSION <select id="degreeProgressionSel"></select></label>
@@ -296,6 +300,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
               <label class="control">配置先の小節 <select id="theoryBarSel"><option value="0">1</option><option value="1">2</option><option value="2">3</option><option value="3">4</option></select></label>
               <label class="control"><input id="smoothVoicingToggle" type="checkbox">滑らかな和音配置（コード配置・試聴）</label>
               <button class="btn" id="smoothVoicingPreviewBtn" type="button">和音配置を試聴</button>
+              <label class="control" title="生成後のメロディを4小節の主題・応答・変化・結びに整えます"><input id="phraseAssistToggle" type="checkbox">フレーズ補助（メロディ・一括生成）</label>
               <button class="btn" id="applyTheoryChordsBtn" type="button">コード配置</button>
               <button class="btn" id="generateTheoryMelodyBtn" type="button">メロディ生成</button>
               <button class="btn" id="generateTheoryBassBtn" type="button">ベース生成</button>
@@ -327,7 +332,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
               </div>
             </details>
             <small>ROOT変更は既存音符も移調します。SCALE・進行・7th変更は設定のみです。「コード配置」は現在パターンの伴奏3トラックを置換します。コードボタンは指定小節の和音設定を変更します。</small>
-          </div>
+          </details>
           <div id="genreAutoControls" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
               <label class="control">GAME GENRE
                 <select id="genrePresetSel"></select>
@@ -349,7 +354,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
       </section>
 
 
-      <section class="panel collapsible-panel collapsed" id="soundPanel">
+      <section class="panel collapsible-panel" id="soundPanel">
         <div class="panel-title">SOUND DESIGN <button class="collapse-toggle" data-collapse="#soundPanel">開く</button><span style="float:right;margin-right:50px">Track FX / Synth</span></div>
         <div style="padding:14px;display:grid;gap:12px">
           <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">
@@ -411,7 +416,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
       </section>
 
 
-      <section class="panel collapsible-panel collapsed" id="samplerPanel">
+      <section class="panel collapsible-panel" id="samplerPanel">
         <div class="panel-title">PCM SAMPLER <button class="collapse-toggle" data-collapse="#samplerPanel">開く</button><span style="float:right;margin-right:50px">Custom Sample / Drum Slots</span></div>
         <div style="padding:14px;display:grid;gap:12px">
           <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
@@ -485,6 +490,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
         </div>
       </section>
       <section class="panel collapsible-panel" id="pianoPanel">
+        <div class="panel-title">PIANO ROLL <button class="collapse-toggle" data-collapse="#pianoPanel">折りたたむ</button></div>
         <div class="roll-head">
           <div class="roll-title-row"><div><h2 id="rollTitle">メロディー・ピアノロール</h2><small>4小節パターン · 48小節アレンジメントに配置</small></div><div class="roll-title-actions"><details class="tool-group tool-group-collapsible"><summary title="音符設定を開閉">音符</summary>
               <label>音価 <select id="lengthSel"><option value="1">1/16</option><option value="2" selected>1/8</option><option value="4">1/4</option><option value="8">1/2</option></select></label>
@@ -506,7 +512,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
               <button class="btn icon-btn" id="copyNotesBtn" title="ノートをコピー" aria-label="ノートをコピー">⧉</button>
               <button class="btn icon-btn" id="pasteNotesBtn" title="ノートを貼り付け" aria-label="ノートを貼り付け">▣</button>
               <button class="btn icon-btn" id="deleteNotesBtn" title="選択したノートを削除" aria-label="選択したノートを削除">×</button>
-            </details><button class="collapse-toggle" data-collapse="#pianoPanel">折りたたむ</button></div></div>
+            </details></div></div>
           <div class="pattern-switch">
             <div class="tool-group">
               <label class="pattern-tab-label">PATTERN
@@ -533,10 +539,26 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
           <span>グリッド 1/16 · <kbd>SPACE</kbd> 48小節 再生 / 一時停止</span>
         </div>
       </section>
+      <details class="panel gemini-assist" id="geminiAssist">
+        <summary class="panel-title gemini-title" style="cursor:pointer"><span>CHROME GEMINI 作曲アシスト（オプション）</span><span class="gemini-status" id="geminiStatus"></span></summary>
+        <div style="padding:0 14px 14px">
+          <textarea id="geminiPrompt" placeholder="例：町の夜。少し寂しいが安心できる、8小節のゲームBGMを作って"></textarea>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <label class="control">作曲モード <select id="geminiMode"><option value="motif">モチーフを育てる</option><option value="variation">大きく展開する</option><option value="contrast">意外性を入れる</option></select></label>
+            <label class="control"><input id="geminiKeepMotif" type="checkbox" checked>主旋律モチーフを保持</label>
+            <button class="btn" id="geminiPlanBtn" type="button">曲の設計図を作る</button>
+            <button class="btn" id="geminiComposeBtn" type="button">Geminiに作曲を依頼</button>
+            <button class="btn" id="geminiApplyBtn" type="button" disabled>結果を現在パターンへ反映</button>
+          </div>
+          <div class="gemini-log" id="geminiLog" aria-live="polite">ログ：待機中</div>
+          </div>
+        </div>
+      </details>
     </main>
   </section>
 </div>
 <div class="toast" id="toastMessage"></div>
+<dialog class="help-modal" id="helpModal"><div class="help-modal-body"><button class="btn help-close" id="helpCloseBtn" type="button">閉じる</button><h2>Arcadia Music Forge の使い方</h2><h3>基本操作</h3><div>再生・停止、BPM、ROOT、SCALEを設定します。曲は48小節、7トラックで構成されます。</div><h3>COMPOSER TOOLS</h3><div>GENERATORでジャンル・スタイル・SEEDを指定して自動生成します。THEORY ASSISTではコード配置、メロディ生成、フレーズ補助、逆引きが使えます。</div><h3>ピアノロール</h3><div>グリッドをクリックして音符を追加し、音符設定・補正・管理・編集から編集します。パターンはA、B、BREAK、CLIMAX、TURNを切り替えられます。</div><h3>保存と書き出し</h3><div>「保存／読込」はプロジェクト、「MIDI保存」はMIDIファイルを扱います。変更はUndoで戻せます。</div><h3>Gemini</h3><div>CHROME GEMINIタブから設計図や作曲を依頼します。モデル準備中はログに状態が表示されます。</div></div></dialog>
 
 <script>
 (() => {
@@ -798,6 +820,30 @@ function generateThematicPhrase(prog,pat,profile,styleProfile,pool,rng,theme){
  });
  return notes;
 }
+// Optional pitch-only post-processing: preserve rhythm and seeded RNG consumption.
+function applyPhraseAssist(notes,prog,pool){
+ if(!notes.length||prog.length!==4||!pool.length)return notes;
+ const result=notes.map(n=>({...n}));
+ const bars=Array.from({length:4},(_,bar)=>result.filter(n=>Math.floor(n.step/16)===bar).sort((a,b)=>a.step-b.step));
+ const motif=bars[0];if(!motif.length)return result;
+ const nearest=(values,target)=>values.reduce((a,b)=>Math.abs(b-target)<Math.abs(a-target)?b:a,values[0]);
+ bars.forEach((barNotes,bar)=>{
+  if(!bar||!barNotes.length)return;
+  const pcs=chordNotes(prog[bar]).map(p=>midiOf(p)%12);
+  const anchors=pool.filter(m=>pcs.includes(m%12));
+  barNotes.forEach((n,i)=>{
+   const source=midiOf(motif[i%motif.length].pitch);
+   const target=bar===1?source-2:bar===2?source+2:midiOf(n.pitch);
+   n.pitch=noteFromMidi(nearest(i===0&&anchors.length?anchors:pool,target));
+  });
+  if(bar===3&&anchors.length){
+   const last=barNotes[barNotes.length-1],root=midiOf(chordNotes(prog[bar])[0])%12;
+   const roots=anchors.filter(m=>m%12===root);
+   last.pitch=noteFromMidi(nearest(roots.length?roots:anchors,midiOf(last.pitch)));
+  }
+ });
+ return result;
+}
 function coordinateGeneratedParts(pat,prog,styleProfile,rng){
  const parts=state.tracks.map(t=>t.patterns[pat]);
  const overlaps=n=>parts[0].some(m=>n.step<m.step+m.len&&m.step<n.step+n.len);
@@ -880,7 +926,7 @@ function normalizeTheory(theory,key='E minor'){
  return {root:ArcadiaTheory.NOTE_NAMES.includes(aliases[root]||root)?(aliases[root]||root):'E',
   scale:Object.hasOwn(ArcadiaTheory.SCALE_TYPES,t.scale)?t.scale:(/major/i.test(legacy?.[2]||'')?'major':'naturalMinor'),
   sevenths:t.sevenths===true,progressionId:ArcadiaTheory.PROGRESSIONS.some(p=>p.id===t.progressionId)?t.progressionId:'minor_epic',
-  smoothVoicing:t.smoothVoicing===true,showScaleGuide:t.showScaleGuide!==false,showChordGuide:t.showChordGuide!==false};
+  phraseAssist:t.phraseAssist===true,smoothVoicing:t.smoothVoicing===true,showScaleGuide:t.showScaleGuide!==false,showChordGuide:t.showChordGuide!==false};
 }
 function ensureTheory(){state.theory=normalizeTheory(state.theory,state.key);return state.theory;}
 function theoryProgression(){
@@ -936,6 +982,7 @@ function renderTheoryAssist(){
  $('#rootSel').value=t.root;$('#scaleSel').value=t.scale;$('#degreeProgressionSel').value=t.progressionId;
  $('#seventhsToggle').checked=t.sevenths;$('#scaleGuideToggle').checked=t.showScaleGuide;$('#chordGuideToggle').checked=t.showChordGuide;
  $('#smoothVoicingToggle').checked=t.smoothVoicing;
+ $('#phraseAssistToggle').checked=t.phraseAssist;
  host.innerHTML='';
  const chords=ArcadiaTheory.diatonic(t.root,t.scale,t.sevenths);
  chords.forEach(c=>{
@@ -1079,17 +1126,44 @@ function renderTheoryHistory(){
 let geminiDraft=null;
 let geminiPlan=null;
 function geminiAvailable(){return !!(window.LanguageModel?.create||window.ai?.languageModel?.create);}
+function geminiLog(message){const el=$('#geminiLog');if(!el)return;const stamp=new Date().toLocaleTimeString();el.textContent=(el.textContent==='ログ：待機中'?'':el.textContent+'\n')+`${stamp}  ${message}`;el.scrollTop=el.scrollHeight;}
+async function geminiCreateSession(systemPrompt){
+ const api=window.LanguageModel||window.ai?.languageModel;
+ if(!api?.create)throw Error('LanguageModel APIが見つかりません');
+ geminiLog(`API検出：${window.LanguageModel?'LanguageModel':'window.ai.languageModel'}`);
+ let availability='unknown';
+ if(typeof api.availability==='function'){
+  availability=await api.availability({expectedOutputLanguages:['ja']});
+  geminiLog(`モデル利用可否：${availability}`);
+  if(availability==='unavailable')throw Error('この端末ではBuilt-in AIモデルを利用できません');
+ }
+ geminiLog('セッションを準備中');
+ const waitMs=(availability==='downloading'||availability==='downloadable')?300000:15000;
+ if(waitMs>15000)geminiLog('モデル準備を待っています（最大5分）');
+ let lastProgress=-1;
+ const options={systemPrompt,expectedOutputLanguages:['ja'],monitor(m){
+   const raw=typeof m==='number'?m:(m?.downloadProgress??m?.progress??(m?.loaded&&m?.total?m.loaded/m.total:null));
+   const progress=Number(raw);
+   if(!Number.isFinite(progress))return;
+   const pct=Math.max(0,Math.min(100,Math.round(progress<=1?progress*100:progress)));
+   if(pct!==lastProgress){lastProgress=pct;geminiLog(`モデルダウンロード進捗：${pct}%`);}
+ }};
+ let lastAvailability=availability;
+ const poll=setInterval(async()=>{try{if(typeof api.availability!=='function')return;const next=await api.availability({expectedOutputLanguages:['ja']});if(next!==lastAvailability){lastAvailability=next;geminiLog(`モデル利用可否（再確認）：${next}`);}}catch{ }},5000);
+ try{return await Promise.race([api.create(options),new Promise((_,reject)=>setTimeout(()=>reject(Error(`Geminiセッションの準備がタイムアウトしました（${Math.round(waitMs/1000)}秒）。ダウンロード進捗が更新されない場合はChromeのモデル準備状態を確認してください。`)),waitMs))]);}
+ finally{clearInterval(poll);}
+}
 function geminiPromptText(){
  const t=ensureTheory(),p=theoryProgression();
  return `あなたはゲーム音楽の作曲アシスタントです。ユーザー要望:${$('#geminiPrompt').value.trim()||'印象的なゲームBGM'}。作曲モード:${$('#geminiMode').value}。主旋律モチーフ保持:${$('#geminiKeepMotif').checked}。現在の設定: ROOT=${t.root}, SCALE=${t.scale}, 進行=${p.map(c=>c.symbol).join('-')}。現在パターンは8小節です。JSONだけを返してください。形式は{"melody":[{"note":"E5","step":0,"length":2,"velocity":100}],"bass":[...],"arpeggio":[...]}。stepは0から63、noteはE4からE6の範囲、lengthは1から16、各配列は最大32個。スケールとコード音を優先し、ドラムや説明文は出力しないでください。`;
 }
 async function requestGeminiPlan(){
  const status=$('#geminiStatus');if(!geminiAvailable()){status.textContent='このChromeでは内蔵Geminiが利用できません。';return;}
- status.textContent='曲の設計図を作成中です…';
- try{const factory=window.LanguageModel?.create||window.ai?.languageModel?.create,session=await factory({systemPrompt:'Return only valid JSON.',temperature:0.7});
-  const text=await session.prompt(`ゲームBGMの設計図をJSONだけで作成してください。要望:${$('#geminiPrompt').value.trim()||'印象的なゲームBGM'}。形式:{"title":"","motif":["E5","G5","B5","A5"],"sections":[{"name":"INTRO","bars":4,"intensity":20,"role":""},{"name":"A","bars":8,"intensity":45,"role":""},{"name":"CLIMAX","bars":8,"intensity":90,"role":""},{"name":"LOOP","bars":4,"intensity":50,"role":""}]}`);
-  const m=String(text).match(/\{[\s\S]*\}/);geminiPlan=JSON.parse(m?.[0]||'{}');state.generation||={};state.generation.geminiPlan=geminiPlan;autoSave();status.textContent=`設計図を保存しました：${geminiPlan.title||'無題'}（${geminiPlan.sections?.length||0}セクション）`;session.destroy?.();
- }catch(error){status.textContent=`設計図を作成できませんでした：${error.message||'応答エラー'}`;}
+ status.textContent='曲の設計図を作成中です…';geminiLog('設計図リクエストを開始');
+ try{const session=await geminiCreateSession('Return only valid JSON.');geminiLog('設計図の応答を待っています');
+  const text=await Promise.race([session.prompt(`ゲームBGMの設計図をJSONだけで作成してください。要望:${$('#geminiPrompt').value.trim()||'印象的なゲームBGM'}。形式:{"title":"","motif":["E5","G5","B5","A5"],"sections":[{"name":"INTRO","bars":4,"intensity":20,"role":""},{"name":"A","bars":8,"intensity":45,"role":""},{"name":"CLIMAX","bars":8,"intensity":90,"role":""},{"name":"LOOP","bars":4,"intensity":50,"role":""}]}`),new Promise((_,reject)=>setTimeout(()=>reject(Error('Geminiの応答がタイムアウトしました。')),60000))]);
+  geminiLog('設計図を受信。解析中');const m=String(text).match(/\{[\s\S]*\}/);geminiPlan=JSON.parse(m?.[0]||'{}');state.generation||={};state.generation.geminiPlan=geminiPlan;autoSave();status.textContent=`設計図を保存しました：${geminiPlan.title||'無題'}（${geminiPlan.sections?.length||0}セクション）`;geminiLog('設計図を保存しました');session.destroy?.();
+ }catch(error){status.textContent=`設計図を作成できませんでした：${error.message||'応答エラー'}`;geminiLog(`エラー：${error.message||'応答エラー'}`);}
 }
 function parseGeminiJson(text){
  const match=String(text).match(/\{[\s\S]*\}/);if(!match)throw Error('JSONが見つかりません');
@@ -1104,15 +1178,21 @@ function parseGeminiJson(text){
 async function requestGeminiComposition(){
  const status=$('#geminiStatus'),btn=$('#geminiComposeBtn');
  if(!geminiAvailable()){status.textContent='このChromeでは内蔵Geminiが利用できません。Chromeの対応環境で開いてください。';return;}
- btn.disabled=true;status.textContent='Geminiが作曲中です…';
+ btn.disabled=true;status.textContent='Geminiが作曲中です…';geminiLog('作曲リクエストを開始');
  try{
   const factory=window.LanguageModel?.create||window.ai?.languageModel?.create;
-  const session=await factory({systemPrompt:'Return only valid JSON. Never use markdown fences.',temperature:0.8});
-  const answer=await session.prompt(geminiPromptText());
-  geminiDraft=parseGeminiJson(answer);$('#geminiApplyBtn').disabled=false;
+  // Chrome's current LanguageModel API ignores/deprecates temperature; omit it.
+  geminiLog('セッションを準備中');
+  const session=await geminiCreateSession('Return only valid JSON. Never use markdown fences.');
+  geminiLog('プロンプトを送信。応答を待っています');
+  const answer=await Promise.race([
+   session.prompt(geminiPromptText()),
+   new Promise((_,reject)=>setTimeout(()=>reject(Error('Geminiの応答がタイムアウトしました。もう一度お試しください。')),60000))
+  ]);
+  geminiLog('応答を受信。JSONを解析中');geminiDraft=parseGeminiJson(answer);$('#geminiApplyBtn').disabled=false;
   status.textContent=`結果を受信しました（メロディ ${geminiDraft.melody.length}音 / ベース ${geminiDraft.bass.length}音 / アルペジオ ${geminiDraft.arpeggio.length}音）`;
   session.destroy?.();
- }catch(error){geminiDraft=null;$('#geminiApplyBtn').disabled=true;status.textContent=`作曲できませんでした：${error.message||'応答エラー'}`;}
+ }catch(error){geminiDraft=null;$('#geminiApplyBtn').disabled=true;status.textContent=`作曲できませんでした：${error.message||'応答エラー'}`;geminiLog(`エラー：${error.message||'応答エラー'}`);}
  finally{btn.disabled=false;}
 }
 function applyGeminiDraft(){
@@ -1131,6 +1211,7 @@ function generateTheoryPart(trackIndex){
  $('#generationSeed').value=seed;
  const rng=makeGeneratorRandom(seed),theme=Array.from({length:6},()=>Math.floor(rng()*9)-4);
  state.tracks[trackIndex].patterns[pat]=trackIndex===0?generateThematicPhrase(prog,pat,profile,styleProfile,theoryScalePool(),rng,theme):generateSupportingPhrase(trackIndex,prog,pat,styleProfile,rng,PATTERNS.indexOf(pat));
+ if(trackIndex===0&&ensureTheory().phraseAssist)state.tracks[0].patterns[pat]=applyPhraseAssist(state.tracks[0].patterns[pat],prog,theoryScalePool());
  state.generation||={};state.generation.progressions||={};state.generation.progressions[pat]=prog;
  state.generation.parts||={};state.generation.parts[pat]||={};state.generation.parts[pat][trackIndex]={seed,genre,style,theory:{...ensureTheory()}};
  state.selected=trackIndex;clearSelection();render();toast(`${pat} の ${TRACKS[trackIndex].name} だけを生成しました`);
@@ -1488,6 +1569,7 @@ function autoComposeBattle(){
    }
  });
  PATTERNS.forEach(pat=>coordinateGeneratedParts(pat,sectionProgressions[pat],styleProfile,rng));
+ if(theory.phraseAssist)PATTERNS.forEach(pat=>{state.tracks[0].patterns[pat]=applyPhraseAssist(state.tracks[0].patterns[pat],sectionProgressions[pat],theoryScalePool());});
  state.tracks[6].sound={...SOUND_DEFAULTS[6],filter:12000,reverb:.06};
  state.selectedPattern="INTRO";
  state.generation.progressions=sectionProgressions;
@@ -2629,9 +2711,9 @@ function tick(){
    pause(); $("#time").textContent="00:00"; $("#barBadge").textContent="1 / 48 小節"; updateArrangementHighlight();
  }
 }
-function play(){
+async function play(){
  stopTheoryPreview();
- ensureAudio(); if(audio.state==="suspended")audio.resume();
+ ensureAudio(); const mode=$("#playbackMode")?.value||"auto";const mobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);if(audio.state==="suspended"&&(mode==="stable"||(mode==="auto"&&mobile)))await audio.resume();
  if(playing){pause();return}
  if($("#loopToggle").checked){
    const lb=getLoopBounds();
@@ -2674,13 +2756,46 @@ function moveLibraryAboveComposer(){
  if(toggle)toggle.textContent="開く";
  composer.parentElement.insertBefore(panel,composer);
 }
+function moveTheoryBelowPiano(){
+ const theory=$("#theoryAssist"), piano=$("#pianoPanel");
+ if(!theory||!piano||!piano.parentElement||!piano.parentElement.insertBefore)return;
+ piano.parentElement.insertBefore(theory,piano.nextSibling||null);
+}
+function initComposerTabs(){
+ const composer=$("#composerPanel"), theory=$("#theoryAssist"), gemini=$("#geminiAssist"), main=composer?.parentElement;
+ if(!composer||!theory||!gemini||!main||$("#composerTabs"))return;
+ const tabs=document.createElement('div');tabs.id='composerTabs';tabs.className='composer-tabs';
+ [['generator','GENERATOR',composer],['theory','THEORY ASSIST',theory],['gemini','CHROME GEMINI',gemini]].forEach(([id,label,panel])=>{
+  const button=document.createElement('button');button.type='button';button.className='composer-tab';button.dataset.panel=id;button.textContent=label;
+  button.onclick=()=>{tabs.querySelectorAll('.composer-tab').forEach(b=>b.classList.toggle('active',b===button));[composer,theory,gemini].forEach(p=>p.classList.add('composer-tab-panel-hidden'));panel.classList.remove('composer-tab-panel-hidden');if(panel.tagName==='DETAILS')panel.open=true;};tabs.appendChild(button);
+ });
+ const anchor=composer||$("#arrangementPanel");
+ main.insertBefore(tabs,anchor);
+ main.insertBefore(theory,anchor);
+ main.insertBefore(gemini,anchor);
+ tabs.querySelector('[data-panel="generator"]').click();
+}
+function initWorkspaceTabs(){
+ const piano=$("#pianoPanel"), sound=$("#soundPanel"), sampler=$("#samplerPanel"), main=piano?.parentElement;
+ if(!piano||!sound||!sampler||!main||$("#workspaceTabs"))return;
+ const tabs=document.createElement('div');tabs.id='workspaceTabs';tabs.className='workspace-tabs';
+ [['piano','PIANO ROLL',piano],['sound','SOUND DESIGN',sound],['sampler','PCM SAMPLER',sampler]].forEach(([id,label,panel])=>{
+  const button=document.createElement('button');button.type='button';button.className='composer-tab';button.dataset.panel=id;button.textContent=label;
+  button.onclick=()=>{tabs.querySelectorAll('.composer-tab').forEach(b=>b.classList.toggle('active',b===button));[piano,sound,sampler].forEach(p=>p.classList.add('composer-tab-panel-hidden'));panel.classList.remove('composer-tab-panel-hidden');};tabs.appendChild(button);
+ });
+ main.insertBefore(tabs,piano);
+ tabs.querySelector('[data-panel="piano"]').click();
+}
 function bindUi(){
+ $('#helpBtn').onclick=()=>$('#helpModal').showModal();$('#helpCloseBtn').onclick=()=>$('#helpModal').close();
  renderLookup();
  $('#lookupFromNotesBtn').onclick=lookupFromCurrentNotes;
  $('#lookupClearBtn').onclick=()=>{lookupPitchClasses.clear();renderLookup();};
  $('#previewProgressionBtn').onclick=()=>previewTheoryChords(patternProgression());
  $('#stopTheoryPreviewBtn').onclick=stopTheoryPreview;
  $('#saveProgressionBtn').onclick=saveTheoryHistory;
+ document.querySelectorAll('.panel-title>.collapse-toggle').forEach(button=>{const parent=button.parentElement;if(parent&&parent.firstChild!==button)parent.insertBefore(button,parent.firstChild);});
+ document.querySelectorAll('.collapse-toggle').forEach(button=>{const target=$(button.dataset.collapse);const collapsed=target?.classList.contains('collapsed')||target?.classList.contains('collapsed-library')||target?.classList.contains('collapsed-arrangement');button.textContent='';button.classList.toggle('is-collapsed',!!collapsed);});
  document.querySelectorAll(".collapse-toggle").forEach(button=>button.onclick=()=>{
    const target=$(button.dataset.collapse);
    if(!target)return;
@@ -2689,7 +2804,8 @@ function bindUi(){
      : target.id==="arrangementBody"
        ? target.classList.toggle("collapsed-arrangement")
        : target.classList.toggle("collapsed");
-   button.textContent=collapsed?"開く":"折りたたむ";
+   button.textContent='';
+   button.classList.toggle('is-collapsed',collapsed);
  });
  const genreSel=$("#genrePresetSel");
  if(genreSel){
@@ -2737,6 +2853,7 @@ function bindUi(){
  $('#degreeProgressionSel').onchange=e=>changeTheory('progressionId',e.target.value);
  $('#seventhsToggle').onchange=e=>changeTheory('sevenths',e.target.checked);
  $('#smoothVoicingToggle').onchange=e=>{stopTheoryPreview();saveUndo();ensureTheory().smoothVoicing=e.target.checked;autoSave();};
+ $('#phraseAssistToggle').onchange=e=>{saveUndo();ensureTheory().phraseAssist=e.target.checked;autoSave();};
  $('#smoothVoicingPreviewBtn').onclick=()=>previewTheoryChords(patternProgression());
  $('#scaleGuideToggle').onchange=e=>{ensureTheory().showScaleGuide=e.target.checked;renderTheoryGuide();autoSave();};
  $('#chordGuideToggle').onchange=e=>{ensureTheory().showChordGuide=e.target.checked;renderTheoryGuide();autoSave();};
@@ -2817,6 +2934,9 @@ function bindUi(){
  document.querySelectorAll(".control input,.control select").forEach(el=>{if(!el.oninput&&!el.onchange) el.onchange=autoSave;});
 }
 moveLibraryAboveComposer();
+moveTheoryBelowPiano();
+initComposerTabs();
+initWorkspaceTabs();
 initTheoryControls();
 initGrid();
 const loadedAutoSave=loadAutoSavedProject();
