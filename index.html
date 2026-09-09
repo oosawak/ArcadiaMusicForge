@@ -2663,12 +2663,13 @@ function updateSamplerConfig(){
  autoSave();
 }
 
-function synth(i,n,dur){
+let stablePlayback=null,playRequest=0;
+function synth(i,n,dur,scheduledTime=null){
  ensureAudio(); if(!activeTrack(i))return;
- const t=state.tracks[i],sound=t.sound||SOUND_DEFAULTS[i],now=audio.currentTime,sec=60/state.bpm/4*dur;
+ const t=state.tracks[i],sound=t.sound||SOUND_DEFAULTS[i],now=scheduledTime??audio.currentTime,sec=60/state.bpm/4*dur;
  const g=audio.createGain(),f=audio.createBiquadFilter(),p=makePanner(audio,sound.pan||0);
  f.type="lowpass";f.frequency.value=clamp(sound.filter||8000,200,12000);
- g.connect(f);f.connect(p);connectTrackFX(audio,p,masterGain,sound);
+ g.connect(f);f.connect(p);connectTrackFX(audio,p,scheduledTime!==null&&stablePlayback?stablePlayback.bus:masterGain,sound);
  const peak=Math.max(.001,t.volume*.22*((n.velocity||100)/127))*((t.sample&&t.sample.gain)||1);
 
  if(i===6){
@@ -2719,10 +2720,40 @@ function tick(){
    pause(); $("#time").textContent="00:00"; $("#barBadge").textContent="1 / 48 小節"; updateArrangementHighlight();
  }
 }
+function pumpStablePlayback(){
+ const run=stablePlayback;if(!playing||!run)return;
+ const now=audio.currentTime;
+ while(run.queue.length&&run.queue[0].time<=now){
+  const event=run.queue.shift();step=event.step;
+  if(event.end){pause();step=0;return;}
+  syncPatternToPlayhead();
+  $('#playhead').style.left=(step%patternSteps)/patternSteps*100+'%';
+  $('#time').textContent=format(step*60/state.bpm/4);
+  $('#barBadge').textContent=`${currentBarFromStep(step)} / 48 小節`;
+  updateArrangementHighlight();
+ }
+ // After a long browser stall, resume without firing a burst of overdue notes.
+ if(run.nextTime<now)run.nextTime=now+.03;
+ if(!run.finished){
+  const arranged=allArrangedNotes();
+  while(run.nextTime<now+.2&&!run.finished){
+   const at=run.nextTime,pos=run.nextStep;
+   arranged.forEach((notes,i)=>notes.filter(n=>n.step===pos).forEach(n=>synth(i,n,n.len,at)));
+   run.queue.push({time:at,step:pos});
+   run.nextTime+=60/state.bpm/4;run.nextStep++;
+   if($('#loopToggle').checked){const bounds=getLoopBounds();if(run.nextStep>=bounds.endStep)run.nextStep=bounds.startStep;}
+   else if(run.nextStep>=totalSteps){run.finished=true;run.queue.push({time:run.nextTime,step:0,end:true});}
+  }
+ }
+ stableTimer=setTimeout(pumpStablePlayback,25);
+}
 async function play(){
  stopTheoryPreview();
- ensureAudio(); const mode=$("#playbackMode")?.value||"auto";const mobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);if(audio.state==="suspended"&&(mode==="stable"||(mode==="auto"&&mobile)))await audio.resume();
  if(playing){pause();return}
+ const request=++playRequest;
+ ensureAudio(); const mode=$('#playbackMode')?.value||'auto',mobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+ try{if(audio.state!=='running')await audio.resume();}catch(error){toast('音声を開始できません：'+error.message);return;}
+ if(request!==playRequest)return;
  if($("#loopToggle").checked){
    const lb=getLoopBounds();
    if(step<lb.startStep||step>=lb.endStep)step=lb.startStep;
@@ -2730,10 +2761,14 @@ async function play(){
  playing=true;$("#playBtn").textContent="❚❚";
  syncPatternToPlayhead();
  const ms=60000/state.bpm/4;
- tick();const stable=mode==="stable"||(mode==="auto"&&mobile);if(stable){let target=performance.now()+ms;const schedule=()=>{if(!playing)return;stableTimer=setTimeout(()=>{tick();target+=ms;schedule();},Math.max(0,target-performance.now()));};schedule();}else timer=setInterval(tick,ms);
+ const stable=mode==='stable'||(mode==='auto'&&mobile);
+ if(stable){const bus=audio.createGain();bus.connect(masterGain);stablePlayback={bus,nextTime:audio.currentTime+.04,nextStep:step,queue:[],finished:false};pumpStablePlayback();}
+ else {tick();if(playing)timer=setInterval(tick,ms);}
  updateArrangementHighlight();
 }
 function pause(){
+ playRequest++;
+ if(stablePlayback){stablePlayback.bus.disconnect();stablePlayback=null;}
  stopTheoryPreview();
  playing=false;clearInterval(timer);timer=null;clearTimeout(stableTimer);stableTimer=null;$("#playBtn").textContent="▶";$("#autoPlayBtn").textContent="▶ Play";updateArrangementHighlight();
 }
