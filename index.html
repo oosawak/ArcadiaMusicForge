@@ -230,12 +230,12 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
   <section class="transport">
     <button class="play" id="playBtn" title="再生/一時停止">▶</button>
     <button class="stop" id="stopBtn" title="停止">■</button>
+    <label class="control">再生モード <select id="playbackMode"><option value="auto">自動（スマホは安定再生）</option><option value="standard">標準（現在の方式）</option><option value="stable">安定再生</option></select></label>
     <div class="time"><b id="time">00:00</b> <span>/ <span id="duration">00:00</span></span></div><span class="transport-badge" id="barBadge">1 / 48 小節</span>
     <label class="control transport-stack"><span>LOOP</span><span class="loop-fields"><input id="loopToggle" type="checkbox"> <input id="loopStart" type="number" min="1" max="48" value="1" style="width:44px">-<input id="loopEnd" type="number" min="1" max="48" value="48" style="width:44px"></span></label>
     <label class="control transport-stack"><span>BPM</span><span class="value-fields"><input id="bpm" type="number" min="50" max="500" value="168"><input id="bpmCtl" type="range" min="50" max="500" value="168" aria-label="BPMスライダー"></span></label>
     <label class="control">ROOT <select id="rootSel"></select></label>
     <label class="control">SCALE <select id="scaleSel"></select></label>
-    <label class="control">再生モード <select id="playbackMode"><option value="auto">自動（スマホは安定再生）</option><option value="standard">標準（現在の方式）</option><option value="stable">安定再生</option></select></label>
     <label class="control transport-stack"><span>MASTER</span><span class="value-fields"><input id="masterVol" type="range" min="0" max="1" step=".01" value=".75"><span id="masterText">75%</span></span></label>
   </section>
 
