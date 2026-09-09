@@ -230,7 +230,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
   <section class="transport">
     <button class="play" id="playBtn" title="再生/一時停止">▶</button>
     <button class="stop" id="stopBtn" title="停止">■</button>
-    <label class="control">再生モード <select id="playbackMode"><option value="auto">自動（安定再生）</option><option value="standard">軽量（現在の方式）</option><option value="stable">安定再生</option></select></label>
+    <label class="control">再生モード <select id="playbackMode"><option value="auto">自動（標準）</option><option value="standard">軽量（現在の方式）</option><option value="stable">安定再生（試験）</option></select></label>
     <label class="control">先読み <select id="lookaheadMs"><option value="50">50ms</option><option value="100">100ms</option><option value="200" selected>200ms</option><option value="400">400ms</option></select></label>
     <div class="time"><b id="time">00:00</b> <span>/ <span id="duration">00:00</span></span></div><span class="transport-badge" id="barBadge">1 / 48 小節</span>
     <label class="control transport-stack"><span>LOOP</span><span class="loop-fields"><input id="loopToggle" type="checkbox"> <input id="loopStart" type="number" min="1" max="48" value="1" style="width:44px">-<input id="loopEnd" type="number" min="1" max="48" value="48" style="width:44px"></span></label>
@@ -2767,7 +2767,7 @@ async function play(){
  playing=true;$("#playBtn").textContent="❚❚";
  syncPatternToPlayhead();
  const ms=60000/state.bpm/4;
- const stable=mode==='stable'||mode==='auto';
+ const stable=mode==='stable';
  if(stable){const bus=audio.createGain();bus.connect(masterGain);stablePlayback={bus,nextTime:audio.currentTime+.04,nextStep:step,queue:[],finished:false};pumpStablePlayback();}
  else {tick();if(playing)timer=setInterval(tick,ms);}
  updateArrangementHighlight();
