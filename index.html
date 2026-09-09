@@ -562,7 +562,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
   </section>
 </div>
 <div class="toast" id="toastMessage"></div>
-<dialog class="help-modal" id="helpModal"><div class="help-modal-body"><button class="btn help-close" id="helpCloseBtn" type="button">閉じる</button><h2>Arcadia Music Forge の使い方</h2><h3>基本操作</h3><div>再生・停止、BPM、ROOT、SCALEを設定します。曲は48小節、7トラックで構成されます。</div><h3>COMPOSER TOOLS</h3><div>GENERATORでジャンル・スタイル・SEEDを指定して自動生成します。THEORY ASSISTではコード配置、メロディ生成、フレーズ補助、逆引きが使えます。</div><h3>ピアノロール</h3><div>グリッドをクリックして音符を追加し、音符設定・補正・管理・編集から編集します。パターンはA、B、BREAK、CLIMAX、TURNを切り替えられます。</div><h3>保存と書き出し</h3><div>「保存／読込」はプロジェクト、「MIDI保存」はMIDIファイルを扱います。変更はUndoで戻せます。</div><h3>Gemini</h3><div>CHROME GEMINIタブから設計図や作曲を依頼します。モデル準備中はログに状態が表示されます。</div></div></dialog>
+<dialog class="help-modal" id="helpModal"><div class="help-modal-body"><button class="btn help-close" id="helpCloseBtn" type="button">閉じる</button><h2>Arcadia Music Forge の使い方</h2><h3>基本操作</h3><div>再生・停止、BPM、ROOT、SCALEを設定します。曲は48小節、7トラックで構成されます。</div><h3>COMPOSER TOOLS</h3><div>GENERATORでジャンル・スタイル・SEEDを指定して自動生成します。THEORY ASSISTではコード配置、メロディ生成、フレーズ補助、逆引きが使えます。</div><h3>ピアノロール</h3><div>グリッドをクリックして音符を追加し、音符設定・補正・管理・編集から編集します。パターンはA、B、BREAK、CLIMAX、TURNを切り替えられます。</div><h3>保存と書き出し</h3><div>「保存／読込」はプロジェクト、「MIDI保存」はMIDIファイルを扱います。変更はUndoで戻せます。</div><h3>Gemini</h3><div>CHROME GEMINIタブから設計図や作曲を依頼します。モデル準備中はログに状態が表示されます。Chromeの内蔵Geminiを使うには、対応するChromeとPrompt API for Gemini Nanoを有効にします。初回はモデルのダウンロードに時間がかかります。<code>LanguageModel.availability()</code>で状態を確認できます。<code>available</code>は利用可能、<code>downloading</code>は準備中、<code>unavailable</code>は非対応です。</div></div></dialog>
 
 <script>
 (() => {
