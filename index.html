@@ -606,6 +606,10 @@ const ArcadiaTheory = (() => {
   {id:'dark_descent',name:'Dark Descent II',degrees:[1,7,6,7],tags:['horror','dungeon']},
   {id:'hopeful',name:'Hopeful',degrees:[1,4,6,5],tags:['town','field','bright']},
   {id:'mystery',name:'Mystery',degrees:[1,4,6,5],tags:['dungeon','horror']}
+  ,{id:'canon_named',name:'カノン進行 · Ⅰ–Ⅴ–Ⅵ–Ⅲ',degrees:[1,5,6,3],tags:['pop','bright']}
+  ,{id:'komuro_named',name:'小室進行 · Ⅵ–Ⅳ–Ⅴ–Ⅰ',degrees:[6,4,5,1],tags:['pop','bright']}
+  ,{id:'oudou_named',name:'王道進行 · Ⅳ–Ⅴ–Ⅲ–Ⅵ',degrees:[4,5,3,6],tags:['pop','bright']}
+  ,{id:'oda_named',name:'織田哲郎進行 · Ⅰ–Ⅵ–Ⅳ–Ⅴ',degrees:[1,6,4,5],tags:['pop','classic']}
  ];
  const mod12=n=>((n%12)+12)%12;
  const noteIndex=note=>typeof note==='number'?mod12(note):Math.max(0,NOTE_NAMES.indexOf(String(note)));
