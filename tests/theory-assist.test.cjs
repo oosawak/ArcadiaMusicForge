@@ -41,7 +41,7 @@ const exportsCode=`
 const realRender=render;
 window.smoothChordVoicings=smoothChordVoicings;
 render=()=>{};renderArrangement=()=>{};refreshPatternSelect=()=>{};updateArrangementHighlight=()=>{};
-window.testApi={installBuiltinSamples,melodyDescription,reverseLookup,saveTheoryHistory,restoreTheoryHistory,previewTheoryChords,stopTheoryPreview,ArcadiaTheory,normalizeTheory,normalizeSongShape,createSongState,ensurePatterns,autoComposeBattle,applyChordBacking,changeTheory,renderTheoryAssist,renderTheoryGuide,initTheoryControls,initGrid,bindUi,patternProgression,theoryProgression,exportProjectPayload,normalizeProjectShape,allArrangedNotes,serializeSong,fitMidiToRoll,generateTheoryPart,renameCurrentPattern,deleteCurrentPattern,
+window.testApi={loadProjectPayload,songGenerationDescription,installBuiltinSamples,melodyDescription,reverseLookup,saveTheoryHistory,restoreTheoryHistory,previewTheoryChords,stopTheoryPreview,ArcadiaTheory,normalizeTheory,normalizeSongShape,createSongState,ensurePatterns,autoComposeBattle,applyChordBacking,changeTheory,renderTheoryAssist,renderTheoryGuide,initTheoryControls,initGrid,bindUi,patternProgression,theoryProgression,exportProjectPayload,normalizeProjectShape,allArrangedNotes,serializeSong,fitMidiToRoll,generateTheoryPart,renameCurrentPattern,deleteCurrentPattern,
  genres:Object.keys(GENRE_PRESETS),styles:Object.keys(STYLE_GENERATION),
  get state(){return state;},get undo(){return undoStack;},
  prepare(song){project={version:17,title:'test',activeSongIndex:0,songs:[song]};state=song;undoStack=[];selectedNotes=new Set();ensurePatterns();},
@@ -246,11 +246,40 @@ for(const song of sampleProject.songs.slice(1)){
  assert.ok(song.tracks.every(t=>Object.values(t.patterns).every(ns=>ns.every(n=>n.step>=0&&n.step+n.len<=64))));
 }
 api.installBuiltinSamples();assert.equal(api.exportProjectPayload().songs.length,11);
-assert.equal(api.normalizeProjectShape(sampleProject).builtinSamplesVersion,1);
+assert.equal(api.normalizeProjectShape(sampleProject).builtinSamplesVersion,2);
 const generatedInfo=plain(api.state.generation);
 nodes.get('#melodyContour').value='fall';nodes.get('#melodyContour').onchange();
 assert.deepEqual(plain(api.state.generation),generatedInfo,'selection changes must not rewrite generation history');
 console.log('PASS: ten built-in samples, distinct contours, no duplicate install, retained user song and generation history');
+
+for(const [mode,label] of Object.entries({fixed:'指定進行',auto:'おまかせ',develop:'展開あり',minimal:'コード少なめ'})){
+ const sample=compose('naturalMinor',mode);
+ const description=api.songGenerationDescription(sample);
+ assert.ok(description.includes('進行モード: '+label));
+ assert.ok(description.includes('進行: '));
+ const saved=api.normalizeProjectShape(plain(api.exportProjectPayload())).songs[0];
+ assert.equal(api.songGenerationDescription(saved),description);
+ sample.generation.progressions.A=['C','C','C','C'];
+ assert.equal(api.songGenerationDescription(sample),description,'preserve generated progression history');
+}
+assert.ok(api.songGenerationDescription({progression:'Am-F-C-G'}).includes('Am → F → C → G'));
+console.log('PASS: progression and mode metadata, section progressions, save/load and legacy display');
+
+// Sample refresh changes only the installed built-ins, without resurrecting deletions.
+assert.equal(new Set(sampleProject.songs.slice(1).map(s=>s.style)).size,10);
+assert.equal(new Set(sampleProject.songs.slice(1).map(s=>s.bpm)).size,10);
+assert.equal(new Set(sampleProject.songs.slice(1).map(s=>s.generation.mode)).size,4);
+assert.equal(new Set(sampleProject.songs.slice(1).map(s=>s.progression)).size,10);
+const olderSamples=plain(sampleProject);olderSamples.builtinSamplesVersion=1;
+olderSamples.songs.pop();olderSamples.activeSongIndex=1;olderSamples.songs[1].bpm=1;
+api.loadProjectPayload(olderSamples);api.installBuiltinSamples();
+const refreshedSamples=plain(api.exportProjectPayload());
+assert.equal(refreshedSamples.songs.length,10);
+assert.equal(refreshedSamples.activeSongIndex,1);
+assert.equal(api.state.bpm,150);
+assert.deepEqual(refreshedSamples.songs[0],olderSamples.songs[0]);
+api.state.bpm=151;api.installBuiltinSamples();assert.equal(api.state.bpm,151,'do not overwrite later edits on every boot');
+console.log('PASS: diverse styles, BPMs, progressions and modes; versioned sample refresh preserves user songs and deletions');
 
 (async()=>{
  const before=plain(api.state);await api.previewTheoryChords(api.patternProgression());
