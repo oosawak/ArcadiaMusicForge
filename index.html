@@ -1324,7 +1324,7 @@ async function geminiCreateSession(systemPrompt){
    if(pct!==lastProgress){lastProgress=pct;geminiLog(`モデルダウンロード進捗：${pct}%`);}
  }};
  let lastAvailability=availability;
- const poll=setInterval(async()=>{try{if(typeof api.availability!=='function')return;const next=await api.availability({expectedOutputLanguages:['ja']});if(next!==lastAvailability){lastAvailability=next;geminiLog(`モデル利用可否（再確認）：${next}`);}}catch{ }},5000);
+ const poll=setInterval(async()=>{try{if(typeof api.availability!=='function')return;const next=await api.availability({expectedOutputLanguages:['en']});if(next!==lastAvailability){lastAvailability=next;geminiLog(`モデル利用可否（再確認）：${next}`);}}catch{ }},5000);
  try{return await Promise.race([api.create(options),new Promise((_,reject)=>setTimeout(()=>reject(Error(`Geminiセッションの準備がタイムアウトしました（${Math.round(waitMs/1000)}秒）。ダウンロード進捗が更新されない場合はChromeのモデル準備状態を確認してください。`)),waitMs))]);}
  finally{clearInterval(poll);}
 }
