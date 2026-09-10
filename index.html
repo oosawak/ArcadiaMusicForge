@@ -1326,15 +1326,30 @@ async function geminiCreateSession(systemPrompt){
  geminiLog(`API検出：${window.LanguageModel?'LanguageModel':'window.ai.languageModel'}`);
  let availability='unknown';
  if(typeof api.availability==='function'){
-  availability=await api.availability({expectedOutputLanguages:['ja']});
+  availability=await api.availability({expectedOutputLanguages:['en']});
   geminiLog(`モデル利用可否：${availability}`);
   if(availability==='unavailable')throw Error('この端末ではBuilt-in AIモデルを利用できません');
  }
+ const session = await api.create({
+    // 警告を防ぐために出力言語を指定
+    expectedOutputLanguages: ['en'],
+    outputLanguage: 'en',
+    
+    // 入力言語の指定
+    expectedInputLanguages: ['en'],
+    
+    // モデルダウンロード中のプログレスを監視（availability === 'after-download' の場合）
+    monitor(m) {
+        m.addEventListener('downloadprogress', (e) => {
+            geminiLog(`モデルダウンロード中: ${Math.round((e.loaded / e.total) * 100)}%`);
+        });
+    }
+});
  geminiLog('セッションを準備中');
  const waitMs=(availability==='downloading'||availability==='downloadable')?300000:15000;
  if(waitMs>15000)geminiLog('モデル準備を待っています（最大5分）');
  let lastProgress=-1;
- const options={systemPrompt,expectedOutputLanguages:['ja'],monitor(m){
+ const options={systemPrompt,expectedOutputLanguages:['en'],monitor(m){
    const raw=typeof m==='number'?m:(m?.downloadProgress??m?.progress??(m?.loaded&&m?.total?m.loaded/m.total:null));
    const progress=Number(raw);
    if(!Number.isFinite(progress))return;
@@ -1342,7 +1357,7 @@ async function geminiCreateSession(systemPrompt){
    if(pct!==lastProgress){lastProgress=pct;geminiLog(`モデルダウンロード進捗：${pct}%`);}
  }};
  let lastAvailability=availability;
- const poll=setInterval(async()=>{try{if(typeof api.availability!=='function')return;const next=await api.availability({expectedOutputLanguages:['ja']});if(next!==lastAvailability){lastAvailability=next;geminiLog(`モデル利用可否（再確認）：${next}`);}}catch{ }},5000);
+ const poll=setInterval(async()=>{try{if(typeof api.availability!=='function')return;const next=await api.availability({expectedOutputLanguages:['en']});if(next!==lastAvailability){lastAvailability=next;geminiLog(`モデル利用可否（再確認）：${next}`);}}catch{ }},5000);
  try{return await Promise.race([api.create(options),new Promise((_,reject)=>setTimeout(()=>reject(Error(`Geminiセッションの準備がタイムアウトしました（${Math.round(waitMs/1000)}秒）。ダウンロード進捗が更新されない場合はChromeのモデル準備状態を確認してください。`)),waitMs))]);}
  finally{clearInterval(poll);}
 }
