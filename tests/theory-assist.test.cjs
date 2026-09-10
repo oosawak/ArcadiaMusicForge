@@ -41,7 +41,7 @@ const exportsCode=`
 const realRender=render;
 window.smoothChordVoicings=smoothChordVoicings;
 render=()=>{};renderArrangement=()=>{};refreshPatternSelect=()=>{};updateArrangementHighlight=()=>{};
-window.testApi={reverseLookup,saveTheoryHistory,restoreTheoryHistory,previewTheoryChords,stopTheoryPreview,ArcadiaTheory,normalizeTheory,normalizeSongShape,createSongState,ensurePatterns,autoComposeBattle,applyChordBacking,changeTheory,renderTheoryAssist,renderTheoryGuide,initTheoryControls,initGrid,bindUi,patternProgression,theoryProgression,exportProjectPayload,normalizeProjectShape,allArrangedNotes,serializeSong,fitMidiToRoll,generateTheoryPart,renameCurrentPattern,deleteCurrentPattern,
+window.testApi={installBuiltinSamples,melodyDescription,reverseLookup,saveTheoryHistory,restoreTheoryHistory,previewTheoryChords,stopTheoryPreview,ArcadiaTheory,normalizeTheory,normalizeSongShape,createSongState,ensurePatterns,autoComposeBattle,applyChordBacking,changeTheory,renderTheoryAssist,renderTheoryGuide,initTheoryControls,initGrid,bindUi,patternProgression,theoryProgression,exportProjectPayload,normalizeProjectShape,allArrangedNotes,serializeSong,fitMidiToRoll,generateTheoryPart,renameCurrentPattern,deleteCurrentPattern,
  genres:Object.keys(GENRE_PRESETS),styles:Object.keys(STYLE_GENERATION),
  get state(){return state;},get undo(){return undoStack;},
  prepare(song){project={version:17,title:'test',activeSongIndex:0,songs:[song]};state=song;undoStack=[];selectedNotes=new Set();ensurePatterns();},
@@ -227,9 +227,30 @@ const autoContour=plain(api.state.tracks);api.autoComposeBattle();
 assert.deepEqual(plain(api.state.tracks),autoContour);
 const beforeContourChange=plain(api.state);
 nodes.get('#melodyContour').value='rise';nodes.get('#melodyContour').onchange();
-assert.equal(api.state.generation.melodyContour,'rise');
+assert.equal(api.state.generatorMelodyContour,'rise');
 nodes.get('#undoBtn').onclick();assert.deepEqual(plain(api.state),beforeContourChange);
 console.log('PASS: 16 melody contours, seed repeatability, legacy output, save/load and accompaniment preservation.');
+
+// Built-ins are installed once; existing songs and active selection are retained.
+const beforeBuiltinSong=plain(api.state);
+api.installBuiltinSamples();
+let sampleProject=plain(api.exportProjectPayload());
+assert.equal(sampleProject.songs.length,11);
+assert.deepEqual(sampleProject.songs[0],plain(api.serializeSong(api.state)));
+assert.deepEqual(plain(api.state),beforeBuiltinSong);
+assert.equal(new Set(sampleProject.songs.slice(1).map(s=>s.generation.melodyContour)).size,10);
+for(const song of sampleProject.songs.slice(1)){
+ assert.ok(song.tracks[0].patterns.A.length>0);
+ assert.ok(api.melodyDescription(song).startsWith('主旋律: '));
+ assert.equal(song.generation.melodyContour,song.generation.resolvedMelodyContour);
+ assert.ok(song.tracks.every(t=>Object.values(t.patterns).every(ns=>ns.every(n=>n.step>=0&&n.step+n.len<=64))));
+}
+api.installBuiltinSamples();assert.equal(api.exportProjectPayload().songs.length,11);
+assert.equal(api.normalizeProjectShape(sampleProject).builtinSamplesVersion,1);
+const generatedInfo=plain(api.state.generation);
+nodes.get('#melodyContour').value='fall';nodes.get('#melodyContour').onchange();
+assert.deepEqual(plain(api.state.generation),generatedInfo,'selection changes must not rewrite generation history');
+console.log('PASS: ten built-in samples, distinct contours, no duplicate install, retained user song and generation history');
 
 (async()=>{
  const before=plain(api.state);await api.previewTheoryChords(api.patternProgression());

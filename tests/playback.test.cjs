@@ -15,3 +15,18 @@ c.$('#loopToggle').checked=true;c.stablePlayback={nextTime:11.04,nextStep:1,queu
 assert.deepEqual(Array.from(c.stablePlayback.queue,e=>e.step),[1,0]);
 c.audio.currentTime=20;const before=calls.length;c.pumpStablePlayback();assert.ok(calls.length-before<=2);assert.ok(calls.at(-1)>20);
 console.log('PASS: audio-clock lookahead, display timing, loop boundary and recovery without overdue bursts');
+
+// Initial playback must retain the intro, then wrap bar 48 to bar 5.
+const playSource=html.slice(html.indexOf('async function play(){'),html.indexOf('function pause(){'));
+Object.assign(c,{playRequest:0,playing:false,step:0,navigator:{userAgent:'test'},ensureAudio(){},stopTheoryPreview(){},masterGain:{},setInterval:()=>1});
+c.audio.state='running';c.audio.createGain=()=>({connect(){}});
+c.$('#playbackMode').value='stable';c.$('#loopToggle').checked=true;
+c.getLoopBounds=()=>({startStep:64,endStep:768});
+vm.runInContext(playSource,c);
+(async()=>{
+ await c.play();assert.equal(c.stablePlayback.queue[0].step,0,'initial play includes intro');
+ c.stablePlayback={nextTime:30.04,nextStep:767,queue:[],finished:false};c.audio.currentTime=30;c.pumpStablePlayback();
+ assert.deepEqual(Array.from(c.stablePlayback.queue,e=>e.step),[767,64],'bar 48 returns to bar 5');
+ console.log('PASS: intro once, then bars 5–48 loop');
+})().catch(e=>{console.error(e);process.exitCode=1;});
+
