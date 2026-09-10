@@ -87,7 +87,7 @@ for(const key of ['E minor','A minor','D minor','G minor','C major','Bb major'])
 }
 function compose(scale='naturalMinor',mode='fixed',style='snes',genre='Action',root='E',sevenths=false){
  const song=api.createSongState();song.theory={...song.theory,root,scale,sevenths};api.prepare(song);
- for(const [id,value] of Object.entries({genrePresetSel:genre,styleSel:style,generationSeed:'12345',generationMode:mode}))nodes.get('#'+id).value=value;
+ for(const [id,value] of Object.entries({genrePresetSel:genre,styleSel:style,generationSeed:'12345',generationMode:mode,melodyContour:'legacy'}))nodes.get('#'+id).value=value;
  nodes.get('#freshSeed').checked=false;api.autoComposeBattle();return plain(api.state);
 }
 let generatedCases=0;
@@ -204,6 +204,33 @@ nodes.get('#undoBtn').onclick();assert.deepEqual(plain(api.state.tracks),partOff
 console.log('PASS: phrase assist default OFF, UI, undo snapshot, save/load, all scales, deterministic ON/OFF, rhythm and other-track preservation.');
 console.log('PASS: full-script syntax, UI bindings, '+chordCases+' chord cases, '+generatedCases+' generator cases, deterministic seeds, migration, transpose, save/load, backing, arrangement and guide logic.');
 
+// Generator contour integration: shape diversity, determinism, other-track preservation.
+const baseContour=compose();
+const contourResults=new Set();
+for(const kind of ["rise", "fall", "arch", "valley", "wave", "leap", "stairsUp", "stairsDown", "repeat", "zigzag", "riseTurn", "fallTurn", "lateRise", "lateFall", "peak", "pendulum"]){
+ nodes.get('#melodyContour').value=kind;api.autoComposeBattle();
+ const result=plain(api.state);
+ contourResults.add(JSON.stringify(result.tracks[0].patterns.A));
+ assert.deepEqual(result.tracks.slice(1),baseContour.tracks.slice(1));
+ for(const [pat,notes] of Object.entries(result.tracks[0].patterns)){
+  assert.deepEqual(rhythm(notes),rhythm(baseContour.tracks[0].patterns[pat]));
+  assert.ok(notes.every(n=>T.scale('E','naturalMinor').includes(T.noteIndex(n.pitch.replace(/\d+$/,'')))));
+ }
+ api.autoComposeBattle();assert.deepEqual(plain(api.state.tracks),result.tracks);
+ assert.equal(api.normalizeProjectShape(plain(api.exportProjectPayload())).songs[0].generation.melodyContour,kind);
+}
+assert.equal(contourResults.size,16,'all contours must produce distinct melodies');
+nodes.get('#melodyContour').value='legacy';api.autoComposeBattle();
+assert.deepEqual(plain(api.state.tracks),baseContour.tracks);
+nodes.get('#melodyContour').value='auto';api.autoComposeBattle();
+const autoContour=plain(api.state.tracks);api.autoComposeBattle();
+assert.deepEqual(plain(api.state.tracks),autoContour);
+const beforeContourChange=plain(api.state);
+nodes.get('#melodyContour').value='rise';nodes.get('#melodyContour').onchange();
+assert.equal(api.state.generation.melodyContour,'rise');
+nodes.get('#undoBtn').onclick();assert.deepEqual(plain(api.state),beforeContourChange);
+console.log('PASS: 16 melody contours, seed repeatability, legacy output, save/load and accompaniment preservation.');
+
 (async()=>{
  const before=plain(api.state);await api.previewTheoryChords(api.patternProgression());
  const starts=auditionEvents.filter(e=>e[0]==='start');assert.equal(starts.length,12);
@@ -213,3 +240,4 @@ console.log('PASS: full-script syntax, UI bindings, '+chordCases+' chord cases, 
  assert.ok(auditionEvents.some(e=>e[0]==='stop'&&e[1]===undefined));
  console.log('PASS: reverse lookup, history deduplication/restore/serialization, preview scheduling/stop and non-destructive audition.');
 })().catch(error=>{console.error(error);process.exitCode=1;});
+

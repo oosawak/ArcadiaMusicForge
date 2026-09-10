@@ -353,6 +353,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
               </label>
               <button class="btn primary" id="autoComposeBtn" type="button">自動生成</button>
               <label class="control">進行モード<select id="generationMode" title="指定進行では選んだコード進行を使います"><option value="fixed">指定進行</option><option value="auto">おまかせ</option><option value="develop">展開あり</option><option value="minimal">コード少なめ</option></select></label>
+              <label class="control">主旋律パターン<select id="melodyContour" title="音の上がり下がりを選び、自動生成で反映します。自動選択はSEEDに従います。"><option value="auto">自動選択（16種類）</option><option value="rise">上昇</option><option value="fall">下降</option><option value="arch">山型</option><option value="valley">谷型</option><option value="wave">波型</option><option value="leap">跳躍</option><option value="stairsUp">階段上昇</option><option value="stairsDown">階段下降</option><option value="repeat">同音反復</option><option value="zigzag">ジグザグ</option><option value="riseTurn">上昇して折り返す</option><option value="fallTurn">下降して折り返す</option><option value="lateRise">終盤で上昇</option><option value="lateFall">終盤で下降</option><option value="peak">一度大きく跳ねる</option><option value="pendulum">振り子</option><option value="legacy">従来の旋律</option></select></label>
               <label class="control">SEED<input id="generationSeed" type="number" min="1" max="4294967295" value="1" style="width:110px"></label>
               <label class="control"><input id="freshSeed" type="checkbox" checked>毎回変更</label>
               <button class="btn" id="autoPlayBtn" type="button">▶ Play</button>
@@ -936,6 +937,27 @@ function makeGeneratorRandom(seed){
    t^=t+Math.imul(t^(t>>>7),61|t);
    return ((t^(t>>>14))>>>0)/4294967296;
  };
+}
+const MELODY_CONTOURS={"rise": [-4, -3, -1, 0, 2, 4], "fall": [4, 3, 1, 0, -2, -4], "arch": [-3, 0, 3, 4, 1, -3], "valley": [3, 0, -3, -4, -1, 3], "wave": [-3, 0, 3, 0, -3, 0, 3, 0], "leap": [-4, 3, -2, 4, -3, 2], "stairsUp": [-4, -4, -2, -2, 1, 1, 3, 3], "stairsDown": [4, 4, 2, 2, -1, -1, -3, -3], "repeat": [0, 0, 0, 0, 2, 2, 0, 0], "zigzag": [-2, 1, -1, 2, 0, 3, 1, 4], "riseTurn": [-4, -2, 0, 2, 4, 3, 2, 1], "fallTurn": [4, 2, 0, -2, -4, -3, -2, -1], "lateRise": [-2, -2, -1, -2, -1, 0, 2, 4], "lateFall": [2, 2, 1, 2, 1, 0, -2, -4], "peak": [-2, -1, 0, 5, 1, 0, -1, -2], "pendulum": [0, 3, 0, -3, 0, 2, 0, -2]};
+function applyMelodyContour(notes,prog,pool,kind,seed,pat){
+ if(kind==='legacy'||!notes.length||!pool.length)return notes;
+ const rng=makeGeneratorRandom((seed^0x51ed270b)>>>0),keys=Object.keys(MELODY_CONTOURS);
+ const shape=MELODY_CONTOURS[kind]||MELODY_CONTOURS[keys[Math.floor(rng()*keys.length)]];
+ const nearest=(values,target)=>values.reduce((a,b)=>Math.abs(b-target)<Math.abs(a-target)?b:a,values[0]);
+ const center=pool.indexOf(nearest(pool,74))+(pat==='CLIMAX'?2:0);
+ const bars=prog.map((_,bar)=>notes.filter(n=>Math.floor(n.step/16)===bar));
+ return notes.map(n=>{
+  const bar=Math.floor(n.step/16),group=bars[bar];if(!group)return {...n};
+  const i=group.indexOf(n),phase=i/Math.max(1,group.length-1)*(shape.length-1),lo=Math.floor(phase);
+  const degree=Math.round(shape[lo]+(shape[Math.min(lo+1,shape.length-1)]-shape[lo])*(phase-lo));
+  const shift=[0,1,-1,0][bar%4]+(pat==='B'?-1:0);
+  let pitch=pool[clamp(center+degree+shift,0,pool.length-1)];
+  if(i===0||i===group.length-1){
+   const pcs=chordNotes(prog[bar]).map(p=>midiOf(p)%12),anchors=pool.filter(p=>pcs.includes(p%12));
+   if(anchors.length)pitch=nearest(anchors,pitch);
+  }
+  return {...n,pitch:noteFromMidi(pitch)};
+ });
 }
 function generateThematicPhrase(prog,pat,profile,styleProfile,pool,rng,theme){
  const notes=[], density=clamp(profile.density+(styleProfile.densityOffset||0),1,8);
@@ -1696,7 +1718,7 @@ function autoComposeBattle(){
  const seed=$('#freshSeed').checked?(crypto.getRandomValues(new Uint32Array(1))[0]||1):(Number($('#generationSeed').value)>>>0)||1;
  $('#generationSeed').value=seed;
  const rng=makeGeneratorRandom(seed),mode=$('#generationMode').value;
- state.generation={seed,mode,style:state.style,genre:state.genrePreset};
+ state.generation={seed,mode,style:state.style,genre:state.genrePreset,melodyContour:$('#melodyContour').value||'auto'};
  const theory=ensureTheory(),ranked=ArcadiaTheory.progressionCandidates(genreTheoryTags(state.genrePreset));
  const matching=ranked.filter(p=>p.score>0),choices=matching.length?matching:ranked;
  const chosen=mode==='auto'?choices[Math.floor(rng()*choices.length)].id:theory.progressionId;
@@ -1745,6 +1767,7 @@ function autoComposeBattle(){
    }
  });
  PATTERNS.forEach(pat=>coordinateGeneratedParts(pat,sectionProgressions[pat],styleProfile,rng));
+ PATTERNS.forEach(pat=>{state.tracks[0].patterns[pat]=applyMelodyContour(state.tracks[0].patterns[pat],sectionProgressions[pat],theoryScalePool(),state.generation.melodyContour,seed,pat);});
  if(theory.phraseAssist)PATTERNS.forEach(pat=>{state.tracks[0].patterns[pat]=applyPhraseAssist(state.tracks[0].patterns[pat],sectionProgressions[pat],theoryScalePool());});
  state.tracks[6].sound={...SOUND_DEFAULTS[6],filter:12000,reverb:.06};
  state.selectedPattern="INTRO";
@@ -2523,6 +2546,7 @@ function applyTrackType(typeId){
 }
 
 function render(){
+ $('#melodyContour').value=state.generation?.melodyContour||'auto';
  ensureTheory();ensurePatterns();
  $("#bpm").value=state.bpm;$("#bpmCtl").value=state.bpm;$("#masterVol").value=state.master;$("#masterText").textContent=Math.round(state.master*100)+"%";
  if($("#genrePresetSel"))$("#genrePresetSel").value=state.genrePreset||"Action";
@@ -3000,6 +3024,7 @@ function initWorkspaceTabs(){
  tabs.querySelector('[data-panel="piano"]').click();
 }
 function bindUi(){
+ $('#melodyContour').onchange=()=>{saveUndo();state.generation||={};state.generation.melodyContour=$('#melodyContour').value;autoSave();};
  $('#helpBtn').textContent='操作ガイド';
  $('#helpBtn').onclick=()=>$('#helpModal').showModal();$('#helpCloseBtn').onclick=()=>$('#helpModal').close();
  const fxBypass=$('#fxBypassToggle');if(fxBypass)fxBypass.checked=typeof navigator!=='undefined'&&/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
