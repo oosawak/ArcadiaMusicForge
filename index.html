@@ -1300,6 +1300,18 @@ async function geminiCreateSession(systemPrompt){
   geminiLog(`モデル利用可否：${availability}`);
   if(availability==='unavailable')throw Error('この端末ではBuilt-in AIモデルを利用できません');
  }
+ const session = await api.create({
+    // 警告を防ぐために出力言語を指定
+    outputLanguage: 'ja',
+    expectedInputLanguages: ['ja'],
+    
+    // モデルダウンロード中のプログレスを監視（availability === 'after-download' の場合）
+    monitor(m) {
+        m.addEventListener('downloadprogress', (e) => {
+            geminiLog(`モデルダウンロード中: ${Math.round((e.loaded / e.total) * 100)}%`);
+        });
+    }
+});
  geminiLog('セッションを準備中');
  const waitMs=(availability==='downloading'||availability==='downloadable')?300000:15000;
  if(waitMs>15000)geminiLog('モデル準備を待っています（最大5分）');
