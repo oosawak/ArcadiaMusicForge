@@ -354,6 +354,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
               <button class="btn primary" id="autoComposeBtn" type="button">自動生成</button>
               <label class="control">進行モード<select id="generationMode" title="指定進行では選んだコード進行を使います"><option value="fixed">指定進行</option><option value="auto">おまかせ</option><option value="develop">展開あり</option><option value="minimal">コード少なめ</option></select></label>
               <label class="control">主旋律パターン<select id="melodyContour" title="音の上がり下がりを選び、自動生成で反映します。自動選択はSEEDに従います。"><option value="auto">自動選択（16種類）</option><option value="rise">上昇</option><option value="fall">下降</option><option value="arch">山型</option><option value="valley">谷型</option><option value="wave">波型</option><option value="leap">跳躍</option><option value="stairsUp">階段上昇</option><option value="stairsDown">階段下降</option><option value="repeat">同音反復</option><option value="zigzag">ジグザグ</option><option value="riseTurn">上昇して折り返す</option><option value="fallTurn">下降して折り返す</option><option value="lateRise">終盤で上昇</option><option value="lateFall">終盤で下降</option><option value="peak">一度大きく跳ねる</option><option value="pendulum">振り子</option><option value="legacy">従来の旋律</option></select></label>
+              <label class="control">主旋律リズム<select id="melodyRhythm"><option value="auto">自動選択</option><option value="quarter">4分音符中心</option><option value="eighth">8分音符中心</option><option value="mixed">長短ミックス</option><option value="dotted">付点リズム</option><option value="offbeat">裏拍中心</option><option value="syncopated">シンコペーション</option><option value="sparse">休符多め</option><option value="rush">16分の駆け込み</option><option value="legacy">従来のリズム</option></select></label>
               <label class="control">SEED<input id="generationSeed" type="number" min="1" max="4294967295" value="1" style="width:110px"></label>
               <label class="control"><input id="freshSeed" type="checkbox" checked>毎回変更</label>
               <button class="btn" id="autoPlayBtn" type="button">▶ Play</button>
@@ -847,7 +848,7 @@ function attachHiddenSampleStore(song,store=createEmptySampleStore()){
 }
 function createSongState(name="新しい曲"){
  const song={
-   name,generatorMelodyContour:"",genrePreset:"Action",workspaceMode:"library",progression:"Em-C-G-D",style:"snes",
+   name,generatorMelodyContour:"",generatorMelodyRhythm:"",genrePreset:"Action",workspaceMode:"library",progression:"Em-C-G-D",style:"snes",
    bpm:168,key:"E minor",theory:normalizeTheory(null),master:.75,selected:0,selectedPattern:"A",patternOrder:[...PATTERNS],
    arrangement:Array.from({length:7},()=>Array(12).fill(null)),
    tracks:TRACKS.map((_,i) => ({
@@ -958,6 +959,35 @@ function applyMelodyContour(notes,prog,pool,kind,seed,pat){
   }
   return {...n,pitch:noteFromMidi(pitch)};
  });
+}
+const MELODY_RHYTHMS={
+ quarter:{label:'4分音符中心',events:[[0,4],[4,4],[8,4],[12,4]]},
+ eighth:{label:'8分音符中心',events:[[0,2],[2,2],[4,2],[6,2],[8,2],[10,2],[12,2],[14,2]]},
+ mixed:{label:'長短ミックス',events:[[0,6],[6,2],[8,4],[12,2],[14,2]]},
+ dotted:{label:'付点リズム',events:[[0,3],[3,1],[4,3],[7,1],[8,3],[11,1],[12,3],[15,1]]},
+ offbeat:{label:'裏拍中心',events:[[2,2],[6,2],[10,2],[14,2]]},
+ syncopated:{label:'シンコペーション',events:[[0,2],[2,4],[6,2],[8,2],[10,4],[14,2]]},
+ sparse:{label:'休符多め',events:[[0,3],[6,2],[12,3]]},
+ rush:{label:'16分の駆け込み',events:[[0,4],[4,4],[8,2],[10,2],[12,1],[13,1],[14,1],[15,1]]}
+};
+function resolveMelodyRhythm(choice,seed){
+ if(choice==='legacy')return 'legacy';
+ if(MELODY_RHYTHMS[choice])return choice;
+ const keys=Object.keys(MELODY_RHYTHMS);
+ return keys[Math.floor(makeGeneratorRandom((seed^0x7a39b215)>>>0)()*keys.length)];
+}
+function applyMelodyRhythm(notes,kind){
+ const rhythm=MELODY_RHYTHMS[kind];if(!rhythm||!notes.length)return notes;
+ const output=[];
+ for(let bar=0;bar<4;bar++){
+  const motif=notes.filter(n=>Math.floor(n.step/16)===bar).sort((a,b)=>a.step-b.step);
+  if(!motif.length)continue;
+  rhythm.events.forEach(([offset,len],i)=>{
+   const source=motif[Math.round(i/Math.max(1,rhythm.events.length-1)*(motif.length-1))];
+   output.push({...source,step:bar*16+offset,len});
+  });
+ }
+ return output;
 }
 function generateThematicPhrase(prog,pat,profile,styleProfile,pool,rng,theme){
  const notes=[], density=clamp(profile.density+(styleProfile.densityOffset||0),1,8);
@@ -1543,6 +1573,7 @@ function renderSongLibrary(){
 }
 function songGenerationDescription(song){
  const info=[melodyDescription(song)],g=song.generation||{};
+ if(g.melodyRhythm){const kind=g.resolvedMelodyRhythm||g.melodyRhythm;info.push('リズム: '+(g.melodyRhythm==='auto'?'自動選択（':'')+(MELODY_RHYTHMS[kind]?.label||'従来のリズム')+(g.melodyRhythm==='auto'?'）':''));}
  const modes={fixed:'指定進行',auto:'おまかせ',develop:'展開あり',minimal:'コード少なめ'};
  if(g.mode)info.push('進行モード: '+(modes[g.mode]||g.mode));
  const sections=g.generatedProgressions||g.progressions;
@@ -1731,6 +1762,8 @@ function autoComposeBattle(){
  const rng=makeGeneratorRandom(seed),mode=$('#generationMode').value;
  state.generation={seed,mode,style:state.style,genre:state.genrePreset,melodyContour:$('#melodyContour').value||'auto'};
  state.generation.resolvedMelodyContour=state.generation.melodyContour==='auto'?Object.keys(MELODY_CONTOURS)[Math.floor(makeGeneratorRandom((seed^0x51ed270b)>>>0)()*Object.keys(MELODY_CONTOURS).length)]:state.generation.melodyContour;
+ state.generation.melodyRhythm=$('#melodyRhythm').value||'auto';
+ state.generation.resolvedMelodyRhythm=resolveMelodyRhythm(state.generation.melodyRhythm,seed);
  const theory=ensureTheory(),ranked=ArcadiaTheory.progressionCandidates(genreTheoryTags(state.genrePreset));
  const matching=ranked.filter(p=>p.score>0),choices=matching.length?matching:ranked;
  const chosen=mode==='auto'?choices[Math.floor(rng()*choices.length)].id:theory.progressionId;
@@ -1778,6 +1811,7 @@ function autoComposeBattle(){
      if(state.style==='dnb')tracks[6].patterns[pat].push(...[6,22,38,54,58].map(step=>({pitch:'C5',step,len:1,velocity:85})));
    }
  });
+ PATTERNS.forEach(pat=>{state.tracks[0].patterns[pat]=applyMelodyRhythm(state.tracks[0].patterns[pat],state.generation.resolvedMelodyRhythm);});
  PATTERNS.forEach(pat=>coordinateGeneratedParts(pat,sectionProgressions[pat],styleProfile,rng));
  PATTERNS.forEach(pat=>{state.tracks[0].patterns[pat]=applyMelodyContour(state.tracks[0].patterns[pat],sectionProgressions[pat],theoryScalePool(),state.generation.melodyContour,seed,pat);});
  if(theory.phraseAssist)PATTERNS.forEach(pat=>{state.tracks[0].patterns[pat]=applyPhraseAssist(state.tracks[0].patterns[pat],sectionProgressions[pat],theoryScalePool());});
@@ -2566,6 +2600,7 @@ function applyTrackType(typeId){
 }
 
 function render(){
+ $('#melodyRhythm').value=state.generatorMelodyRhythm||state.generation?.melodyRhythm||'auto';
  $('#melodyContour').value=state.generatorMelodyContour||state.generation?.melodyContour||'auto';
  ensureTheory();ensurePatterns();
  $("#bpm").value=state.bpm;$("#bpmCtl").value=state.bpm;$("#masterVol").value=state.master;$("#masterText").textContent=Math.round(state.master*100)+"%";
@@ -3045,6 +3080,7 @@ function initWorkspaceTabs(){
  tabs.querySelector('[data-panel="piano"]').click();
 }
 function bindUi(){
+ $('#melodyRhythm').onchange=()=>{saveUndo();state.generatorMelodyRhythm=$('#melodyRhythm').value;autoSave();};
  $('#melodyContour').onchange=()=>{saveUndo();state.generatorMelodyContour=$('#melodyContour').value;autoSave();};
  $('#helpBtn').textContent='操作ガイド';
  $('#helpBtn').onclick=()=>$('#helpModal').showModal();$('#helpCloseBtn').onclick=()=>$('#helpModal').close();

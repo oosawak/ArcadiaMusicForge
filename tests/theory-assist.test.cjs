@@ -87,7 +87,7 @@ for(const key of ['E minor','A minor','D minor','G minor','C major','Bb major'])
 }
 function compose(scale='naturalMinor',mode='fixed',style='snes',genre='Action',root='E',sevenths=false){
  const song=api.createSongState();song.theory={...song.theory,root,scale,sevenths};api.prepare(song);
- for(const [id,value] of Object.entries({genrePresetSel:genre,styleSel:style,generationSeed:'12345',generationMode:mode,melodyContour:'legacy'}))nodes.get('#'+id).value=value;
+ for(const [id,value] of Object.entries({genrePresetSel:genre,styleSel:style,generationSeed:'12345',generationMode:mode,melodyContour:'legacy',melodyRhythm:'legacy'}))nodes.get('#'+id).value=value;
  nodes.get('#freshSeed').checked=false;api.autoComposeBattle();return plain(api.state);
 }
 let generatedCases=0;
@@ -280,6 +280,27 @@ assert.equal(api.state.bpm,150);
 assert.deepEqual(refreshedSamples.songs[0],olderSamples.songs[0]);
 api.state.bpm=151;api.installBuiltinSamples();assert.equal(api.state.bpm,151,'do not overwrite later edits on every boot');
 console.log('PASS: diverse styles, BPMs, progressions and modes; versioned sample refresh preserves user songs and deletions');
+
+// Rhythm changes actual onset/duration patterns; legacy output is recoverable.
+const rhythmBaseline=compose();const rhythmVariants=new Set();
+for(const kind of ['quarter','eighth','mixed','dotted','offbeat','syncopated','sparse','rush']){
+ nodes.get('#melodyRhythm').value=kind;api.autoComposeBattle();const song=plain(api.state);
+ rhythmVariants.add(JSON.stringify(rhythm(song.tracks[0].patterns.A)));
+ assert.equal(song.generation.resolvedMelodyRhythm,kind);
+ for(const ns of Object.values(song.tracks[0].patterns))ns.forEach((n,i)=>{
+  assert.ok(Number.isInteger(n.step)&&n.len>=1&&n.step+n.len<=64);
+  if(i)assert.ok(ns[i-1].step+ns[i-1].len<=n.step);
+ });
+ api.autoComposeBattle();assert.deepEqual(plain(api.state.tracks),song.tracks);
+ assert.equal(api.normalizeProjectShape(plain(api.exportProjectPayload())).songs[0].generation.melodyRhythm,kind);
+ assert.ok(api.songGenerationDescription(song).includes('リズム: '));
+}
+assert.equal(rhythmVariants.size,8);
+nodes.get('#melodyRhythm').value='legacy';api.autoComposeBattle();assert.deepEqual(plain(api.state.tracks),rhythmBaseline.tracks);
+nodes.get('#melodyRhythm').value='auto';api.autoComposeBattle();const autoRhythm=plain(api.state);api.autoComposeBattle();assert.deepEqual(plain(api.state.tracks),autoRhythm.tracks);
+nodes.get('#melodyRhythm').value='sparse';nodes.get('#melodyRhythm').onchange();assert.deepEqual(plain(api.state.generation),autoRhythm.generation);
+nodes.get('#undoBtn').onclick();assert.deepEqual(plain(api.state),autoRhythm);
+console.log('PASS: eight rhythm patterns, actual timing changes, deterministic selection, legacy recovery, save/load and undo');
 
 (async()=>{
  const before=plain(api.state);await api.previewTheoryChords(api.patternProgression());
