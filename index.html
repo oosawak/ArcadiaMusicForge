@@ -1302,8 +1302,9 @@ async function geminiCreateSession(systemPrompt){
  }
  const session = await api.create({
     // 警告を防ぐために出力言語を指定
-    outputLanguage: 'en',
-    expectedInputLanguages: ['en'],
+    outputLanguage: 'ja',
+    expectedOutputLanguages: ['ja'],
+    expectedInputLanguages: ['ja', 'en'],
     
     // モデルダウンロード中のプログレスを監視（availability === 'after-download' の場合）
     monitor(m) {
