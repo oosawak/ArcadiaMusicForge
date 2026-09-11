@@ -1704,6 +1704,7 @@ function installBuiltinSamples(){
  const active=project.songs[project.activeSongIndex];
  const obsolete=song=>/^(demo-|builtin-contour-|builtin-rhythm-)/.test(song.demoId||'');
  project.songs=project.songs.filter(song=>!obsolete(song));
+ if(!project.songs.some(song=>song.name==='曲 1'))project.songs.unshift(createSongState('曲 1'));
  const firstSample=project.songs.length;
  project.songs.push(...BUILTIN_SAMPLE_SONGS.map(sample=>{
   const song=normalizeSongShape(sample);song.adaptiveAccompaniment=true;song.generation=song.generation||{};song.generation.adaptiveAccompaniment=true;
@@ -3378,6 +3379,7 @@ render();
 })();
 </script>
 </body></html>
+
 
 
 
