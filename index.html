@@ -358,6 +358,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
               <label class="control">主旋律リズム<select id="melodyRhythm"><option value="auto">自動選択</option><option value="quarter">4分音符中心</option><option value="eighth">8分音符中心</option><option value="mixed">長短ミックス</option><option value="dotted">付点リズム</option><option value="offbeat">裏拍中心</option><option value="syncopated">シンコペーション</option><option value="sparse">休符多め</option><option value="rush">16分の駆け込み</option><option value="legacy">従来のリズム</option></select></label>
               <label class="control"><input id="randomMelodyContour" type="checkbox">主旋律パターンをランダム選択</label>
               <label class="control" title="現在のROOT・SCALEに合わせた進行候補から選びます。進行モードは維持します"><input id="randomProgression" type="checkbox">コード進行をランダム選択</label>
+              <label class="control"><input id="adaptiveAccompaniment" type="checkbox">主旋律に合わせて伴奏を調整</label>
               <label class="control">SEED<input id="generationSeed" type="number" min="1" max="4294967295" value="1" style="width:110px"></label>
               <label class="control"><input id="freshSeed" type="checkbox" checked>毎回変更</label>
               <button class="btn" id="autoPlayBtn" type="button">▶ Play</button>
@@ -851,7 +852,7 @@ function attachHiddenSampleStore(song,store=createEmptySampleStore()){
 }
 function createSongState(name="新しい曲"){
  const song={
-   name,randomMelodyContour:false,randomProgression:false,generatorMelodyContour:"",generatorMelodyRhythm:"",generatorRhythmCategory:"",genrePreset:"Action",workspaceMode:"library",progression:"Em-C-G-D",style:"snes",
+   name,adaptiveAccompaniment:false,randomMelodyContour:false,randomProgression:false,generatorMelodyContour:"",generatorMelodyRhythm:"",generatorRhythmCategory:"",genrePreset:"Action",workspaceMode:"library",progression:"Em-C-G-D",style:"snes",
    bpm:168,key:"E minor",theory:normalizeTheory(null),master:.75,selected:0,selectedPattern:"A",patternOrder:[...PATTERNS],
    arrangement:Array.from({length:7},()=>Array(12).fill(null)),
    tracks:TRACKS.map((_,i) => ({
@@ -1088,6 +1089,56 @@ function coordinateGeneratedParts(pat,prog,styleProfile,rng){
  parts[5]=attacks.map((step,i)=>({pitch:chordNotes(prog[Math.floor(step/16)])[0],step,len:Math.max(1,Math.min((attacks[i+1]??64)-step,8)-1),velocity:85+Math.floor(rng()*12)}));
  if(pat==='TURN')parts.forEach((notes,i)=>{parts[i]=notes.filter(n=>n.step<60).map(n=>({...n,len:Math.min(n.len,60-n.step)}));});
  parts.forEach((notes,i)=>state.tracks[i].patterns[pat]=notes);
+}
+// Optional post-process of the final melody; does not consume the generator RNG.
+function adaptAccompaniment(parts,prog,pat,pool){
+ const result=parts.map(notes=>notes.map(n=>({...n}))),lead=result[0];
+ const limit=pat==='TURN'?60:64,quiet=pat==='INTRO'||pat==='BREAK';
+ const nearest=(values,target)=>values.reduce((a,b)=>Math.abs(b-target)<Math.abs(a-target)?b:a,values[0]);
+ for(let bar=0;bar<prog.length;bar++){
+  const start=bar*16,end=Math.min(start+16,limit);if(start>=end)continue;
+  const melody=lead.filter(n=>n.step<end&&n.step+n.len>start);
+  const busy=melody.length>=6;
+  const occupied=step=>melody.some(n=>step>=n.step&&step<n.step+n.len);
+  const gaps=[];
+  for(let step=start;step<end;){if(occupied(step)){step++;continue;}const from=step;while(step<end&&!occupied(step))step++;if(step-from>=2)gaps.push({step:from,len:step-from});}
+  const chord=chordNotes(prog[bar]).map(midiOf),pcs=chord.map(n=>n%12);
+  const anchors=pool.filter(n=>pcs.includes(n%12));if(!anchors.length)continue;
+  const center=melody.length?melody.reduce((sum,n)=>sum+midiOf(n.pitch),0)/melody.length:76;
+  const lower=anchors.filter(n=>n<=center-5),voicePool=lower.length?lower:anchors;
+  const inside=n=>n.step>=start&&n.step<end;
+  const replace=(ti,notes)=>{result[ti]=result[ti].filter(n=>!inside(n)).concat(notes);};
+  // Short answers only inside actual rests, leaving the intro/break sparse.
+  if(!quiet)replace(1,gaps.slice(0,2).map((gap,i)=>({pitch:noteFromMidi(voicePool[i%voicePool.length]),step:gap.step,len:Math.min(gap.len,3),velocity:70})));
+  for(const ti of [2,3,4]){
+   const source=result[ti].filter(inside),adjusted=[];
+   source.forEach(n=>{
+    if(busy&&ti!==2&&occupied(n.step)&&((n.step-start)%8!==0))return;
+    const pitch=ti===2?n.pitch:noteFromMidi(nearest(voicePool,midiOf(n.pitch)));
+    adjusted.push({...n,pitch,len:Math.min(n.len,end-n.step),velocity:clamp(Math.round((n.velocity||70)*(occupied(n.step)?(busy?.6:.8):1.1)),1,127)});
+   });
+   // When melody leaves room, articulate sustained harmony in two pulses.
+   replace(ti,ti===2&&!busy&&!quiet?adjusted.flatMap(n=>{
+    if(n.len<=8)return [n];
+    return [{...n,len:Math.min(6,n.len)},{...n,step:n.step+8,len:Math.min(6,n.len-8)}];
+   }):adjusted);
+  }
+  const drums=result[6].filter(inside),hasKick=drums.some(n=>n.pitch==='C5');
+  let attacks=[...new Set(result[5].filter(inside).map(n=>n.step))];
+  if(hasKick&&!quiet){
+   attacks=[start,...melody.filter(n=>n.step>=start+4&&n.step<end&&n.step%2===0).map(n=>n.step)];
+   attacks=[...new Set(attacks)].slice(0,busy?2:3);
+   const kept=drums.filter(n=>n.pitch!=='C5'&&!(busy&&n.pitch==='E5'&&(n.step-start)%4!==2));
+   attacks.forEach(step=>kept.push({pitch:'C5',step,len:1,velocity:100}));
+   const tail=gaps.find(g=>g.step>=start+12);
+   if(bar===3&&tail&&drums.some(n=>n.pitch==='D5')){
+    for(let step=tail.step;step<Math.min(end,tail.step+3);step++)if(!kept.some(n=>n.pitch==='D5'&&n.step===step))kept.push({pitch:'D5',step,len:1,velocity:72+(step-tail.step)*7});
+   }
+   replace(6,kept);
+  }
+  if(result[5].some(inside))replace(5,attacks.map((step,i)=>({pitch:noteFromMidi(nearest(anchors,chord[0])),step,len:Math.max(1,Math.min((attacks[i+1]??end)-step,busy?3:6)),velocity:busy?78:88})));
+ }
+ return result.map(notes=>notes.filter(n=>n.step<limit).map(n=>({...n,len:Math.min(n.len,limit-n.step)})).sort((a,b)=>a.step-b.step));
 }
 function generateMelodyPhrase(prog,pat,profile,styleProfile,pool,rng,phraseIndex){
  const notes=[],used=new Set();
@@ -1622,6 +1673,7 @@ function renderSongLibrary(){
 }
 function songGenerationDescription(song){
  const info=[melodyDescription(song)],g=song.generation||{};
+ if(g.adaptiveAccompaniment)info.push('伴奏: 主旋律に追従');
  if(g.melodyRhythm){const kind=g.resolvedMelodyRhythm||g.melodyRhythm;info.push('リズム: '+(g.melodyRhythm==='auto'?'自動選択（':'')+(MELODY_RHYTHMS[kind]?.label||'従来のリズム')+(g.melodyRhythm==='auto'?'）':''));}
  if(g.randomProgression)info.push('進行選択: ランダム');
  const modes={fixed:'指定進行',auto:'おまかせ',develop:'展開あり',minimal:'コード少なめ'};
@@ -1810,6 +1862,7 @@ function autoComposeBattle(){
  const rng=makeGeneratorRandom(seed),mode=$('#generationMode').value;
  state.generation={seed,mode,style:state.style,genre:state.genrePreset,randomMelodyContour:$('#randomMelodyContour').checked,randomProgression:$('#randomProgression').checked,melodyContour:$('#randomMelodyContour').checked?'auto':($('#melodyContour').value||'auto')};
  state.generation.resolvedMelodyContour=state.generation.melodyContour==='auto'?Object.keys(MELODY_CONTOURS)[Math.floor(makeGeneratorRandom((seed^0x51ed270b)>>>0)()*Object.keys(MELODY_CONTOURS).length)]:state.generation.melodyContour;
+ state.generation.adaptiveAccompaniment=$('#adaptiveAccompaniment').checked;
  state.generation.melodyRhythm=$('#melodyRhythm').value||'auto';
  state.generation.rhythmCategory=$('#rhythmCategory').value||'all';
  state.generation.resolvedMelodyRhythm=resolveMelodyRhythm(state.generation.melodyRhythm,seed,state.generation.rhythmCategory);
@@ -1865,6 +1918,10 @@ function autoComposeBattle(){
  PATTERNS.forEach(pat=>coordinateGeneratedParts(pat,sectionProgressions[pat],styleProfile,rng));
  PATTERNS.forEach(pat=>{state.tracks[0].patterns[pat]=applyMelodyContour(state.tracks[0].patterns[pat],sectionProgressions[pat],theoryScalePool(),state.generation.melodyContour,seed,pat);});
  if(theory.phraseAssist)PATTERNS.forEach(pat=>{state.tracks[0].patterns[pat]=applyPhraseAssist(state.tracks[0].patterns[pat],sectionProgressions[pat],theoryScalePool());});
+ if(state.generation.adaptiveAccompaniment)PATTERNS.forEach(pat=>{
+  const adapted=adaptAccompaniment(state.tracks.map(t=>t.patterns[pat]),sectionProgressions[pat],pat,theoryScalePool());
+  adapted.forEach((notes,ti)=>{state.tracks[ti].patterns[pat]=notes;});
+ });
  state.tracks[6].sound={...SOUND_DEFAULTS[6],filter:12000,reverb:.06};
  state.selectedPattern="INTRO";
  state.generation.progressions=sectionProgressions;
@@ -2650,6 +2707,7 @@ function applyTrackType(typeId){
 }
 
 function render(){
+ $("#adaptiveAccompaniment").checked=!!state.adaptiveAccompaniment;
  $("#randomMelodyContour").checked=!!state.randomMelodyContour;
  $("#randomProgression").checked=!!state.randomProgression;
  renderRhythmChoices();
@@ -3132,7 +3190,7 @@ function initWorkspaceTabs(){
  tabs.querySelector('[data-panel="piano"]').click();
 }
 function bindUi(){
- ['randomMelodyContour','randomProgression'].forEach(id=>{$('#'+id).onchange=()=>{saveUndo();state[id]=$('#'+id).checked;autoSave();};});
+ ['randomMelodyContour','randomProgression','adaptiveAccompaniment'].forEach(id=>{$('#'+id).onchange=()=>{saveUndo();state[id]=$('#'+id).checked;autoSave();};});
  renderRhythmChoices();
  $('#rhythmCategory').onchange=()=>{saveUndo();state.generatorRhythmCategory=$('#rhythmCategory').value;state.generatorMelodyRhythm='auto';renderRhythmChoices();autoSave();};
  $('#melodyRhythm').onchange=()=>{saveUndo();state.generatorMelodyRhythm=$('#melodyRhythm').value;autoSave();};

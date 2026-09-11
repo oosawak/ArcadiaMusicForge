@@ -41,7 +41,7 @@ const exportsCode=`
 const realRender=render;
 window.smoothChordVoicings=smoothChordVoicings;
 render=()=>{};renderArrangement=()=>{};refreshPatternSelect=()=>{};updateArrangementHighlight=()=>{};
-window.testApi={rhythmChoices,resolveMelodyRhythm,applyMelodyRhythm,renderRhythmChoices,get rhythms(){return MELODY_RHYTHMS;},loadProjectPayload,songGenerationDescription,installBuiltinSamples,melodyDescription,reverseLookup,saveTheoryHistory,restoreTheoryHistory,previewTheoryChords,stopTheoryPreview,ArcadiaTheory,normalizeTheory,normalizeSongShape,createSongState,ensurePatterns,autoComposeBattle,applyChordBacking,changeTheory,renderTheoryAssist,renderTheoryGuide,initTheoryControls,initGrid,bindUi,patternProgression,theoryProgression,exportProjectPayload,normalizeProjectShape,allArrangedNotes,serializeSong,fitMidiToRoll,generateTheoryPart,renameCurrentPattern,deleteCurrentPattern,
+window.testApi={adaptAccompaniment,rhythmChoices,resolveMelodyRhythm,applyMelodyRhythm,renderRhythmChoices,get rhythms(){return MELODY_RHYTHMS;},loadProjectPayload,songGenerationDescription,installBuiltinSamples,melodyDescription,reverseLookup,saveTheoryHistory,restoreTheoryHistory,previewTheoryChords,stopTheoryPreview,ArcadiaTheory,normalizeTheory,normalizeSongShape,createSongState,ensurePatterns,autoComposeBattle,applyChordBacking,changeTheory,renderTheoryAssist,renderTheoryGuide,initTheoryControls,initGrid,bindUi,patternProgression,theoryProgression,exportProjectPayload,normalizeProjectShape,allArrangedNotes,serializeSong,fitMidiToRoll,generateTheoryPart,renameCurrentPattern,deleteCurrentPattern,
  genres:Object.keys(GENRE_PRESETS),styles:Object.keys(STYLE_GENERATION),
  get state(){return state;},get undo(){return undoStack;},
  prepare(song){project={version:17,title:'test',activeSongIndex:0,songs:[song]};state=song;undoStack=[];selectedNotes=new Set();ensurePatterns();},
@@ -351,6 +351,39 @@ const beforeRandomToggle=plain(api.state);nodes.get('#randomProgression').checke
 assert.equal(api.state.randomProgression,true);assert.deepEqual(plain(api.state.generation),beforeRandomToggle.generation);
 nodes.get('#undoBtn').onclick();assert.deepEqual(plain(api.state),beforeRandomToggle);
 console.log('PASS: independent seeded random melody/progression, mode preservation, save/load, undo and OFF recovery');
+
+nodes.get('#randomProgression').checked=false;nodes.get('#randomMelodyContour').checked=false;
+const accompanimentOff=compose();
+nodes.get('#adaptiveAccompaniment').checked=true;nodes.get('#adaptiveAccompaniment').onchange();
+api.autoComposeBattle();const accompanimentOn=plain(api.state);
+assert.deepEqual(accompanimentOn.tracks[0],accompanimentOff.tracks[0],'preserve final melody');
+assert.notDeepEqual(accompanimentOn.tracks.slice(1),accompanimentOff.tracks.slice(1));
+assert.deepEqual(accompanimentOn.arrangement,accompanimentOff.arrangement);
+assert.equal(accompanimentOn.bpm,accompanimentOff.bpm);
+for(let ti=0;ti<7;ti++)assert.deepEqual(accompanimentOn.tracks[ti].sound,accompanimentOff.tracks[ti].sound);
+for(const [pat,ns] of Object.entries(accompanimentOn.tracks[1].patterns)){
+ assert.ok(ns.every(n=>!accompanimentOn.tracks[0].patterns[pat].some(m=>n.step<m.step+m.len&&m.step<n.step+n.len)));
+}
+for(const tr of accompanimentOn.tracks)for(const [pat,ns] of Object.entries(tr.patterns))ns.forEach(n=>assert.ok(n.len>0&&n.step>=0&&n.step+n.len<=(pat==='TURN'?60:64)));
+api.autoComposeBattle();assert.deepEqual(plain(api.state.tracks),accompanimentOn.tracks);
+assert.equal(api.normalizeProjectShape(plain(api.exportProjectPayload())).songs[0].generation.adaptiveAccompaniment,true);
+nodes.get('#adaptiveAccompaniment').checked=false;nodes.get('#adaptiveAccompaniment').onchange();api.autoComposeBattle();
+assert.deepEqual(plain(api.state.tracks),accompanimentOff.tracks,'OFF recovers seeded output');
+const parts=accompanimentOff.tracks.map(t=>t.patterns.A),originalParts=plain(parts);
+const prog=accompanimentOff.generation.progressions.A;
+const pool=Array.from({length:25},(_,i)=>64+i).filter(n=>T.scale('E','naturalMinor').includes(n%12));
+const sparse=plain(parts);sparse[0]=[0,16,32,48].map(step=>({pitch:'E5',step,len:2,velocity:100}));
+const dense=plain(parts);dense[0]=Array.from({length:32},(_,i)=>({pitch:'E5',step:i*2,len:2,velocity:100}));
+const sparseResult=plain(api.adaptAccompaniment(sparse,prog,'A',pool));
+const denseResult=plain(api.adaptAccompaniment(dense,prog,'A',pool));
+assert.notDeepEqual(sparseResult.slice(1),denseResult.slice(1),'accompaniment responds to rhythm');
+assert.ok(sparseResult[1].length>0);assert.equal(denseResult[1].length,0);
+for(const output of [sparseResult,denseResult]){
+ assert.deepEqual(output[5].map(n=>n.step),output[6].filter(n=>n.pitch==='C5').map(n=>n.step));
+}
+assert.deepEqual(parts,originalParts);
+const beforeAdaptiveToggle=plain(api.state);nodes.get('#adaptiveAccompaniment').checked=true;nodes.get('#adaptiveAccompaniment').onchange();nodes.get('#undoBtn').onclick();assert.deepEqual(plain(api.state),beforeAdaptiveToggle);
+console.log('PASS: adaptive accompaniment responds to melody, preserves lead/sound, aligns bass/kick, save/load, undo and OFF recovery');
 
 (async()=>{
  const before=plain(api.state);await api.previewTheoryChords(api.patternProgression());
