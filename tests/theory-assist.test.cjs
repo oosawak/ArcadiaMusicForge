@@ -88,7 +88,7 @@ for(const key of ['E minor','A minor','D minor','G minor','C major','Bb major'])
 function compose(scale='naturalMinor',mode='fixed',style='snes',genre='Action',root='E',sevenths=false){
  const song=api.createSongState();song.theory={...song.theory,root,scale,sevenths};api.prepare(song);
  for(const [id,value] of Object.entries({genrePresetSel:genre,styleSel:style,generationSeed:'12345',generationMode:mode,melodyContour:'legacy',melodyRhythm:'legacy'}))nodes.get('#'+id).value=value;
- nodes.get('#freshSeed').checked=false;api.autoComposeBattle();return plain(api.state);
+ nodes.get('#freshSeed').checked=false;nodes.get('#randomMelodyContour').checked=false;nodes.get('#randomProgression').checked=false;nodes.get('#adaptiveAccompaniment').checked=false;api.autoComposeBattle();return plain(api.state);
 }
 let generatedCases=0;
 for(const scale of Object.keys(T.SCALE_TYPES))for(const mode of ['fixed','auto','develop','minimal']){
@@ -394,5 +394,6 @@ console.log('PASS: adaptive accompaniment responds to melody, preserves lead/sou
  assert.ok(auditionEvents.some(e=>e[0]==='stop'&&e[1]===undefined));
  console.log('PASS: reverse lookup, history deduplication/restore/serialization, preview scheduling/stop and non-destructive audition.');
 })().catch(error=>{console.error(error);process.exitCode=1;});
+
 
 
