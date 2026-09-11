@@ -1702,7 +1702,7 @@ const BUILTIN_SAMPLE_SONGS=[{"name":"IGNITION LINE — 発進の閃光","randomM
 function installBuiltinSamples(){
  if(project.builtinSamplesVersion===4)return;
  const active=project.songs[project.activeSongIndex];
- const obsolete=song=>/^(demo-|builtin-contour-|builtin-rhythm-)/.test(song.demoId||'')||/^曲[ \u3000]*1$/.test(song.name||'');
+ const obsolete=song=>/^(demo-|builtin-contour-|builtin-rhythm-)/.test(song.demoId||'');
  project.songs=project.songs.filter(song=>!obsolete(song));
  const firstSample=project.songs.length;
  project.songs.push(...BUILTIN_SAMPLE_SONGS.map(sample=>{
@@ -3193,8 +3193,8 @@ function initWorkspaceTabs(){
  tabs.querySelector('[data-panel="piano"]').click();
 }
 function bindUi(){
- const composer=document.querySelector('#composerPanel'),generate=document.querySelector('#autoComposeBtn'),play=document.querySelector('#autoPlayBtn');
- if(composer&&generate&&play&&play.parentElement)play.parentElement.insertBefore(generate,play);
+ const composer=document.querySelector('#composerPanel'),generate=document.querySelector('#autoComposeBtn'),playButton=document.querySelector('#autoPlayBtn');
+ if(composer&&generate&&playButton&&playButton.parentElement)playButton.parentElement.insertBefore(generate,playButton);
  if(state&&(!state.generation||state.generation.seed==null)){state.randomMelodyContour=true;state.randomProgression=true;state.adaptiveAccompaniment=true;}
  ['randomMelodyContour','randomProgression','adaptiveAccompaniment'].forEach(id=>{$('#'+id).onchange=()=>{saveUndo();state[id]=$('#'+id).checked;autoSave();};});
  renderRhythmChoices();
@@ -3378,6 +3378,8 @@ render();
 })();
 </script>
 </body></html>
+
+
 
 
 

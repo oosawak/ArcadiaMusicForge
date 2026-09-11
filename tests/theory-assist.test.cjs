@@ -275,11 +275,11 @@ const personalSong=plain(sampleProject.songs[0]);personalSong.name='自分の曲
 const obsoleteProject={builtinSamplesVersion:2,activeSongIndex:3,songs:[{name:'曲 1'},{name:'旧決戦',demoId:'demo-boss'},{name:'旧サンプル',demoId:'builtin-contour-v1-0'},personalSong]};
 api.loadProjectPayload(obsoleteProject);api.installBuiltinSamples();
 const refreshedSamples=plain(api.exportProjectPayload());
-assert.equal(refreshedSamples.songs.length,11);
-assert.equal(refreshedSamples.activeSongIndex,0);
+assert.equal(refreshedSamples.songs.length,12);
+assert.equal(refreshedSamples.activeSongIndex,1);
 assert.equal(api.state.name,'自分の曲');
-assert.deepEqual(refreshedSamples.songs[0],personalSong);
-assert.ok(!refreshedSamples.songs.some(s=>s.name==='曲 1'||s.demoId==='demo-boss'));
+assert.deepEqual(refreshedSamples.songs[1],personalSong);
+assert.ok(!refreshedSamples.songs.some(s=>s.demoId==='demo-boss'));
 api.state.bpm=151;api.installBuiltinSamples();assert.equal(api.state.bpm,151);
 const justDefault={songs:[{name:'曲1'}]};api.loadProjectPayload(justDefault);api.installBuiltinSamples();
 assert.equal(api.exportProjectPayload().songs.length,10);assert.equal(api.state.demoId,'builtin-rhythm-v3-0');
@@ -394,6 +394,8 @@ console.log('PASS: adaptive accompaniment responds to melody, preserves lead/sou
  assert.ok(auditionEvents.some(e=>e[0]==='stop'&&e[1]===undefined));
  console.log('PASS: reverse lookup, history deduplication/restore/serialization, preview scheduling/stop and non-destructive audition.');
 })().catch(error=>{console.error(error);process.exitCode=1;});
+
+
 
 
 
