@@ -246,7 +246,7 @@ for(const song of sampleProject.songs.slice(1)){
  assert.ok(song.tracks.every(t=>Object.values(t.patterns).every(ns=>ns.every(n=>n.step>=0&&n.step+n.len<=64))));
 }
 api.installBuiltinSamples();assert.equal(api.exportProjectPayload().songs.length,11);
-assert.equal(api.normalizeProjectShape(sampleProject).builtinSamplesVersion,3);
+assert.equal(api.normalizeProjectShape(sampleProject).builtinSamplesVersion,4);
 const generatedInfo=plain(api.state.generation);
 nodes.get('#melodyContour').value='fall';nodes.get('#melodyContour').onchange();
 assert.deepEqual(plain(api.state.generation),generatedInfo,'selection changes must not rewrite generation history');
@@ -394,6 +394,7 @@ console.log('PASS: adaptive accompaniment responds to melody, preserves lead/sou
  assert.ok(auditionEvents.some(e=>e[0]==='stop'&&e[1]===undefined));
  console.log('PASS: reverse lookup, history deduplication/restore/serialization, preview scheduling/stop and non-destructive audition.');
 })().catch(error=>{console.error(error);process.exitCode=1;});
+
 
 
 
