@@ -7,6 +7,11 @@ const path=require('node:path');
 const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
 const script=html.match(/<script>([\s\S]*?)<\/script>/)[1];
 new vm.Script(script); // Check the complete production script, including bootstrap.
+const wavExport=script.slice(script.indexOf('async function exportWav(){'),script.indexOf('\n\n\nfunction ensurePatterns(){'));
+assert.ok(wavExport.indexOf('window.showSaveFilePicker')<wavExport.indexOf('await off.startRendering()'),'WAV save dialog must start from the click before async rendering drops browser user activation');
+assert.ok(wavExport.includes('await stream.write(blob);await stream.close()'),'WAV export must write and close the selected file');
+assert.ok(wavExport.includes('a.download=')&&wavExport.includes('a.click()'),'WAV export must keep a browser-download fallback');
+assert.ok(wavExport.includes('WAVを保存できませんでした：'),'WAV export failures must be visible to the user');
 class Element {
  constructor(){this.children=[];this.dataset={};this.style={};this.value='';this.checked=false;this._classes=new Set();this.classList={add:(...c)=>c.forEach(x=>this._classes.add(x)),remove:(...c)=>c.forEach(x=>this._classes.delete(x)),contains:c=>this._classes.has(c),toggle:(c,v)=>{if(v===undefined)v=!this._classes.has(c);v?this._classes.add(c):this._classes.delete(c);return v;}};}
  set className(v){this._classes=new Set(v.split(/\s+/).filter(Boolean));}

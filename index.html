@@ -1704,7 +1704,7 @@ function installBuiltinSamples(){
  const active=project.songs[project.activeSongIndex];
  const obsolete=song=>/^(demo-|builtin-contour-|builtin-rhythm-)/.test(song.demoId||'');
  project.songs=project.songs.filter(song=>!obsolete(song));
- if(!project.songs.some(song=>String(song.name||'').replace(/[\\s\\u3000]/g,'')==='曲1'))project.songs.unshift(createSongState('曲 1'));
+   if(!project.songs.some(song=>String(song.name||'').replace(/[\s\u3000]/g,'')==='曲1'))project.songs.unshift(createSongState('曲 1'));
  const firstSample=project.songs.length;
  project.songs.push(...BUILTIN_SAMPLE_SONGS.map(sample=>{
   const song=normalizeSongShape(sample);song.adaptiveAccompaniment=true;song.randomMelodyContour=true;song.randomProgression=true;song.generatorMelodyContour="auto";song.generatorMelodyRhythm="auto";song.generation=song.generation||{};song.generation.adaptiveAccompaniment=true;song.generation.randomMelodyContour=true;song.generation.randomProgression=true;song.generation.melodyContour="auto";song.generation.melodyRhythm="auto";song.generation.adaptiveAccompaniment=true;
