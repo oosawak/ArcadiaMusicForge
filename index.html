@@ -2013,7 +2013,7 @@ async function exportWav(){
  }
  try{
  const sr=44100, totalSec=totalSteps*(60/state.bpm/4)+2, off=new OfflineAudioContext(2,Math.ceil(sr*totalSec),sr);
- const mg=off.createGain();mg.gain.value=state.master*.22;mg.connect(off.destination);
+ const mg=off.createGain();mg.gain.value=state.master*.65;connectOutputLimiter(off,mg);
  const anySolo=state.tracks.some(t=>t.solo);
  const arranged=allArrangedNotes();
 
@@ -2029,7 +2029,7 @@ async function exportWav(){
      const g=off.createGain(),f=off.createBiquadFilter(),p=offPanner(off,sound.pan||0);
      f.type="lowpass";f.frequency.value=clamp(sound.filter||8000,200,12000);
      g.connect(f);f.connect(p);p.connect(mg);
-     const peak=Math.max(.001,tr.volume*.2*((n.velocity||100)/127))*((tr.sample&&tr.sample.gain)||1);
+     const peak=Math.max(.001,tr.volume*.5*((n.velocity||100)/127))*((tr.sample&&tr.sample.gain)||1);
      const end=applyEnvelope(g.gain,at,dur,sound,peak);
 
      if(ti===6){
@@ -2746,7 +2746,13 @@ function render(){
 function ensureAudio(){
  if(audio)return;
  audio=new (window.AudioContext||window.webkitAudioContext)();
- masterGain=audio.createGain();masterGain.gain.value=state.master*.26;masterGain.connect(audio.destination);
+ masterGain=audio.createGain();masterGain.gain.value=state.master*.65;connectOutputLimiter(audio,masterGain);
+}
+function connectOutputLimiter(ctx,input){
+ if(!ctx.createDynamicsCompressor){input.connect(ctx.destination);return null;}
+ const limiter=ctx.createDynamicsCompressor();
+ limiter.threshold.value=-8;limiter.knee.value=3;limiter.ratio.value=8;limiter.attack.value=.003;limiter.release.value=.18;
+ input.connect(limiter);limiter.connect(ctx.destination);return limiter;
 }
 function activeTrack(i){
  const anySolo=state.tracks.some(t=>t.solo); const t=state.tracks[i];
@@ -3051,7 +3057,7 @@ function synth(i,n,dur,scheduledTime=null){
  const g=audio.createGain(),f=audio.createBiquadFilter(),p=makePanner(audio,sound.pan||0);
  f.type="lowpass";f.frequency.value=clamp(sound.filter||8000,200,12000);
  g.connect(f);f.connect(p);connectTrackFX(audio,p,scheduledTime!==null&&stablePlayback?stablePlayback.bus:masterGain,sound);
- const peak=Math.max(.001,t.volume*.22*((n.velocity||100)/127))*((t.sample&&t.sample.gain)||1);
+ const peak=Math.max(.001,t.volume*.5*((n.velocity||100)/127))*((t.sample&&t.sample.gain)||1);
 
  if(i===6){
   const slot=drumSlotForPitch(n.pitch),custom=getSampleStore().drums[slot];
@@ -3299,7 +3305,7 @@ function bindUi(){
  $('#geminiApplyBtn').onclick=()=>{if(confirm('現在パターンのメロディ・ベース・アルペジオをGeminiの結果で置き換えますか？'))applyGeminiDraft();};
  $('#geminiStatus').textContent=geminiAvailable()?'Chrome内蔵Geminiを利用できます。':'Chrome内蔵Geminiが未対応です。既存機能はそのまま使えます。';
  [['#generateTheoryMelodyBtn',0],['#generateTheoryBassBtn',5],['#generateTheoryArpBtn',4]].forEach(([id,ti])=>{$(id).onclick=()=>{if(confirm(`現在パターンの${TRACKS[ti].name}だけを置き換えますか？`))generateTheoryPart(ti);};});
- $("#masterVol").oninput=()=>{state.master=+$("#masterVol").value;$("#masterText").textContent=Math.round(state.master*100)+"%";autoSave();};
+ $("#masterVol").oninput=()=>{state.master=+$("#masterVol").value;if(masterGain&&audio)masterGain.gain.setTargetAtTime(state.master*.65,audio.currentTime,.015);$("#masterText").textContent=Math.round(state.master*100)+"%";autoSave();};
  $("#loopToggle").onchange=()=>{state.loopEnabled=$("#loopToggle").checked;autoSave();};
  $("#loopStart").oninput=()=>{state.loopStart=+$("#loopStart").value||1;autoSave();};
  $("#loopEnd").oninput=()=>{state.loopEnd=+$("#loopEnd").value||48;autoSave();};
