@@ -95,6 +95,36 @@ function compose(scale='naturalMinor',mode='fixed',style='snes',genre='Action',r
  for(const [id,value] of Object.entries({genrePresetSel:genre,styleSel:style,generationSeed:'12345',generationMode:mode,melodyContour:'legacy',melodyRhythm:'legacy'}))nodes.get('#'+id).value=value;
  nodes.get('#freshSeed').checked=false;nodes.get('#randomMelodyContour').checked=false;nodes.get('#randomProgression').checked=false;nodes.get('#adaptiveAccompaniment').checked=false;api.autoComposeBattle();return plain(api.state);
 }
+function composeScene(scene,style='pop',contour='auto',rhythm='auto',category='all'){
+ compose('naturalMinor','auto',style,scene);
+ nodes.get('#melodyContour').value=contour;nodes.get('#melodyRhythm').value=rhythm;
+ nodes.get('#rhythmCategory').value=category;nodes.get('#randomMelodyContour').checked=false;
+ nodes.get('#randomProgression').checked=true;nodes.get('#adaptiveAccompaniment').checked=true;
+ api.autoComposeBattle();return plain(api.state);
+}
+const sceneIds=['dawn','nightCity','rainyRoom','seaside','journey','celebration','longing','mystery','openSky','resolve'];
+const sceneResults=sceneIds.map(id=>{
+ const song=composeScene(id);
+ assert.deepEqual(composeScene(id),song,'scene selection must reproduce with the same seed');
+ assert.equal(song.generation.scene,id);
+ assert.deepEqual(plain(api.normalizeSongShape(song)),song,'scene and resolved choices survive save/load');
+ assert.ok(api.songGenerationDescription(song).includes('情景:'));
+ assert.ok(song.tracks.flatMap(t=>Object.values(t.patterns).flat()).every(n=>n.step>=0&&n.len>0&&n.step+n.len<=64&&n.velocity>=1&&n.velocity<=127));
+ return song;
+});
+const rainy=sceneResults[2],festive=sceneResults[5];
+assert.equal(rainy.generation.resolvedRhythmCategory,'sparse');
+assert.ok(['dense','accent'].includes(festive.generation.resolvedRhythmCategory));
+assert.ok(rainy.tracks[0].patterns.A.length<festive.tracks[0].patterns.A.length,'quiet scene leaves more melodic space');
+const backingCount=s=>s.tracks.slice(1).reduce((sum,t)=>sum+t.patterns.A.length,0);
+assert.ok(backingCount(rainy)<backingCount(festive),'scene affects accompaniment after adaptive accompaniment');
+assert.equal(new Set(sceneResults.map(s=>JSON.stringify(s.tracks.map(t=>t.patterns.A)))).size,sceneIds.length);
+const explicitScene=composeScene('rainyRoom','pop','leap','eighth');
+assert.equal(explicitScene.generation.resolvedMelodyContour,'leap');
+assert.equal(explicitScene.generation.resolvedMelodyRhythm,'eighth');
+assert.equal(composeScene('rainyRoom','pop','auto','auto','dense').generation.resolvedRhythmCategory,'dense');
+assert.notDeepEqual(composeScene('nightCity','pop').tracks,composeScene('nightCity','ambient').tracks,'music genre changes instrumentation and accompaniment within a scene');
+console.log('PASS: ten scenes, seeded reproduction, actual melodic/backing differences, explicit choices and save/load');
 let generatedCases=0;
 for(const scale of Object.keys(T.SCALE_TYPES))for(const mode of ['fixed','auto','develop','minimal']){
  const song=compose(scale,mode,'snes','Action','C#',true),pcs=T.scale('C#',scale);

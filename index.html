@@ -338,18 +338,18 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
             <small>ROOT変更は既存音符も移調します。SCALE・進行・7th変更は設定のみです。「コード配置」は現在パターンの伴奏3トラックを置換します。コードボタンは指定小節の和音設定を変更します。</small>
           </details>
           <div id="genreAutoControls" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-              <label class="control">GAME GENRE
-                <select id="genrePresetSel"></select>
-              </label>
-              <label class="control">進行
-                <select id="progressionSel"><option>Em - C - G - D</option><option>Em - D - C - D</option><option>Em - G - D - C</option><option>Am - F - C - G</option><option>C - Am - F - G</option><option>C - G - Am - F</option><option>F - C - G - Am</option><option>Am - G - F - C</option><option>C - F - G - Am</option><option>Em - C - Am - D</option><option>Em - Am - C - D</option><option>C - G - F - Am</option><option>カノン進行 · C - G - Am - Em</option><option>小室進行 · F - G - Am - Em</option><option>王道進行 · F - G - Em - Am</option><option>織田哲郎進行 · C - Am - F - G</option><option>循環進行 · C - Am - Dm - G</option><option>ポップパンク · C - G - F - G</option><option>アンダルシア風 · Am - G - F - E</option><option>明るい冒険系 · C - F - G - Am</option><option>切ないゲーム系 · Am - F - Dm - E</option><option>ボス戦系 · Em - F - G - Em</option><option>不安・ホラー系 · Am - Bb - Am - E</option><option>浮遊感・SF系 · C - D - Em - Bm</option><option>パッヘルベル型・前半 · C - G - Am - Em</option></select>
-              </label>
-              <label class="control">STYLE
+              <label class="control">音楽ジャンル
                 <select id="styleSel">
                   <option value="snes">SNES風</option>
                   <option value="nes">NES風</option>
                   <option value="orchestral">オーケストラ風</option>
                 </select>
+              </label>
+              <label class="control">情景・ムード
+                <select id="genrePresetSel"></select>
+              </label>
+              <label class="control">進行
+                <select id="progressionSel"><option>Em - C - G - D</option><option>Em - D - C - D</option><option>Em - G - D - C</option><option>Am - F - C - G</option><option>C - Am - F - G</option><option>C - G - Am - F</option><option>F - C - G - Am</option><option>Am - G - F - C</option><option>C - F - G - Am</option><option>Em - C - Am - D</option><option>Em - Am - C - D</option><option>C - G - F - Am</option><option>カノン進行 · C - G - Am - Em</option><option>小室進行 · F - G - Am - Em</option><option>王道進行 · F - G - Em - Am</option><option>織田哲郎進行 · C - Am - F - G</option><option>循環進行 · C - Am - Dm - G</option><option>ポップパンク · C - G - F - G</option><option>アンダルシア風 · Am - G - F - E</option><option>明るい冒険系 · C - F - G - Am</option><option>切ないゲーム系 · Am - F - Dm - E</option><option>ボス戦系 · Em - F - G - Em</option><option>不安・ホラー系 · Am - Bb - Am - E</option><option>浮遊感・SF系 · C - D - Em - Bm</option><option>パッヘルベル型・前半 · C - G - Am - Em</option></select>
               </label>
               <button class="btn primary" id="autoComposeBtn" type="button">自動生成</button>
               <label class="control">進行モード<select id="generationMode" title="指定進行では選んだコード進行を使います"><option value="fixed">指定進行</option><option value="auto">おまかせ</option><option value="develop">展開あり</option><option value="minimal">コード少なめ</option></select></label>
@@ -362,6 +362,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
               <label class="control">SEED<input id="generationSeed" type="number" min="1" max="4294967295" value="1" style="width:110px"></label>
               <label class="control"><input id="freshSeed" type="checkbox" checked>毎回変更</label>
               <button class="btn" id="autoPlayBtn" type="button">▶ Play</button>
+              <small id="sceneDescription" style="flex-basis:100%"></small>
           </div>
         </div>
       </section>
@@ -616,12 +617,12 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
 <h3>GENERATOR</h3>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
-<div style="white-space:pre-wrap;overflow-wrap:anywhere">ゲームBGMをルールベースで自動生成します。Geminiの接続は不要です。</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">音楽ジャンルと情景・ムードを組み合わせて作曲します。例えば「ピアノ × 雨の日の部屋」「シンセウェーブ × 夜の街」「オーケストラ × 旅立ち」。Geminiの接続は不要です。</div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere">|設定|現在の実装での働き|</div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere">|---|---|</div>
-<div style="white-space:pre-wrap;overflow-wrap:anywhere">|GAME GENRE|テンポ範囲、生成傾向、ドラム、音色セット、フィルター・残響・定位の調整|</div>
-<div style="white-space:pre-wrap;overflow-wrap:anywhere">|STYLE|テンポ補正、音域、音数、アルペジオの刻み、ドラムや追加スタイル処理|</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">|情景・ムード|テンポ、自動選択する旋律・リズム・進行の候補、伴奏の音数、強弱やセクションごとの厚み|</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">|音楽ジャンル（旧STYLE）|音色、テンポ補正、音域、音数、アルペジオの刻み、ベース・ドラムの傾向|</div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere">|進行|「指定進行」時にGENERATORの選択を使用。解釈可能な4コードの場合に適用|</div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere">|指定進行|選択した進行を基本に生成|</div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere">|おまかせ|ジャンルタグに合うDegree進行候補を選択|</div>
@@ -629,7 +630,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
 <div style="white-space:pre-wrap;overflow-wrap:anywhere">|コード少なめ|和音の切り替えを減らす|</div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere">|SEED|生成用乱数の起点。同じ条件での再現・比較に使用|</div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
-<div style="white-space:pre-wrap;overflow-wrap:anywhere">ジャンルはAction、Puzzle、Racing、Horror、Cozy、Sci-Fi、Platformer、Boss、Menu、Town、Dungeon、Sports、Rhythmの13種類です。</div>
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">情景は朝、夜の街、雨の日の部屋、海辺、旅立ち、祝祭、追憶、ミステリー、星空、決意の10種類。従来のゲーム向け13種類も選べます。主旋律とリズムを自動選択にすると情景を参考に選びます。ROOT／SCALEは現在の指定を使用します。明るさを変えたい場合はSCALEも調整してください。</div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere">STYLEはSNES風、NES風、オーケストラ風、FM音源、ピアノ、アンビエント、ロック、ファンク、ジャズ、ボサノバ、ハウス、テクノ、ドラムンベース、シンセウェーブ、和風、民族音楽風の16種類です。機種別のチャンネル制限はありません。</div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
@@ -852,7 +853,7 @@ function attachHiddenSampleStore(song,store=createEmptySampleStore()){
 }
 function createSongState(name="新しい曲"){
  const song={
-   name,adaptiveAccompaniment:true,randomMelodyContour:true,randomProgression:true,generatorMelodyContour:"",generatorMelodyRhythm:"",generatorRhythmCategory:"",genrePreset:"Action",workspaceMode:"auto",progression:"Em-C-G-D",style:"snes",
+   name,adaptiveAccompaniment:true,randomMelodyContour:true,randomProgression:true,generatorMelodyContour:"",generatorMelodyRhythm:"",generatorRhythmCategory:"",genrePreset:"dawn",workspaceMode:"auto",progression:"Em-C-G-D",style:"piano",
    bpm:168,key:"E minor",theory:normalizeTheory(null),master:.75,selected:0,selectedPattern:"A",patternOrder:[...PATTERNS],
    arrangement:Array.from({length:7},()=>Array(12).fill(null)),
    tracks:TRACKS.map((_,i) => ({
@@ -912,6 +913,42 @@ const GENRE_SOUND_SHAPES={
  Platformer:{filter:1.12,reverb:.8,delay:1,pan:.16},Boss:{filter:1.2,reverb:.78,delay:1.15,pan:.2},Menu:{filter:.72,reverb:1.5,delay:1.45,pan:.55},
  Town:{filter:.8,reverb:1.35,delay:1.2,pan:.35},Dungeon:{filter:.64,reverb:1.6,delay:1.3,pan:.42},Sports:{filter:1.15,reverb:.7,delay:1,pan:.16},Rhythm:{filter:1.12,reverb:.72,delay:1.05,pan:.25}
 };
+// Scene IDs are stored in genrePreset; legacy game profiles remain valid.
+const SCENE_PRESETS={
+ dawn:{label:'朝・新しい一日',base:'Cozy',tempo:[85,115],density:3,contours:['rise','arch','lateRise'],categories:['balanced'],texture:.72,velocity:88,tags:['bright','town'],description:'緩やかな上昇と、ほどよい音数の伴奏。'},
+ nightCity:{label:'夜の街',base:'Sci-Fi',tempo:[100,130],density:4,contours:['wave','pendulum','zigzag'],categories:['accent','balanced'],texture:.85,velocity:94,tags:['field','epic'],description:'裏拍や揺れる旋律を中心に、動きのある夜景。'},
+ rainyRoom:{label:'雨の日の部屋',base:'Puzzle',tempo:[65,90],density:2,contours:['fall','lateFall','wave'],categories:['sparse'],texture:.35,velocity:72,tags:['town','dungeon'],description:'休符の多い旋律と、控えめな伴奏。'},
+ seaside:{label:'海辺・風',base:'Cozy',tempo:[85,115],density:3,contours:['wave','arch','valley'],categories:['balanced','accent'],texture:.6,velocity:84,tags:['field','bright'],description:'波のような旋律と、軽いリズム。'},
+ journey:{label:'旅立ち・冒険',base:'Platformer',tempo:[115,150],density:5,contours:['rise','stairsUp','riseTurn','leap'],categories:['balanced','dense'],texture:.9,velocity:103,tags:['adventure','field'],description:'上へ向かう旋律と、前進感のある伴奏。'},
+ celebration:{label:'喜び・祝祭',base:'Sports',tempo:[120,155],density:6,contours:['leap','zigzag','peak','rise'],categories:['dense','accent'],texture:1,velocity:108,tags:['bright','adventure'],description:'跳躍と細かいリズムを使った、にぎやかな展開。'},
+ longing:{label:'追憶・切なさ',base:'Town',tempo:[70,105],density:2,contours:['arch','fallTurn','lateFall'],categories:['sparse','balanced'],texture:.52,velocity:82,tags:['town','epic'],description:'弧を描く旋律と、余韻を残す伴奏。'},
+ mystery:{label:'霧・ミステリー',base:'Horror',tempo:[65,100],density:2,contours:['pendulum','valley','repeat'],categories:['sparse','accent'],texture:.42,velocity:80,tags:['horror','dungeon'],description:'中心音へ戻る旋律と、間を置いた伴奏。'},
+ openSky:{label:'星空・浮遊',base:'Menu',tempo:[60,90],density:1,contours:['wave','valley','lateRise'],categories:['sparse'],texture:.28,velocity:70,tags:['field','epic'],description:'少ない音数と緩やかな動きで、広がりを表現。'},
+ resolve:{label:'決意・高揚',base:'Action',tempo:[125,165],density:6,contours:['stairsUp','lateRise','riseTurn','peak'],categories:['dense','balanced'],texture:.95,velocity:106,tags:['epic','battle'],description:'上昇する旋律と、厚みを増す伴奏。'}
+};
+Object.entries(SCENE_PRESETS).forEach(([id,scene])=>{
+ GENRE_PRESETS[id]={...GENRE_PRESETS[scene.base],bpm:Math.round((scene.tempo[0]+scene.tempo[1])/2),density:scene.density,
+  sounds:['snes','bell','pad','brass','pluck','bass','pluck']};
+ GENRE_TEMPO_RANGES[id]=scene.tempo;
+ GENRE_SOUND_SHAPES[id]={...GENRE_SOUND_SHAPES[scene.base]};
+});
+function renderSceneDescription(){
+ const hint=$('#sceneDescription');if(!hint)return;
+ const scene=SCENE_PRESETS[state.genrePreset];
+ hint.textContent=(scene?scene.description:'従来のゲーム向け生成設定。')+' 自動選択は情景を参考にします。指定した旋律・リズム・ROOT／SCALEは優先されます。';
+}
+function shapeSceneParts(pat,scene,seed){
+ const rng=makeGeneratorRandom((seed^0x19cf4701^PATTERNS.indexOf(pat))>>>0);
+ const section=pat==='INTRO'?.65:pat==='BREAK'?.5:pat==='CLIMAX'?1.15:pat==='TURN'?.8:1;
+ state.tracks.forEach((track,ti)=>{
+  const notes=track.patterns[pat];
+  const kept=ti===0?notes:notes.filter(n=>{
+   const keep=rng()<Math.min(1,scene.texture*section);
+   return keep||(ti===5&&n.step%16===0);
+  });
+  track.patterns[pat]=kept.map(n=>({...n,velocity:clamp(Math.round((n.velocity??90)*scene.velocity/96*(pat==='CLIMAX'?1.06:1)),1,127)}));
+ });
+}
 function generationTempo(genre,style,rng){
  const range=GENRE_TEMPO_RANGES[genre]||GENRE_TEMPO_RANGES.Action;
  const offset=STYLE_TEMPO_OFFSETS[style]||0;
@@ -924,6 +961,7 @@ const STYLE_GENERATION={
  orchestral:{densityOffset:-1,octave:-12,arpStep:4,drumBoost:.65}
 };
 const EXTRA_STYLES={
+ pop:['ポップ',112,4,'pluck','soft',0],
  fm:['FM音源',150,2,'pluck','drive',2],piano:['ピアノ',90,8,'bell','none',-2],ambient:['アンビエント',72,16,'pad','none',-3],
  rock:['ロック',160,4,'brass','drive',1],funk:['ファンク',112,3,'pluck','soft',1],jazz:['ジャズ',126,3,'bell','soft',0],bossa:['ボサノバ',108,4,'pluck','soft',-1],
  house:['ハウス',126,2,'snes','drive',1],techno:['テクノ',140,1,'bass','drive',2],dnb:['ドラムンベース',174,2,'pluck','drive',2],synthwave:['シンセウェーブ',100,2,'snes','drive',0],
@@ -1247,6 +1285,7 @@ function patternProgression(){
 }
 function theoryScalePool(low=64,high=88){const t=ensureTheory();return ArcadiaTheory.scalePool(t.root,t.scale,low,high);}
 function genreTheoryTags(genre){
+ if(SCENE_PRESETS[genre])return SCENE_PRESETS[genre].tags;
  return {Action:['battle','boss','epic'],Boss:['battle','boss','epic'],Racing:['racing','battle'],Sports:['racing','battle'],Rhythm:['racing','battle'],Horror:['horror','dungeon'],Dungeon:['horror','dungeon'],Cozy:['town','bright'],Town:['town','bright'],Menu:['town','bright'],Platformer:['field','adventure'],'Sci-Fi':['field','epic']}[genre]||['town','bright'];
 }
 function initTheoryControls(){
@@ -1673,6 +1712,7 @@ function renderSongLibrary(){
 }
 function songGenerationDescription(song){
  const info=[melodyDescription(song)],g=song.generation||{};
+ if(g.scene)info.unshift('情景: '+(SCENE_PRESETS[g.scene]?.label||g.scene));
  if(g.adaptiveAccompaniment)info.push('伴奏: 主旋律に追従');
  if(g.melodyRhythm){const kind=g.resolvedMelodyRhythm||g.melodyRhythm;info.push('リズム: '+(g.melodyRhythm==='auto'?'自動選択（':'')+(MELODY_RHYTHMS[kind]?.label||'従来のリズム')+(g.melodyRhythm==='auto'?'）':''));}
  if(g.randomProgression)info.push('進行選択: ランダム');
@@ -1860,20 +1900,26 @@ function autoComposeBattle(){
  state.patternOrder=[...new Set([...(state.patternOrder||[]),'INTRO','A','B','BREAK','CLIMAX','TURN'])];
  ensurePatterns();
  const profile=GENRE_PRESETS[state.genrePreset]||GENRE_PRESETS.Action;
+ const scene=SCENE_PRESETS[state.genrePreset];
  const styleProfile=STYLE_GENERATION[state.style]||STYLE_GENERATION.snes;
  const seed=$('#freshSeed').checked?(crypto.getRandomValues(new Uint32Array(1))[0]||1):(Number($('#generationSeed').value)>>>0)||1;
  $('#generationSeed').value=seed;
  const rng=makeGeneratorRandom(seed),mode=$('#generationMode').value;
  state.generation={seed,mode,style:state.style,genre:state.genrePreset,randomMelodyContour:$('#randomMelodyContour').checked,randomProgression:$('#randomProgression').checked,melodyContour:$('#randomMelodyContour').checked?'auto':($('#melodyContour').value||'auto')};
- state.generation.resolvedMelodyContour=state.generation.melodyContour==='auto'?Object.keys(MELODY_CONTOURS)[Math.floor(makeGeneratorRandom((seed^0x51ed270b)>>>0)()*Object.keys(MELODY_CONTOURS).length)]:state.generation.melodyContour;
+ const contourChoices=scene?scene.contours:Object.keys(MELODY_CONTOURS);
+ state.generation.resolvedMelodyContour=state.generation.melodyContour==='auto'?contourChoices[Math.floor(makeGeneratorRandom((seed^0x51ed270b)>>>0)()*contourChoices.length)]:state.generation.melodyContour;
  state.generation.adaptiveAccompaniment=$('#adaptiveAccompaniment').checked;
  state.generation.melodyRhythm=$('#melodyRhythm').value||'auto';
  state.generation.rhythmCategory=$('#rhythmCategory').value||'all';
- state.generation.resolvedMelodyRhythm=resolveMelodyRhythm(state.generation.melodyRhythm,seed,state.generation.rhythmCategory);
+ const selectedCategory=state.generation.rhythmCategory;
+ const resolvedCategory=scene&&selectedCategory==='all'?scene.categories[Math.floor(makeGeneratorRandom((seed^0x37ac196f)>>>0)()*scene.categories.length)]:selectedCategory;
+ state.generation.resolvedMelodyRhythm=resolveMelodyRhythm(state.generation.melodyRhythm,seed,resolvedCategory);
+ if(scene){state.generation.scene=state.genrePreset;state.generation.sceneVersion=1;state.generation.resolvedRhythmCategory=MELODY_RHYTHMS[state.generation.resolvedMelodyRhythm]?.category||resolvedCategory;}
  const theory=ensureTheory(),ranked=ArcadiaTheory.progressionCandidates(genreTheoryTags(state.genrePreset));
  const matching=ranked.filter(p=>p.score>0),choices=matching.length?matching:ranked;
  const baseChosen=mode==='auto'?choices[Math.floor(rng()*choices.length)].id:theory.progressionId;
- const chosen=state.generation.randomProgression?ArcadiaTheory.PROGRESSIONS[Math.floor(makeGeneratorRandom((seed^0x38bd49a1)>>>0)()*ArcadiaTheory.PROGRESSIONS.length)].id:baseChosen;
+ const randomChoices=scene?choices:ArcadiaTheory.PROGRESSIONS;
+ const chosen=state.generation.randomProgression?randomChoices[Math.floor(makeGeneratorRandom((seed^0x38bd49a1)>>>0)()*randomChoices.length)].id:baseChosen;
  let mainProgression=ArcadiaTheory.resolveProgression(theory.root,theory.scale,chosen,theory.sevenths);
  const selectedGeneratorProgression=$('#progressionSel')?.selectedOptions?.[0]?.textContent||'';
  const generatorSymbols=selectedGeneratorProgression.match(/[A-G][#b]?m?(?:maj7|m7|7|dim)?/g)||[];
@@ -1886,7 +1932,7 @@ function autoComposeBattle(){
  state.bpm=generationTempo(state.genrePreset,state.style,rng);
  state.generation.bpm=state.bpm;
  const selected=state.selected;
- const voices=profile.sounds||['snes','bell','pad','brass','pluck','bass','pluck'],shape=GENRE_SOUND_SHAPES[state.genrePreset]||GENRE_SOUND_SHAPES.Action;
+ const voices=scene?[spec?spec[3]:state.style==='orchestral'?'brass':'snes','bell','pad','brass','pluck','bass','pluck']:profile.sounds||['snes','bell','pad','brass','pluck','bass','pluck'],shape=GENRE_SOUND_SHAPES[state.genrePreset]||GENRE_SOUND_SHAPES.Action;
  voices.forEach((voice,i)=>{state.selected=i;applySoundPreset(voice,true);const sound=state.tracks[i].sound;sound.filter=clamp(Math.round(sound.filter*shape.filter),200,12000);sound.reverb=clamp(sound.reverb*shape.reverb,0,1);sound.delay=clamp(sound.delay*shape.delay,0,0.7);sound.pan=clamp((i%2?1:-1)*shape.pan, -1,1);if(spec&&i===0)sound.wave=spec[3]==='snes'?'pulse':spec[3]==='pluck'?'triangle':sound.wave;state.tracks[i].volume=[.78,.35,.38,.3,.32,.68,.6][i];});state.selected=selected;
  const theme=Array.from({length:6},()=>Math.floor(rng()*9)-4);
  state.tracks.forEach(t=>PATTERNS.forEach(p=>t.patterns[p]=[]));
@@ -1920,19 +1966,20 @@ function autoComposeBattle(){
  });
  PATTERNS.forEach(pat=>{state.tracks[0].patterns[pat]=applyMelodyRhythm(state.tracks[0].patterns[pat],state.generation.resolvedMelodyRhythm);});
  PATTERNS.forEach(pat=>coordinateGeneratedParts(pat,sectionProgressions[pat],styleProfile,rng));
- PATTERNS.forEach(pat=>{state.tracks[0].patterns[pat]=applyMelodyContour(state.tracks[0].patterns[pat],sectionProgressions[pat],theoryScalePool(),state.generation.melodyContour,seed,pat);});
+ PATTERNS.forEach(pat=>{state.tracks[0].patterns[pat]=applyMelodyContour(state.tracks[0].patterns[pat],sectionProgressions[pat],theoryScalePool(),scene?state.generation.resolvedMelodyContour:state.generation.melodyContour,seed,pat);});
  if(theory.phraseAssist)PATTERNS.forEach(pat=>{state.tracks[0].patterns[pat]=applyPhraseAssist(state.tracks[0].patterns[pat],sectionProgressions[pat],theoryScalePool());});
  if(state.generation.adaptiveAccompaniment)PATTERNS.forEach(pat=>{
   const adapted=adaptAccompaniment(state.tracks.map(t=>t.patterns[pat]),sectionProgressions[pat],pat,theoryScalePool());
   adapted.forEach((notes,ti)=>{state.tracks[ti].patterns[pat]=notes;});
  });
+ if(scene)PATTERNS.forEach(pat=>shapeSceneParts(pat,scene,seed));
  state.tracks[6].sound={...SOUND_DEFAULTS[6],filter:12000,reverb:.06};
  state.selectedPattern="INTRO";
  state.generation.progressions=sectionProgressions;
  state.generation.generatedProgressions=JSON.parse(JSON.stringify(sectionProgressions));
  state.generation.theory={...ensureTheory()};
  standardArrangement();
- render();toast(`${state.genrePreset} の曲を48小節へ自動生成しました`);
+ render();toast(`${scene?.label||state.genrePreset} の曲を48小節へ自動生成しました`);
 }
 function applyChordBackingCore(prog){
  prog.forEach((c,bar)=>{
@@ -2738,6 +2785,7 @@ function render(){
  ensureTheory();ensurePatterns();
  $("#bpm").value=state.bpm;$("#bpmCtl").value=state.bpm;$("#masterVol").value=state.master;$("#masterText").textContent=Math.round(state.master*100)+"%";
  if($("#genrePresetSel"))$("#genrePresetSel").value=state.genrePreset||"Action";
+ renderSceneDescription();
  if($("#styleSel"))$("#styleSel").value=state.style||"snes";
  if($("#workspaceModeSel"))$("#workspaceModeSel").value=state.workspaceMode||"library";
  renderSongLibrary();initTracks();renderNotes();renderChords();renderDrums();renderArrangement();renderSoundControls();renderSamplerControls();updateArrangementHighlight();updateDuration();
@@ -3251,9 +3299,9 @@ function bindUi(){
  });
  const genreSel=$("#genrePresetSel");
  if(genreSel){
-   genreSel.innerHTML=Object.keys(GENRE_PRESETS).map(name=>`<option value="${name}">${name}</option>`).join("");
+   genreSel.innerHTML='<optgroup label="情景・ムード">'+Object.entries(SCENE_PRESETS).map(([id,scene])=>`<option value="${id}">${scene.label}</option>`).join('')+'</optgroup><optgroup label="従来のゲーム向け">'+Object.keys(GENRE_PRESETS).filter(name=>!SCENE_PRESETS[name]).map(name=>`<option value="${name}">${name}</option>`).join('')+'</optgroup>';
    genreSel.value=state.genrePreset||"Action";
-   genreSel.onchange=()=>{state.genrePreset=genreSel.value;autoSave();};
+   genreSel.onchange=()=>{state.genrePreset=genreSel.value;renderSceneDescription();autoSave();};
  }
  $("#workspaceModeSel").onchange=e=>setWorkspaceMode(e.target.value);
  const applyGenreBtn=$("#applyGenreBtn");
