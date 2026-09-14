@@ -1704,7 +1704,7 @@ function installBuiltinSamples(){
  const active=project.songs[project.activeSongIndex];
  const obsolete=song=>/^(demo-|builtin-contour-|builtin-rhythm-)/.test(song.demoId||'');
  project.songs=project.songs.filter(song=>!obsolete(song));
- if(!project.songs.some(song=>song.name==='曲 1'))project.songs.unshift(createSongState('曲 1'));
+ if(!project.songs.some(song=>String(song.name||'').replace(/[\\s\\u3000]/g,'')==='曲1'))project.songs.unshift(createSongState('曲 1'));
  const firstSample=project.songs.length;
  project.songs.push(...BUILTIN_SAMPLE_SONGS.map(sample=>{
   const song=normalizeSongShape(sample);song.adaptiveAccompaniment=true;song.randomMelodyContour=true;song.randomProgression=true;song.generatorMelodyContour="auto";song.generatorMelodyRhythm="auto";song.generation=song.generation||{};song.generation.adaptiveAccompaniment=true;song.generation.randomMelodyContour=true;song.generation.randomProgression=true;song.generation.melodyContour="auto";song.generation.melodyRhythm="auto";song.generation.adaptiveAccompaniment=true;
@@ -2004,6 +2004,14 @@ function exportMidi(){
  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="battle-composer-48bars.mid";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500);toast("48小節MIDIを書き出しました");
 }
 async function exportWav(){
+ const button=$("#wavBtn"),originalLabel=button?.textContent;
+ if(button){button.disabled=true;button.textContent="WAV準備中…";}
+ let saveHandlePromise=null;
+ if(typeof window.showSaveFilePicker==='function'){
+   try{saveHandlePromise=window.showSaveFilePicker({suggestedName:`${sanitizeFileName(state.name||'arcadia-music-forge')}.wav`,types:[{description:'WAV audio',accept:{'audio/wav':['.wav']}}]}).then(handle=>({handle}),error=>({error}));}
+   catch(error){if(button){button.disabled=false;button.textContent=originalLabel;}toast(`WAV保存を開始できません：${error.message}`);return;}
+ }
+ try{
  const sr=44100, totalSec=totalSteps*(60/state.bpm/4)+2, off=new OfflineAudioContext(2,Math.ceil(sr*totalSec),sr);
  const mg=off.createGain();mg.gain.value=state.master*.22;mg.connect(off.destination);
  const anySolo=state.tracks.some(t=>t.solo);
@@ -2057,7 +2065,7 @@ async function exportWav(){
      sources.forEach(s=>{s.gain.connect(g);s.osc.start(at);s.osc.stop(end);});
    });
  });
- toast("WAVをレンダリング中…");
+ toast("WAVをレンダリング中…保存先を選択済みなら、完了後に自動保存します。");
  const rendered=await off.startRendering(), chans=rendered.numberOfChannels, len=rendered.length;
  const ab=new ArrayBuffer(44+len*chans*2),dv=new DataView(ab);
  const ws=(o,s)=>[...s].forEach((c,i)=>dv.setUint8(o+i,c.charCodeAt(0)));
@@ -2069,7 +2077,18 @@ async function exportWav(){
  for(let i=0;i<len;i++)for(let c=0;c<chans;c++,o+=2){
    const s=Math.max(-1,Math.min(1,data[c][i]));dv.setInt16(o,s<0?s*0x8000:s*0x7fff,true);
  }
- const blob=new Blob([ab],{type:"audio/wav"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="arcadia-music-forge-48bars.wav";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500);toast("WAVを書き出しました");
+ const blob=new Blob([ab],{type:"audio/wav"});
+ if(saveHandlePromise){
+   const selected=await saveHandlePromise;if(selected.error)throw selected.error;
+   const stream=await selected.handle.createWritable();await stream.write(blob);await stream.close();
+ }else{
+   const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=`${sanitizeFileName(state.name||'arcadia-music-forge')}.wav`;a.style.display='none';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+ }
+ toast("WAVを書き出しました");
+ }catch(error){
+   if(error?.name==='AbortError')toast('WAV保存をキャンセルしました');
+   else toast(`WAVを保存できませんでした：${error?.message||error}`);
+ }finally{if(button){button.disabled=false;button.textContent=originalLabel;}}
 }
 
 
@@ -3379,6 +3398,7 @@ render();
 })();
 </script>
 </body></html>
+
 
 
 

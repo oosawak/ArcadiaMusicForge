@@ -235,18 +235,18 @@ console.log('PASS: 16 melody contours, seed repeatability, legacy output, save/l
 const beforeBuiltinSong=plain(api.state);
 api.installBuiltinSamples();
 let sampleProject=plain(api.exportProjectPayload());
-assert.equal(sampleProject.songs.length,11);
-assert.deepEqual(sampleProject.songs[0],plain(api.serializeSong(api.state)));
+assert.equal(sampleProject.songs.length,12);
+assert.deepEqual(sampleProject.songs[1],plain(api.serializeSong(api.state)));
 assert.deepEqual(plain(api.state),beforeBuiltinSong);
-assert.equal(new Set(sampleProject.songs.slice(1).map(s=>s.generation.melodyContour)).size,10);
-for(const song of sampleProject.songs.slice(1)){
+assert.equal(new Set(sampleProject.songs.filter(s=>String(s.demoId||"").startsWith("builtin-rhythm-v3-")).map(s=>s.generation.resolvedMelodyContour)).size,10);
+for(const song of sampleProject.songs.filter(s=>String(s.demoId||"").startsWith("builtin-rhythm-v3-"))){
  assert.ok(song.tracks[0].patterns.A.length>0);
  assert.ok(api.melodyDescription(song).startsWith('主旋律: '));
- assert.equal(song.generation.melodyContour,song.generation.resolvedMelodyContour);
+ assert.equal(song.generation.melodyContour,'auto');assert.equal(song.generatorMelodyContour,'auto');assert.equal(song.generatorMelodyRhythm,'auto');assert.equal(song.randomMelodyContour,true);assert.equal(song.randomProgression,true);assert.equal(song.adaptiveAccompaniment,true);assert.equal(song.generation.adaptiveAccompaniment,true);
  assert.ok(song.tracks.every(t=>Object.values(t.patterns).every(ns=>ns.every(n=>n.step>=0&&n.step+n.len<=64))));
 }
-api.installBuiltinSamples();assert.equal(api.exportProjectPayload().songs.length,11);
-assert.equal(api.normalizeProjectShape(sampleProject).builtinSamplesVersion,4);
+api.installBuiltinSamples();assert.equal(api.exportProjectPayload().songs.length,12);
+assert.equal(api.normalizeProjectShape(sampleProject).builtinSamplesVersion,5);
 const generatedInfo=plain(api.state.generation);
 nodes.get('#melodyContour').value='fall';nodes.get('#melodyContour').onchange();
 assert.deepEqual(plain(api.state.generation),generatedInfo,'selection changes must not rewrite generation history');
@@ -266,11 +266,11 @@ assert.ok(api.songGenerationDescription({progression:'Am-F-C-G'}).includes('Am �
 console.log('PASS: progression and mode metadata, section progressions, save/load and legacy display');
 
 // Replace obsolete sample libraries and default song; keep personal songs.
-assert.equal(new Set(sampleProject.songs.slice(1).map(s=>s.style)).size,10);
-assert.equal(new Set(sampleProject.songs.slice(1).map(s=>s.bpm)).size,10);
-assert.equal(new Set(sampleProject.songs.slice(1).map(s=>s.generation.mode)).size,4);
-assert.equal(new Set(sampleProject.songs.slice(1).map(s=>s.generation.resolvedMelodyRhythm)).size,10);
-assert.equal(new Set(sampleProject.songs.slice(1).map(s=>JSON.stringify(rhythm(s.tracks[0].patterns.A)))).size,10);
+assert.equal(new Set(sampleProject.songs.filter(s=>String(s.demoId||"").startsWith("builtin-rhythm-v3-")).map(s=>s.style)).size,10);
+assert.equal(new Set(sampleProject.songs.filter(s=>String(s.demoId||"").startsWith("builtin-rhythm-v3-")).map(s=>s.bpm)).size,10);
+assert.equal(new Set(sampleProject.songs.filter(s=>String(s.demoId||"").startsWith("builtin-rhythm-v3-")).map(s=>s.generation.mode)).size,4);
+assert.equal(new Set(sampleProject.songs.filter(s=>String(s.demoId||"").startsWith("builtin-rhythm-v3-")).map(s=>s.generation.resolvedMelodyRhythm)).size,10);
+assert.equal(new Set(sampleProject.songs.filter(s=>String(s.demoId||"").startsWith("builtin-rhythm-v3-")).map(s=>JSON.stringify(rhythm(s.tracks[0].patterns.A)))).size,10);
 const personalSong=plain(sampleProject.songs[0]);personalSong.name='自分の曲';
 const obsoleteProject={builtinSamplesVersion:2,activeSongIndex:3,songs:[{name:'曲 1'},{name:'旧決戦',demoId:'demo-boss'},{name:'旧サンプル',demoId:'builtin-contour-v1-0'},personalSong]};
 api.loadProjectPayload(obsoleteProject);api.installBuiltinSamples();
@@ -282,9 +282,9 @@ assert.deepEqual(refreshedSamples.songs[1],personalSong);
 assert.ok(!refreshedSamples.songs.some(s=>s.demoId==='demo-boss'));
 api.state.bpm=151;api.installBuiltinSamples();assert.equal(api.state.bpm,151);
 const justDefault={songs:[{name:'曲1'}]};api.loadProjectPayload(justDefault);api.installBuiltinSamples();
-assert.equal(api.exportProjectPayload().songs.length,10);assert.equal(api.state.demoId,'builtin-rhythm-v3-0');
+assert.equal(api.exportProjectPayload().songs.length,11);assert.equal(api.state.name,'曲1');
 const deletedSample=plain(api.exportProjectPayload());deletedSample.songs.pop();
-api.loadProjectPayload(deletedSample);api.installBuiltinSamples();assert.equal(api.exportProjectPayload().songs.length,9);
+api.loadProjectPayload(deletedSample);api.installBuiltinSamples();assert.equal(api.exportProjectPayload().songs.length,10);
 console.log('PASS: ten new rhythm samples, removal of old samples/default, preservation of personal songs and later deletions');
 
 // Rhythm changes actual onset/duration patterns; legacy output is recoverable.
@@ -394,6 +394,9 @@ console.log('PASS: adaptive accompaniment responds to melody, preserves lead/sou
  assert.ok(auditionEvents.some(e=>e[0]==='stop'&&e[1]===undefined));
  console.log('PASS: reverse lookup, history deduplication/restore/serialization, preview scheduling/stop and non-destructive audition.');
 })().catch(error=>{console.error(error);process.exitCode=1;});
+
+
+
 
 
 
