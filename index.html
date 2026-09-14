@@ -217,9 +217,9 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
 <div class="app">
   <header class="top">
     <div class="brand">
-      <small>GAME MUSIC SEQUENCER</small>
+      <small>MUSIC COMPOSER &amp; SEQUENCER</small>
       <h1>Arcadia Music Forge</h1>
-      <p>ゲーム音楽のフレーズ作成、アレンジ、再生、MIDI/WAV書き出しまでをブラウザで。</p>
+      <p>ジャンルと情景から作曲。フレーズ作成、アレンジ、再生、MIDI/WAV書き出しまでをブラウザで。</p>
     </div>
     <div class="actions">
       <button class="btn" id="newBtn">新規</button>
@@ -292,7 +292,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
                 <option value="auto">ジャンル自動生成</option>
               </select>
             </label>
-            <span id="workspaceModeHint" style="color:#7f8799;font-size:11px">ジャンル設定を選び、自動生成で現在の曲へ反映します。</span>
+            <span id="workspaceModeHint" style="color:#7f8799;font-size:11px">音楽ジャンルと情景を選び、自動生成で現在の曲へ反映します。</span>
           </div>
           <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px" id="chordGrid"></div>
           <details id="theoryAssist" class="panel gemini-assist" style="display:grid;gap:10px">
@@ -1870,7 +1870,7 @@ function setWorkspaceMode(mode){
  const auto=mode==="auto";
  const controls=$("#genreAutoControls"), hint=$("#workspaceModeHint");
  if(controls)controls.style.display=auto?"flex":"none";
- if(hint)hint.textContent=auto?"ジャンル設定を選び、自動生成で現在の曲へ反映します。":"ジャンル設定を選び、自動生成で現在の曲へ反映します。";
+ if(hint)hint.textContent="音楽ジャンルと情景を選び、自動生成で現在の曲へ反映します。";
  const sel=$("#workspaceModeSel"); if(sel)sel.value=mode;
  autoSave();
 }
