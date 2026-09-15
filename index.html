@@ -360,8 +360,8 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
               <label class="control">主旋律パターン<select id="melodyContour" title="音の上がり下がりを選び、自動生成で反映します。自動選択はSEEDに従います。"><option value="auto">自動選択（16種類）</option><option value="rise">上昇</option><option value="fall">下降</option><option value="arch">山型</option><option value="valley">谷型</option><option value="wave">波型</option><option value="leap">跳躍</option><option value="stairsUp">階段上昇</option><option value="stairsDown">階段下降</option><option value="repeat">同音反復</option><option value="zigzag">ジグザグ</option><option value="riseTurn">上昇して折り返す</option><option value="fallTurn">下降して折り返す</option><option value="lateRise">終盤で上昇</option><option value="lateFall">終盤で下降</option><option value="peak">一度大きく跳ねる</option><option value="pendulum">振り子</option><option value="legacy">従来の旋律</option></select></label>
               <label class="control">リズムカテゴリ<select id="rhythmCategory"><option value="all">すべて</option><option value="sparse">ゆったり・余白</option><option value="balanced">標準・メリハリ</option><option value="dense">細かい・躍動</option><option value="accent">付点・裏拍</option></select></label>
               <label class="control">主旋律リズム<select id="melodyRhythm"><option value="auto">自動選択</option><option value="quarter">4分音符中心</option><option value="eighth">8分音符中心</option><option value="mixed">長短ミックス</option><option value="dotted">付点リズム</option><option value="offbeat">裏拍中心</option><option value="syncopated">シンコペーション</option><option value="sparse">休符多め</option><option value="rush">16分の駆け込み</option><option value="legacy">従来のリズム</option></select></label>
-              <label class="control"><input id="randomMelodyContour" type="checkbox" checked>主旋律パターンをランダム選択</label>
-              <label class="control" title="現在のROOT・SCALEに合わせた進行候補から選びます。進行モードは維持します"><input id="randomProgression" type="checkbox" checked>コード進行をランダム選択</label>
+              <label class="control" title="保存データ互換用" style="display:none"><input id="randomMelodyContour" type="checkbox">主旋律パターンをランダム選択</label>
+              <label class="control" title="保存データ互換用" style="display:none"><input id="randomProgression" type="checkbox">コード進行をランダム選択</label>
               <label class="control"><input id="adaptiveAccompaniment" type="checkbox" checked>主旋律に合わせて伴奏を調整</label>
               <label class="control">SEED<input id="generationSeed" type="number" min="1" max="4294967295" value="1" style="width:110px"></label>
               <label class="control"><input id="freshSeed" type="checkbox" checked>毎回変更</label>
@@ -1057,9 +1057,22 @@ const GENERATOR_PROGRESSIONS={
  borrowed_minor:{name:'借用和音・明から暗へ',styles:['pop','piano','rnb'],chords:[[0,'major'],[5,'major'],[5,'minor'],[0,'major']]},
  dance_lift:{name:'ダンス・高揚',styles:['edm','house','synthwave'],chords:[[9,'minor'],[5,'major'],[0,'major'],[7,'major']]},
  dark_pulse:{name:'ダーク・半音の緊張',styles:['techno','trap','dnb'],chords:[[0,'minor'],[1,'major'],[0,'minor'],[7,'dom7']]},
- open_fifths:{name:'開放的なサス進行',styles:['folk','ambient','piano'],chords:[[0,'sus2'],[7,'sus4'],[5,'add9'],[0,'sus2']]}
+ open_fifths:{name:'開放的なサス進行',styles:['folk','ambient','piano'],chords:[[0,'sus2'],[7,'sus4'],[5,'add9'],[0,'sus2']]},
+ neo_soul:{name:'ネオソウル・循環',styles:['rnb','hiphop','lofi'],chords:[[0,'min7'],[5,'maj7'],[10,'min7'],[3,'maj7']]},
+ boom_bap:{name:'ブームバップ・ループ',styles:['hiphop'],chords:[[0,'min7'],[8,'maj7'],[10,'maj7'],[8,'maj7']]},
+ trap_dark:{name:'トラップ・ダークループ',styles:['trap'],chords:[[0,'min7'],[1,'maj7'],[8,'maj7'],[7,'min7']]},
+ disco_lift:{name:'ディスコ・リフト',styles:['edm','house','pop'],chords:[[0,'min7'],[5,'major'],[7,'major'],[3,'major']]},
+ festival:{name:'フェス・アンセム',styles:['edm','rock','pop'],chords:[[0,'major'],[7,'major'],[9,'min7'],[5,'major']]},
+ acid_cycle:{name:'アシッド・サイクル',styles:['techno','house'],chords:[[0,'min7'],[0,'min7'],[1,'major'],[0,'min7']]},
+ breaks_minor:{name:'ブレイクス・短調',styles:['dnb','techno'],chords:[[0,'min7'],[5,'min7'],[8,'major'],[7,'major']]},
+ modal_jazz:{name:'モーダル・ジャズ',styles:['jazz'],chords:[[0,'min7'],[1,'maj7'],[5,'min7'],[0,'min7']]},
+ jazz_blues:{name:'ジャズブルース',styles:['jazz','funk'],chords:[[0,'dom7'],[0,'dom7'],[5,'dom7'],[0,'dom7']]},
+ cinematic:{name:'シネマティック・広がり',styles:['orchestral','ambient','piano'],chords:[[0,'min7'],[5,'add9'],[7,'sus4'],[2,'min7']]},
+ sunset:{name:'夕暮れ・穏やかな循環',styles:['lofi','piano','folk'],chords:[[0,'maj7'],[7,'min7'],[5,'maj7'],[9,'min7']]},
+ pop_pivot:{name:'ポップ・転調感',styles:['pop','rock'],chords:[[0,'major'],[1,'major'],[5,'major'],[7,'major']]}
 };
 const EXTRA_PROGRESS_MODES={twoChord:'2コード反復',subtle:'小さな変化',answer:'問いと応答',brightChorus:'サビで明るく',tension:'終盤に緊張'};
+const autoProgressionOption=document.createElement('option');autoProgressionOption.value='auto';autoProgressionOption.textContent='自動選択（ジャンルに合わせる）';$('#progressionSel').append(autoProgressionOption);
 Object.entries(GENERATOR_PROGRESSIONS).forEach(([id,p])=>{const o=document.createElement('option');o.value=id;o.textContent=p.name;$('#progressionSel').append(o);});
 Object.entries(EXTRA_PROGRESS_MODES).forEach(([id,label])=>{const o=document.createElement('option');o.value=id;o.textContent=label;$('#generationMode').append(o);});
 function generatorPalette(id,root){return GENERATOR_PROGRESSIONS[id].chords.map(([offset,type])=>{
@@ -2059,7 +2072,9 @@ function autoComposeBattle(){
  const seed=$('#freshSeed').checked?(crypto.getRandomValues(new Uint32Array(1))[0]||1):(Number($('#generationSeed').value)>>>0)||1;
  $('#generationSeed').value=seed;
  const rng=makeGeneratorRandom(seed),mode=$('#generationMode').value;
- state.generation={seed,mode,style:state.style,genre:state.genrePreset,randomMelodyContour:$('#randomMelodyContour').checked,randomProgression:$('#randomProgression').checked,melodyContour:$('#randomMelodyContour').checked?'auto':($('#melodyContour').value||'auto')};
+ const paletteId=$('#progressionSel').value;
+ const contourSelection=$('#melodyContour').value||'auto',contourAuto=contourSelection==='auto'||$('#randomMelodyContour').checked;
+ state.generation={seed,mode,style:state.style,genre:state.genrePreset,randomMelodyContour:contourAuto,randomProgression:paletteId==='auto'||$('#randomProgression').checked,melodyContour:contourAuto?'auto':contourSelection};
  const contourChoices=contourChoicesFor(variation);
  state.generation.resolvedMelodyContour=state.generation.melodyContour==='auto'?contourChoices[Math.floor(makeGeneratorRandom((seed^0x51ed270b)>>>0)()*contourChoices.length)]:state.generation.melodyContour;
  state.generation.adaptiveAccompaniment=$('#adaptiveAccompaniment').checked;
@@ -2073,15 +2088,15 @@ function autoComposeBattle(){
  if(variation){state.generation.variationLabel=scene?.label||variation.label;state.generation.resolvedRhythmCategory=MELODY_RHYTHMS[state.generation.resolvedMelodyRhythm]?.category||resolvedCategory;}
  const theory=ensureTheory(),ranked=ArcadiaTheory.progressionCandidates(genreTheoryTags(state.genrePreset));
  const matching=ranked.filter(p=>p.score>0),choices=matching.length?matching:ranked;
- const baseChosen=mode==='auto'?choices[Math.floor(rng()*choices.length)].id:theory.progressionId;
+ const baseChosen=mode==='auto'&&paletteId==='auto'?choices[Math.floor(rng()*choices.length)].id:theory.progressionId;
  const randomChoices=choices;
  const chosen=state.generation.randomProgression?randomChoices[Math.floor(makeGeneratorRandom((seed^0x38bd49a1)>>>0)()*randomChoices.length)].id:baseChosen;
  let mainProgression=ArcadiaTheory.resolveProgression(theory.root,theory.scale,chosen,theory.sevenths);
  const selectedGeneratorProgression=$('#progressionSel')?.selectedOptions?.[0]?.textContent||'';
  const generatorSymbols=selectedGeneratorProgression.match(/[A-G][#b]?m?(?:maj7|m7|7|dim)?/g)||[];
  const generatorChords=generatorSymbols.map(harmonicChord);
- if(!state.generation.randomProgression&&mode==='fixed'&&generatorChords.length===4&&generatorChords.every(Boolean))mainProgression=generatorChords;
- const paletteId=$('#progressionSel').value;
+ // The selected GENERATOR progression remains the base in development mode.
+ if(!state.generation.randomProgression&&generatorChords.length===4&&generatorChords.every(Boolean))mainProgression=generatorChords;
  const paletteChoices=Object.keys(GENERATOR_PROGRESSIONS).filter(id=>GENERATOR_PROGRESSIONS[id].styles.includes(state.style));
  let resolvedPalette=!state.generation.randomProgression&&GENERATOR_PROGRESSIONS[paletteId]?paletteId:null;
  if((mode==='auto'||state.generation.randomProgression)&&paletteChoices.length){
