@@ -926,6 +926,21 @@ const SCENE_PRESETS={
  openSky:{label:'星空・浮遊',base:'Menu',tempo:[60,90],density:1,contours:['wave','valley','lateRise'],categories:['sparse'],texture:.28,velocity:70,tags:['field','epic'],description:'少ない音数と緩やかな動きで、広がりを表現。'},
  resolve:{label:'決意・高揚',base:'Action',tempo:[125,165],density:6,contours:['stairsUp','lateRise','riseTurn','peak'],categories:['dense','balanced'],texture:.95,velocity:106,tags:['epic','battle'],description:'上昇する旋律と、厚みを増す伴奏。'}
 };
+const GAME_GENERATION_SHAPES={
+ Action:{label:'アクション',contours:['leap','zigzag','riseTurn','peak'],categories:['dense','accent'],texture:.88,velocity:106,description:'細かい動きと跳躍で、勢いを出す。'},
+ Puzzle:{label:'パズル',contours:['repeat','pendulum','wave'],categories:['sparse','balanced'],texture:.42,velocity:78,description:'短い反復と余白で、考える時間を残す。'},
+ Racing:{label:'レース',contours:['rise','stairsUp','leap','rush'],categories:['dense'],texture:1,velocity:112,description:'高密度のリズムと上昇する旋律で、速度感を出す。'},
+ Horror:{label:'ホラー',contours:['fall','valley','lateFall','pendulum'],categories:['sparse','accent'],texture:.3,velocity:74,description:'沈む旋律と不規則な間で、不安を作る。'},
+ Cozy:{label:'ほのぼの',contours:['wave','arch','repeat'],categories:['sparse','balanced'],texture:.5,velocity:82,description:'穏やかな反復と軽い伴奏。'},
+ 'Sci-Fi':{label:'SF',contours:['zigzag','wave','lateRise','leap'],categories:['accent','balanced'],texture:.68,velocity:92,description:'裏拍や跳躍を使った、浮遊感のある動き。'},
+ Platformer:{label:'アクション・冒険',contours:['stairsUp','rise','wave','leap'],categories:['balanced','dense'],texture:.74,velocity:98,description:'覚えやすい反復に、軽快な上昇感を加える。'},
+ Boss:{label:'ボス戦',contours:['peak','leap','riseTurn','zigzag'],categories:['dense','accent'],texture:.96,velocity:116,description:'強い跳躍と厚い伴奏で、対決の緊張を作る。'},
+ Menu:{label:'タイトル・メニュー',contours:['wave','repeat','arch'],categories:['sparse'],texture:.28,velocity:74,description:'長く聴いても疲れにくい、少ない音数と緩やかな旋律。'},
+ Town:{label:'町・日常',contours:['arch','wave','repeat'],categories:['sparse','balanced'],texture:.48,velocity:84,description:'口ずさみやすい旋律と、柔らかな伴奏。'},
+ Dungeon:{label:'ダンジョン',contours:['pendulum','valley','fallTurn'],categories:['sparse','accent'],texture:.38,velocity:80,description:'低い動きと反復で、探索の緊張を保つ。'},
+ Sports:{label:'スポーツ',contours:['rise','leap','peak','zigzag'],categories:['dense','balanced'],texture:.92,velocity:108,description:'明快な拍と強いアクセントで、応援の高揚感を出す。'},
+ Rhythm:{label:'リズムゲーム',contours:['zigzag','repeat','leap','wave'],categories:['dense','accent'],texture:1,velocity:110,description:'拍に乗りやすい反復と細かなリズム。'}
+};
 Object.entries(SCENE_PRESETS).forEach(([id,scene])=>{
  GENRE_PRESETS[id]={...GENRE_PRESETS[scene.base],bpm:Math.round((scene.tempo[0]+scene.tempo[1])/2),density:scene.density,
   sounds:['snes','bell','pad','brass','pluck','bass','pluck']};
@@ -934,8 +949,9 @@ Object.entries(SCENE_PRESETS).forEach(([id,scene])=>{
 });
 function renderSceneDescription(){
  const hint=$('#sceneDescription');if(!hint)return;
- const scene=SCENE_PRESETS[state.genrePreset];
- hint.textContent=(scene?scene.description:'従来のゲーム向け生成設定。')+' 自動選択は情景を参考にします。指定した旋律・リズム・ROOT／SCALEは優先されます。';
+ const scene=SCENE_PRESETS[state.genrePreset],variation=scene||GAME_GENERATION_SHAPES[state.genrePreset];
+ const game=GAME_GENERATION_SHAPES[state.genrePreset];
+ hint.textContent=(scene?scene.description:game?game.description:'')+' 自動選択はこの傾向を強めます。旋律・リズムを固定するとその指定を優先します。ROOT／SCALEは共通設定です。';
 }
 function shapeSceneParts(pat,scene,seed){
  const rng=makeGeneratorRandom((seed^0x19cf4701^PATTERNS.indexOf(pat))>>>0);
@@ -944,7 +960,7 @@ function shapeSceneParts(pat,scene,seed){
   const notes=track.patterns[pat];
   const kept=ti===0?notes:notes.filter(n=>{
    const keep=rng()<Math.min(1,scene.texture*section);
-   return keep||(ti===5&&n.step%16===0);
+   return keep||(ti===5&&n.step%16===0)||(ti===6&&n.pitch==='C5'&&['house','techno','synthwave'].includes(state.style));
   });
   track.patterns[pat]=kept.map(n=>({...n,velocity:clamp(Math.round((n.velocity??90)*scene.velocity/96*(pat==='CLIMAX'?1.06:1)),1,127)}));
  });
@@ -961,6 +977,7 @@ const STYLE_GENERATION={
  orchestral:{densityOffset:-1,octave:-12,arpStep:4,drumBoost:.65}
 };
 const EXTRA_STYLES={
+ lofi:['ローファイ',82,8,'bell','soft',-2],
  pop:['ポップ',112,4,'pluck','soft',0],
  fm:['FM音源',150,2,'pluck','drive',2],piano:['ピアノ',90,8,'bell','none',-2],ambient:['アンビエント',72,16,'pad','none',-3],
  rock:['ロック',160,4,'brass','drive',1],funk:['ファンク',112,3,'pluck','soft',1],jazz:['ジャズ',126,3,'bell','soft',0],bossa:['ボサノバ',108,4,'pluck','soft',-1],
@@ -971,6 +988,54 @@ Object.entries(EXTRA_STYLES).forEach(([id,p])=>{
  STYLE_GENERATION[id]={densityOffset:p[5],octave:0,arpStep:p[2],drumBoost:1};
  const option=document.createElement('option');option.value=id;option.textContent=p[0];$('#styleSel').append(option);
 });
+const GENRE_ARRANGEMENTS={rock:'リフとビート',house:'四つ打ちとベース',techno:'反復ビート',dnb:'ブレイクビート',synthwave:'シンセと反復ベース',funk:'裏拍の掛け合い',jazz:'和音とベースの掛け合い',bossa:'シンコペーション伴奏',lofi:'和音と余白',ambient:'長い音と余白',piano:'鍵盤中心'};
+function arrangeByMusicGenre(progressions,seed){
+ state.tracks.forEach((t,i)=>{if(['和音','持続音','リフ'].includes(t.label))t.label=TRACKS[i].name;});
+ const style=state.style,description=GENRE_ARRANGEMENTS[style];if(!description)return;
+ const quiet=['ambient','piano','lofi'].includes(style),dance=['house','techno','dnb','synthwave'].includes(style);
+ const selected=state.selected;
+ const voice=(ti,preset,label)=>{state.selected=ti;applySoundPreset(preset,true);state.tracks[ti].label=label;};
+ voice(2,quiet||style==='jazz'||style==='bossa'?'bell':'pad','和音');
+ if(style==='ambient'){voice(2,'pad','持続音');state.tracks[2].sound.attack=.3;state.tracks[2].sound.release=1;}
+ if(style==='rock'){voice(3,'pluck','リフ');state.tracks[3].sound.wave='sawtooth';}
+ voice(5,'bass','ベース');state.selected=selected;
+ state.generation.arrangementStyle=description;state.generation.arrangementVersion=1;
+ const rng=makeGeneratorRandom((seed^0x4b8c9021)>>>0),variant=rng()<.5?0:1;
+ PATTERNS.forEach(pat=>{
+  const parts=state.tracks.map(t=>t.patterns[pat]);
+  [1,2,3,4,5,6].forEach(ti=>parts[ti]=[]);
+  const intro=pat==='INTRO'||pat==='BREAK',climax=pat==='CLIMAX';
+  const add=(ti,pitch,step,len,velocity)=>parts[ti].push({pitch,step,len:Math.min(len,64-step),velocity});
+  progressions[pat].forEach((c,bar)=>{
+   const chord=chordNotes(c);if(!chord.length)return;const start=bar*16;
+   const leadHits=new Set(parts[0].filter(n=>n.step>=start&&n.step<start+16).map(n=>n.step-start));
+   if(style==='ambient')chord.forEach(p=>add(2,p,start,16,58));
+   else if(style==='rock'){
+    const hits=intro?[0,8]:variant?[0,2,6,8,10,14]:[0,3,6,8,11,14];
+    hits.forEach((s,i)=>add(3,chord[i%3===2?Math.min(2,chord.length-1):0],start+s,2,climax?105:92));
+   }else if(!['techno','dnb'].includes(style)){
+    const hits=style==='lofi'?[0,10]:style==='piano'?[0,8]:style==='jazz'?[2,7,10,14]:style==='bossa'?[0,6,10]:dance?[2,10]:[2,6,10,14];
+    hits.filter(s=>!intro||s<8).forEach(s=>{
+     const answering=state.generation.adaptiveAccompaniment&&leadHits.has(s);
+     chord.forEach(p=>add(2,p,start+s,quiet?6:2,answering?55:72));
+    });
+   }
+   if(style!=='ambient'){
+    const hits=style==='piano'?[0]:style==='lofi'?[0,8]:style==='jazz'?[0,4,8,12]:style==='bossa'?[0,6,8,14]:style==='funk'?[0,3,6,10,14]:dance?[0,2,4,6,8,10,12,14]:[0,4,8,12];
+    hits.filter(s=>!intro||s%8===0).forEach((s,i)=>add(5,chord[style==='jazz'?i%chord.length:0],start+s,quiet?8:2,86));
+   }
+   if(!['ambient','piano'].includes(style)&&(!intro||dance)){
+    const kicks=style==='dnb'?[0,6,10]:dance?[0,4,8,12]:style==='lofi'?[0,10]:[0,8];
+    kicks.forEach(s=>add(6,'C5',start+s,1,96));
+    [4,12].forEach(s=>add(6,'D5',start+s,1,style==='lofi'?65:88));
+    (quiet?[2,10]:[2,6,10,14]).forEach(s=>add(6,'E5',start+s,1,quiet?42:56));
+   }
+  });
+  // Automatic ambient melody becomes occasional accents; explicit choices stay intact.
+  if(style==='ambient'&&state.generation.melodyContour==='auto'&&state.generation.melodyRhythm==='auto')parts[0]=parts[0].filter(n=>n.step%16===0).map(n=>({...n,len:Math.min(8,64-n.step),velocity:55}));
+  state.tracks.forEach((t,ti)=>t.patterns[pat]=parts[ti]);
+ });
+}
 function noteFromMidi(m){return ArcadiaTheory.midiName(m);}
 function makeGeneratorRandom(seed){
  let value=(seed>>>0)||1;
@@ -1286,7 +1351,7 @@ function patternProgression(){
 function theoryScalePool(low=64,high=88){const t=ensureTheory();return ArcadiaTheory.scalePool(t.root,t.scale,low,high);}
 function genreTheoryTags(genre){
  if(SCENE_PRESETS[genre])return SCENE_PRESETS[genre].tags;
- return {Action:['battle','boss','epic'],Boss:['battle','boss','epic'],Racing:['racing','battle'],Sports:['racing','battle'],Rhythm:['racing','battle'],Horror:['horror','dungeon'],Dungeon:['horror','dungeon'],Cozy:['town','bright'],Town:['town','bright'],Menu:['town','bright'],Platformer:['field','adventure'],'Sci-Fi':['field','epic']}[genre]||['town','bright'];
+ return {Action:['battle','epic'],Boss:['boss','battle','epic'],Racing:['racing','battle'],Sports:['racing','bright'],Rhythm:['racing','pop','classic'],Horror:['horror','dungeon'],Dungeon:['dungeon','horror'],Cozy:['town','bright'],Town:['town','field','bright'],Menu:['town','classic'],Puzzle:['town','classic'],'Sci-Fi':['field','epic'],Platformer:['field','adventure']}[genre]||['town','bright'];
 }
 function initTheoryControls(){
  const fill=(id,entries)=>entries.forEach(([value,label])=>{const o=document.createElement('option');o.value=value;o.textContent=label;$(id).appendChild(o);});
@@ -1713,7 +1778,9 @@ function renderSongLibrary(){
 function songGenerationDescription(song){
  const info=[melodyDescription(song)],g=song.generation||{};
  if(g.scene)info.unshift('情景: '+(SCENE_PRESETS[g.scene]?.label||g.scene));
+ else if(g.gamePreset)info.unshift('ゲーム向け: '+(GAME_GENERATION_SHAPES[g.gamePreset]?.label||g.gamePreset));
  if(g.adaptiveAccompaniment)info.push('伴奏: 主旋律に追従');
+ if(g.arrangementStyle)info.push('編成: '+g.arrangementStyle);
  if(g.melodyRhythm){const kind=g.resolvedMelodyRhythm||g.melodyRhythm;info.push('リズム: '+(g.melodyRhythm==='auto'?'自動選択（':'')+(MELODY_RHYTHMS[kind]?.label||'従来のリズム')+(g.melodyRhythm==='auto'?'）':''));}
  if(g.randomProgression)info.push('進行選択: ランダム');
  const modes={fixed:'指定進行',auto:'おまかせ',develop:'展開あり',minimal:'コード少なめ'};
@@ -1900,25 +1967,27 @@ function autoComposeBattle(){
  state.patternOrder=[...new Set([...(state.patternOrder||[]),'INTRO','A','B','BREAK','CLIMAX','TURN'])];
  ensurePatterns();
  const profile=GENRE_PRESETS[state.genrePreset]||GENRE_PRESETS.Action;
- const scene=SCENE_PRESETS[state.genrePreset];
+ const scene=SCENE_PRESETS[state.genrePreset],variation=scene||GAME_GENERATION_SHAPES[state.genrePreset];
  const styleProfile=STYLE_GENERATION[state.style]||STYLE_GENERATION.snes;
  const seed=$('#freshSeed').checked?(crypto.getRandomValues(new Uint32Array(1))[0]||1):(Number($('#generationSeed').value)>>>0)||1;
  $('#generationSeed').value=seed;
  const rng=makeGeneratorRandom(seed),mode=$('#generationMode').value;
  state.generation={seed,mode,style:state.style,genre:state.genrePreset,randomMelodyContour:$('#randomMelodyContour').checked,randomProgression:$('#randomProgression').checked,melodyContour:$('#randomMelodyContour').checked?'auto':($('#melodyContour').value||'auto')};
- const contourChoices=scene?scene.contours:Object.keys(MELODY_CONTOURS);
+ const contourChoices=variation?variation.contours:Object.keys(MELODY_CONTOURS);
  state.generation.resolvedMelodyContour=state.generation.melodyContour==='auto'?contourChoices[Math.floor(makeGeneratorRandom((seed^0x51ed270b)>>>0)()*contourChoices.length)]:state.generation.melodyContour;
  state.generation.adaptiveAccompaniment=$('#adaptiveAccompaniment').checked;
  state.generation.melodyRhythm=$('#melodyRhythm').value||'auto';
  state.generation.rhythmCategory=$('#rhythmCategory').value||'all';
  const selectedCategory=state.generation.rhythmCategory;
- const resolvedCategory=scene&&selectedCategory==='all'?scene.categories[Math.floor(makeGeneratorRandom((seed^0x37ac196f)>>>0)()*scene.categories.length)]:selectedCategory;
+ const resolvedCategory=variation&&selectedCategory==='all'?variation.categories[Math.floor(makeGeneratorRandom((seed^0x37ac196f)>>>0)()*variation.categories.length)]:selectedCategory;
  state.generation.resolvedMelodyRhythm=resolveMelodyRhythm(state.generation.melodyRhythm,seed,resolvedCategory);
- if(scene){state.generation.scene=state.genrePreset;state.generation.sceneVersion=1;state.generation.resolvedRhythmCategory=MELODY_RHYTHMS[state.generation.resolvedMelodyRhythm]?.category||resolvedCategory;}
+ if(scene){state.generation.scene=state.genrePreset;state.generation.sceneVersion=1;}
+ else if(variation){state.generation.gamePreset=state.genrePreset;state.generation.gamePresetVersion=1;}
+ if(variation){state.generation.variationLabel=scene?.label||variation.label;state.generation.resolvedRhythmCategory=MELODY_RHYTHMS[state.generation.resolvedMelodyRhythm]?.category||resolvedCategory;}
  const theory=ensureTheory(),ranked=ArcadiaTheory.progressionCandidates(genreTheoryTags(state.genrePreset));
  const matching=ranked.filter(p=>p.score>0),choices=matching.length?matching:ranked;
  const baseChosen=mode==='auto'?choices[Math.floor(rng()*choices.length)].id:theory.progressionId;
- const randomChoices=scene?choices:ArcadiaTheory.PROGRESSIONS;
+ const randomChoices=choices;
  const chosen=state.generation.randomProgression?randomChoices[Math.floor(makeGeneratorRandom((seed^0x38bd49a1)>>>0)()*randomChoices.length)].id:baseChosen;
  let mainProgression=ArcadiaTheory.resolveProgression(theory.root,theory.scale,chosen,theory.sevenths);
  const selectedGeneratorProgression=$('#progressionSel')?.selectedOptions?.[0]?.textContent||'';
@@ -1966,20 +2035,22 @@ function autoComposeBattle(){
  });
  PATTERNS.forEach(pat=>{state.tracks[0].patterns[pat]=applyMelodyRhythm(state.tracks[0].patterns[pat],state.generation.resolvedMelodyRhythm);});
  PATTERNS.forEach(pat=>coordinateGeneratedParts(pat,sectionProgressions[pat],styleProfile,rng));
- PATTERNS.forEach(pat=>{state.tracks[0].patterns[pat]=applyMelodyContour(state.tracks[0].patterns[pat],sectionProgressions[pat],theoryScalePool(),scene?state.generation.resolvedMelodyContour:state.generation.melodyContour,seed,pat);});
+ PATTERNS.forEach(pat=>{state.tracks[0].patterns[pat]=applyMelodyContour(state.tracks[0].patterns[pat],sectionProgressions[pat],theoryScalePool(),variation?state.generation.resolvedMelodyContour:state.generation.melodyContour,seed,pat);});
  if(theory.phraseAssist)PATTERNS.forEach(pat=>{state.tracks[0].patterns[pat]=applyPhraseAssist(state.tracks[0].patterns[pat],sectionProgressions[pat],theoryScalePool());});
  if(state.generation.adaptiveAccompaniment)PATTERNS.forEach(pat=>{
   const adapted=adaptAccompaniment(state.tracks.map(t=>t.patterns[pat]),sectionProgressions[pat],pat,theoryScalePool());
   adapted.forEach((notes,ti)=>{state.tracks[ti].patterns[pat]=notes;});
  });
- if(scene)PATTERNS.forEach(pat=>shapeSceneParts(pat,scene,seed));
+ arrangeByMusicGenre(sectionProgressions,seed);
+ if(variation)PATTERNS.forEach(pat=>shapeSceneParts(pat,variation,seed));
  state.tracks[6].sound={...SOUND_DEFAULTS[6],filter:12000,reverb:.06};
  state.selectedPattern="INTRO";
  state.generation.progressions=sectionProgressions;
  state.generation.generatedProgressions=JSON.parse(JSON.stringify(sectionProgressions));
  state.generation.theory={...ensureTheory()};
  standardArrangement();
- render();toast(`${scene?.label||state.genrePreset} の曲を48小節へ自動生成しました`);
+ if(GENRE_ARRANGEMENTS[state.style])state.arrangement.forEach((row,ti)=>row.forEach((pat,i)=>{if(pat&&!state.tracks[ti].patterns[pat]?.length)row[i]=null;}));
+ render();toast(`${scene?.label||variation?.label||state.genrePreset} の曲を48小節へ自動生成しました`);
 }
 function applyChordBackingCore(prog){
  prog.forEach((c,bar)=>{
@@ -3299,7 +3370,7 @@ function bindUi(){
  });
  const genreSel=$("#genrePresetSel");
  if(genreSel){
-   genreSel.innerHTML='<optgroup label="情景・ムード">'+Object.entries(SCENE_PRESETS).map(([id,scene])=>`<option value="${id}">${scene.label}</option>`).join('')+'</optgroup><optgroup label="従来のゲーム向け">'+Object.keys(GENRE_PRESETS).filter(name=>!SCENE_PRESETS[name]).map(name=>`<option value="${name}">${name}</option>`).join('')+'</optgroup>';
+   genreSel.innerHTML='<optgroup label="情景・ムード">'+Object.entries(SCENE_PRESETS).map(([id,scene])=>`<option value="${id}" title="${scene.description}">${scene.label}</option>`).join('')+'</optgroup><optgroup label="ゲーム向け">'+Object.entries(GAME_GENERATION_SHAPES).map(([id,game])=>`<option value="${id}" title="${game.description}">${game.label}</option>`).join('')+'</optgroup>';
    genreSel.value=state.genrePreset||"Action";
    genreSel.onchange=()=>{state.genrePreset=genreSel.value;renderSceneDescription();autoSave();};
  }

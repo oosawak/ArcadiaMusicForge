@@ -47,7 +47,7 @@ const realRender=render;
 window.smoothChordVoicings=smoothChordVoicings;
 render=()=>{};renderArrangement=()=>{};refreshPatternSelect=()=>{};updateArrangementHighlight=()=>{};
 window.testApi={adaptAccompaniment,rhythmChoices,resolveMelodyRhythm,applyMelodyRhythm,renderRhythmChoices,get rhythms(){return MELODY_RHYTHMS;},loadProjectPayload,songGenerationDescription,installBuiltinSamples,melodyDescription,reverseLookup,saveTheoryHistory,restoreTheoryHistory,previewTheoryChords,stopTheoryPreview,ArcadiaTheory,normalizeTheory,normalizeSongShape,createSongState,ensurePatterns,autoComposeBattle,applyChordBacking,changeTheory,renderTheoryAssist,renderTheoryGuide,initTheoryControls,initGrid,bindUi,patternProgression,theoryProgression,exportProjectPayload,normalizeProjectShape,allArrangedNotes,serializeSong,fitMidiToRoll,generateTheoryPart,renameCurrentPattern,deleteCurrentPattern,
- genres:Object.keys(GENRE_PRESETS),styles:Object.keys(STYLE_GENERATION),
+ genres:Object.keys(GENRE_PRESETS),styles:Object.keys(STYLE_GENERATION),scenePresets:SCENE_PRESETS,gameShapes:GAME_GENERATION_SHAPES,genreTags:genreTheoryTags,
  get state(){return state;},get undo(){return undoStack;},
  prepare(song){project={version:17,title:'test',activeSongIndex:0,songs:[song]};state=song;undoStack=[];selectedNotes=new Set();ensurePatterns();},
  selectPattern(p){state.selectedPattern=p;},selectTrack(t){state.selected=t;},realRender};
@@ -103,6 +103,18 @@ function composeScene(scene,style='pop',contour='auto',rhythm='auto',category='a
  api.autoComposeBattle();return plain(api.state);
 }
 const sceneIds=['dawn','nightCity','rainyRoom','seaside','journey','celebration','longing','mystery','openSky','resolve'];
+for(const style of ['rock','house','techno','dnb','synthwave','funk','jazz','bossa','lofi','ambient','piano']){
+ const song=composeScene('celebration',style);
+ assert.ok(song.generation.arrangementStyle);
+ assert.deepEqual(composeScene('celebration',style),song,'genre arrangement is seeded');
+ assert.deepEqual(plain(api.normalizeSongShape(song)),song,'genre arrangement survives serialization');
+ for(let ti=0;ti<7;ti++)for(const pat of song.arrangement[ti])if(pat)assert.ok(song.tracks[ti].patterns[pat].length,'unused instruments have no arrangement clips');
+ if(style==='rock'){assert.equal(song.tracks[2].patterns.A.length,0);assert.ok(song.tracks[3].patterns.A.length>0);}
+ if(['ambient','piano'].includes(style))assert.equal(song.tracks[6].patterns.A.length,0);
+ if(style==='ambient'){assert.equal(song.tracks[5].patterns.A.length,0);assert.ok(song.tracks[2].patterns.A.every(n=>n.len===16));}
+ if(['house','techno','synthwave'].includes(style))assert.deepEqual(song.tracks[6].patterns.A.filter(n=>n.pitch==='C5').map(n=>n.step),Array.from({length:16},(_,i)=>i*4));
+}
+console.log('PASS: genre instrumentation, rhythm, unused tracks, determinism and serialization');
 const sceneResults=sceneIds.map(id=>{
  const song=composeScene(id);
  assert.deepEqual(composeScene(id),song,'scene selection must reproduce with the same seed');
@@ -125,6 +137,25 @@ assert.equal(explicitScene.generation.resolvedMelodyRhythm,'eighth');
 assert.equal(composeScene('rainyRoom','pop','auto','auto','dense').generation.resolvedRhythmCategory,'dense');
 assert.notDeepEqual(composeScene('nightCity','pop').tracks,composeScene('nightCity','ambient').tracks,'music genre changes instrumentation and accompaniment within a scene');
 console.log('PASS: ten scenes, seeded reproduction, actual melodic/backing differences, explicit choices and save/load');
+assert.equal(Object.keys(api.gameShapes).length,13,'retain all existing game IDs for old projects');
+const oldGameSongs=Object.keys(api.gameShapes).map(id=>{
+ const song=compose('naturalMinor','auto','pop',id);
+ nodes.get('#melodyContour').value='auto';nodes.get('#melodyRhythm').value='auto';
+ nodes.get('#randomMelodyContour').checked=true;nodes.get('#randomProgression').checked=true;
+ api.autoComposeBattle();const generated=plain(api.state);
+ assert.equal(generated.generation.gamePreset,id);
+ assert.equal(generated.generation.resolvedMelodyContour,api.gameShapes[id].contours.find(c=>c===generated.generation.resolvedMelodyContour));
+ assert.ok(generated.generation.resolvedRhythmCategory);
+ const matchingProgressions=T.progressionCandidates(api.genreTags(id)).filter(p=>p.score>0).map(p=>p.id);
+ assert.ok(matchingProgressions.includes(generated.generation.progressionId),'random progression follows the selected game profile');
+ assert.ok(api.songGenerationDescription(generated).includes('ゲーム向け:'));
+ assert.deepEqual(plain(api.normalizeSongShape(generated)),generated,'game profile and its generated record survive project save/load');
+ assert.deepEqual(compose('naturalMinor','auto','pop',id),song,'legacy profile setup remains deterministic');
+ return generated;
+});
+assert.equal(new Set(oldGameSongs.map(s=>JSON.stringify(s.tracks.map(t=>t.patterns.A)))).size,13,'game profiles should produce distinct rhythmic, melodic or accompaniment patterns');
+assert.ok(oldGameSongs.find(s=>s.generation.gamePreset==='Menu').tracks.slice(1).reduce((n,t)=>n+t.patterns.A.length,0)<oldGameSongs.find(s=>s.generation.gamePreset==='Boss').tracks.slice(1).reduce((n,t)=>n+t.patterns.A.length,0));
+console.log('PASS: all thirteen legacy game profiles stay selectable and now steer seeded melody, rhythm and backing');
 let generatedCases=0;
 for(const scale of Object.keys(T.SCALE_TYPES))for(const mode of ['fixed','auto','develop','minimal']){
  const song=compose(scale,mode,'snes','Action','C#',true),pcs=T.scale('C#',scale);
