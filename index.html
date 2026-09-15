@@ -430,6 +430,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
             <span class="fx-chip">SOURCE</span><span class="fx-chip">FILTER</span><span class="fx-chip">PAN</span><span class="fx-chip">WIDTH</span><span class="fx-chip">REVERB</span><span class="fx-chip">DELAY</span>
           </div>
           <div style="color:#7f8799;font-size:11px">設定は選択中トラックに適用され、再生・WAV書き出しにも反映されます。</div>
+          <div class="control" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span>短い音声を生成</span><input id="wtrmaxPrompt" type="text" placeholder="例：雨の環境音、短いシンセのジングル" style="min-width:240px;flex:1"><input id="wtrmaxDuration" type="number" min="0.5" max="30" step="0.5" value="5" style="width:64px"><span>秒</span><button class="btn" id="wtrmaxGenerateBtn" type="button">生成してサンプラーへ</button><span id="wtrmaxStatus" class="preset-tag"></span></div>
         </div>
       </section>
 
@@ -3170,6 +3171,11 @@ async function loadTrackSample(file){
    renderSamplerControls();renderSoundControls();autoSave();toast("トラックサンプルを読み込みました");
  }catch{toast("音声ファイルを読み込めませんでした")}
 }
+async function generateWtrmaxSample(){
+ const prompt=$('#wtrmaxPrompt').value.trim();if(!prompt)return toast('生成する音の説明を入力してください');
+ const status=$('#wtrmaxStatus');status.textContent='生成中…';$('#wtrmaxGenerateBtn').disabled=true;
+ try{const response=await fetch('http://wtrmax:8000/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt,negative_prompt:'low quality, distorted, noisy, human voice',duration:clamp(+$('#wtrmaxDuration').value||5,.5,30),steps:50})});if(!response.ok)throw Error('HTTP '+response.status);const blob=await response.blob();if(!blob.size)throw Error('empty response');await loadTrackSample(new File([blob],'wtrmax-generated.mp3',{type:blob.type||'audio/mpeg'}));status.textContent='読み込み完了';toast('生成音声をPCM SAMPLERへ読み込みました');}catch(error){status.textContent='接続できません';toast('wtrmaxへ接続できませんでした。CORSとサーバー起動を確認してください');}finally{$('#wtrmaxGenerateBtn').disabled=false;}
+}
 async function loadDrumSample(slot,file){
  if(!file)return;
  try{
@@ -3585,6 +3591,7 @@ function bindUi(){
  $("#instrumentPresetLoadBtn").onclick=loadInstrumentPreset;
  $("#instrumentPresetDeleteBtn").onclick=deleteInstrumentPreset;
  $("#previewInstrumentBtn").onclick=previewInstrument;
+ $('#wtrmaxGenerateBtn').onclick=generateWtrmaxSample;
  $("#trackSampleInput").onchange=e=>loadTrackSample(e.target.files?.[0]);
  $("#clearSampleBtn").onclick=()=>{getSampleStore().tracks[state.selected]=null; if(state.tracks[state.selected].sample) state.tracks[state.selected].sample.name=""; renderSamplerControls(); autoSave();};
  $("#previewSampleBtn").onclick=()=>{const runtime=getSampleStore().tracks[state.selected]; if(runtime?.buffer) previewBuffer(runtime.buffer,state.tracks[state.selected].sample?.gain||1);};
