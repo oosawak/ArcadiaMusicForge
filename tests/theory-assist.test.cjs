@@ -47,7 +47,7 @@ const realRender=render;
 window.smoothChordVoicings=smoothChordVoicings;
 render=()=>{};renderArrangement=()=>{};refreshPatternSelect=()=>{};updateArrangementHighlight=()=>{};
 window.testApi={adaptAccompaniment,rhythmChoices,resolveMelodyRhythm,applyMelodyRhythm,renderRhythmChoices,get rhythms(){return MELODY_RHYTHMS;},loadProjectPayload,songGenerationDescription,installBuiltinSamples,melodyDescription,reverseLookup,saveTheoryHistory,restoreTheoryHistory,previewTheoryChords,stopTheoryPreview,ArcadiaTheory,normalizeTheory,normalizeSongShape,createSongState,ensurePatterns,autoComposeBattle,applyChordBacking,changeTheory,renderTheoryAssist,renderTheoryGuide,initTheoryControls,initGrid,bindUi,patternProgression,theoryProgression,exportProjectPayload,normalizeProjectShape,allArrangedNotes,serializeSong,fitMidiToRoll,generateTheoryPart,renameCurrentPattern,deleteCurrentPattern,
- contourChoicesFor,extraContours:EXTRA_CONTOUR_LABELS,genres:Object.keys(GENRE_PRESETS),styles:Object.keys(STYLE_GENERATION),scenePresets:SCENE_PRESETS,gameShapes:GAME_GENERATION_SHAPES,genreTags:genreTheoryTags,
+ generatorPalettes:GENERATOR_PROGRESSIONS,progressModes:EXTRA_PROGRESS_MODES,contourChoicesFor,extraContours:EXTRA_CONTOUR_LABELS,genres:Object.keys(GENRE_PRESETS),styles:Object.keys(STYLE_GENERATION),scenePresets:SCENE_PRESETS,gameShapes:GAME_GENERATION_SHAPES,genreTags:genreTheoryTags,
  get state(){return state;},get undo(){return undoStack;},
  prepare(song){project={version:17,title:'test',activeSongIndex:0,songs:[song]};state=song;undoStack=[];selectedNotes=new Set();ensurePatterns();},
  selectPattern(p){state.selectedPattern=p;},selectTrack(t){state.selected=t;},realRender};
@@ -103,6 +103,21 @@ function composeScene(scene,style='pop',contour='auto',rhythm='auto',category='a
  api.autoComposeBattle();return plain(api.state);
 }
 const sceneIds=['dawn','nightCity','rainyRoom','seaside','journey','celebration','longing','mystery','openSky','resolve'];
+for(const id of Object.keys(api.generatorPalettes))for(const mode of ['fixed',...Object.keys(api.progressModes)]){
+ compose();nodes.get('#progressionSel').value=id;nodes.get('#generationMode').value=mode;
+ const theory=plain(api.state.theory);api.autoComposeBattle();const song=plain(api.state),p=song.generation.progressions;
+ assert.equal(song.generation.generatorProgression,id);
+ assert.deepEqual(song.theory,theory,'generator leaves theory settings intact');
+ assert.equal(api.normalizeSongShape(song).generatorProgressionChoice,id);
+ assert.equal(api.normalizeSongShape(song).generatorProgressionMode,mode);
+ api.autoComposeBattle();assert.deepEqual(plain(api.state.tracks),song.tracks);
+ if(mode==='twoChord'){assert.deepEqual(p.A[0],p.A[1]);assert.deepEqual(p.A[2],p.A[3]);}
+ if(mode==='answer')assert.deepEqual(p.B.map(c=>c.symbol),[p.A[2],p.A[3],p.A[1],p.A[0]].map(c=>c.symbol));
+ if(mode==='brightChorus')assert.ok(p.CLIMAX.every(c=>c.type==='major'));
+ if(mode==='tension')assert.equal(p.TURN[3].type,'dom7');
+}
+nodes.get('#progressionSel').value='';
+console.log('PASS: ten progression palettes, five development modes, theory isolation and seeded save/load');
 for(const style of ['hiphop','trap','rnb','edm']){
  const baseline=composeScene('celebration',style);
  assert.ok(baseline.generation.arrangementStyle);
