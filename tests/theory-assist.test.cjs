@@ -47,7 +47,7 @@ const realRender=render;
 window.smoothChordVoicings=smoothChordVoicings;
 render=()=>{};renderArrangement=()=>{};refreshPatternSelect=()=>{};updateArrangementHighlight=()=>{};
 window.testApi={adaptAccompaniment,rhythmChoices,resolveMelodyRhythm,applyMelodyRhythm,renderRhythmChoices,get rhythms(){return MELODY_RHYTHMS;},loadProjectPayload,songGenerationDescription,installBuiltinSamples,melodyDescription,reverseLookup,saveTheoryHistory,restoreTheoryHistory,previewTheoryChords,stopTheoryPreview,ArcadiaTheory,normalizeTheory,normalizeSongShape,createSongState,ensurePatterns,autoComposeBattle,applyChordBacking,changeTheory,renderTheoryAssist,renderTheoryGuide,initTheoryControls,initGrid,bindUi,patternProgression,theoryProgression,exportProjectPayload,normalizeProjectShape,allArrangedNotes,serializeSong,fitMidiToRoll,generateTheoryPart,renameCurrentPattern,deleteCurrentPattern,
- genres:Object.keys(GENRE_PRESETS),styles:Object.keys(STYLE_GENERATION),scenePresets:SCENE_PRESETS,gameShapes:GAME_GENERATION_SHAPES,genreTags:genreTheoryTags,
+ contourChoicesFor,extraContours:EXTRA_CONTOUR_LABELS,genres:Object.keys(GENRE_PRESETS),styles:Object.keys(STYLE_GENERATION),scenePresets:SCENE_PRESETS,gameShapes:GAME_GENERATION_SHAPES,genreTags:genreTheoryTags,
  get state(){return state;},get undo(){return undoStack;},
  prepare(song){project={version:17,title:'test',activeSongIndex:0,songs:[song]};state=song;undoStack=[];selectedNotes=new Set();ensurePatterns();},
  selectPattern(p){state.selectedPattern=p;},selectTrack(t){state.selected=t;},realRender};
@@ -103,6 +103,23 @@ function composeScene(scene,style='pop',contour='auto',rhythm='auto',category='a
  api.autoComposeBattle();return plain(api.state);
 }
 const sceneIds=['dawn','nightCity','rainyRoom','seaside','journey','celebration','longing','mystery','openSky','resolve'];
+for(const style of ['hiphop','trap','rnb','edm']){
+ const baseline=composeScene('celebration',style);
+ assert.ok(baseline.generation.arrangementStyle);
+ const sounds=new Set();
+ for(const soundStyle of ['normal','nes','snes','megadrive','ps1']){
+  nodes.get('#soundStyleSel').value=soundStyle;api.autoComposeBattle();const song=plain(api.state);
+  assert.equal(song.generation.soundStyle,soundStyle);
+  assert.equal(song.style,style);
+  assert.deepEqual(song.tracks.map(t=>t.patterns),baseline.tracks.map(t=>t.patterns),'sound styling preserves composition');
+  sounds.add(JSON.stringify(song.tracks.map(t=>t.sound)));
+  assert.equal(api.normalizeSongShape(song).soundStyle,soundStyle);
+  api.autoComposeBattle();assert.deepEqual(plain(api.state.tracks),song.tracks);
+ }
+ assert.equal(sounds.size,5);
+ nodes.get('#soundStyleSel').value='normal';
+}
+console.log('PASS: independent genre/sound style combinations, sound differences, seeded notes and save/load');
 for(const style of ['rock','house','techno','dnb','synthwave','funk','jazz','bossa','lofi','ambient','piano']){
  const song=composeScene('celebration',style);
  assert.ok(song.generation.arrangementStyle);
@@ -144,7 +161,7 @@ const oldGameSongs=Object.keys(api.gameShapes).map(id=>{
  nodes.get('#randomMelodyContour').checked=true;nodes.get('#randomProgression').checked=true;
  api.autoComposeBattle();const generated=plain(api.state);
  assert.equal(generated.generation.gamePreset,id);
- assert.equal(generated.generation.resolvedMelodyContour,api.gameShapes[id].contours.find(c=>c===generated.generation.resolvedMelodyContour));
+ assert.equal(generated.generation.resolvedMelodyContour,api.contourChoicesFor(api.gameShapes[id]).find(c=>c===generated.generation.resolvedMelodyContour));
  assert.ok(generated.generation.resolvedRhythmCategory);
  const matchingProgressions=T.progressionCandidates(api.genreTags(id)).filter(p=>p.score>0).map(p=>p.id);
  assert.ok(matchingProgressions.includes(generated.generation.progressionId),'random progression follows the selected game profile');
@@ -286,6 +303,24 @@ for(const kind of ["rise", "fall", "arch", "valley", "wave", "leap", "stairsUp",
  assert.equal(api.normalizeProjectShape(plain(api.exportProjectPayload())).songs[0].generation.melodyContour,kind);
 }
 assert.equal(contourResults.size,16,'all contours must produce distinct melodies');
+const extraResults=new Set();
+for(const kind of Object.keys(api.extraContours)){
+ nodes.get('#melodyContour').value=kind;api.autoComposeBattle();const song=plain(api.state);
+ extraResults.add(JSON.stringify(song.tracks[0].patterns.A));
+ assert.deepEqual(song.tracks.slice(1),baseContour.tracks.slice(1));
+ assert.deepEqual(rhythm(song.tracks[0].patterns.A),rhythm(baseContour.tracks[0].patterns.A));
+ assert.ok(api.melodyDescription(song).includes(api.extraContours[kind]));
+ assert.equal(api.normalizeSongShape(song).generation.resolvedMelodyContour,kind);
+ api.autoComposeBattle();assert.deepEqual(plain(api.state.tracks),song.tracks);
+}
+assert.equal(extraResults.size,Object.keys(api.extraContours).length,'new combinations produce distinct melodies');
+const selectedExtras=new Set();nodes.get('#melodyContour').value='auto';
+for(let seed=1;seed<=100;seed++){
+ nodes.get('#generationSeed').value=String(Math.imul(seed,2654435761)>>>0);api.autoComposeBattle();
+ const kind=api.state.generation.resolvedMelodyContour;if(api.extraContours[kind])selectedExtras.add(kind);
+}
+assert.ok(selectedExtras.size>=3,'automatic selection reaches new combinations');
+nodes.get('#generationSeed').value='12345';
 nodes.get('#melodyContour').value='legacy';api.autoComposeBattle();
 assert.deepEqual(plain(api.state.tracks),baseContour.tracks);
 nodes.get('#melodyContour').value='auto';api.autoComposeBattle();
