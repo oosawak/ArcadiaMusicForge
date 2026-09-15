@@ -39,6 +39,9 @@ vm.runInContext(playSource,c);
  c.stablePlayback={nextTime:30.04,nextStep:767,queue:[],finished:false};c.audio.currentTime=30;c.pumpStablePlayback();
  assert.deepEqual(Array.from(c.stablePlayback.queue,e=>e.step),[767,64],'bar 48 returns to bar 5');
  console.log('PASS: intro once, then bars 5–48 loop');
+ c.getLoopBounds=()=>({startStep:64,endStep:384});
+ c.stablePlayback={nextTime:30.04,nextStep:383,queue:[],finished:false};c.audio.currentTime=30;c.pumpStablePlayback();
+ assert.deepEqual(Array.from(c.stablePlayback.queue,e=>e.step),[383,64],'audition TURN ends at bar 24 and returns to A');
 })().catch(e=>{console.error(e);process.exitCode=1;});
 
 

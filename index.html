@@ -275,6 +275,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
           <div class="arr-toolbar">
             <button class="btn" id="arrClearBtn">配置をクリア</button>
             <button class="btn" id="arrDemoBtn">標準構成</button>
+            <button class="btn" id="arrAuditionBtn" title="INTROから各パターンを4小節ずつ再生し、Aへ戻ってループ">試聴構成</button>
             <span>クリックでパターン切替 · 右クリックでOFF · ドラッグ＆ドロップでブロック移動/コピー</span>
           </div>
           <div class="gemini-assist" id="geminiAssistPlaceholder" style="display:none"></div>
@@ -2422,6 +2423,7 @@ function ensureArrangement(){
  });
 }
 function standardArrangement(){
+ if(state.arrangementPreset==='audition'){state.loopEnd=48;state.arrangementPreset='standard';}
  ensureArrangement();
  state.arrangement=Array.from({length:7},()=>Array(12).fill(null));
  const pick=(name,fallback=0)=>PATTERNS.includes(name)?name:PATTERNS[Math.min(fallback,PATTERNS.length-1)];
@@ -2439,6 +2441,16 @@ function standardArrangement(){
      state.arrangement[ti][b]=p;
    });
  });
+}
+function auditionArrangement(){
+ saveUndo();stopPlayback();ensureArrangement();
+ const layout=['INTRO','A','B','BREAK','CLIMAX','TURN'];
+ state.arrangement=state.tracks.map(track=>Array.from({length:12},(_,i)=>{
+  const p=layout[i];return p&&track.patterns[p]?.length?p:null;
+ }));
+ state.arrangementPreset='audition';state.loopEnabled=true;state.loopStart=5;state.loopEnd=24;
+ step=0;state.selectedPattern='INTRO';render();autoSave();
+ toast('試聴構成：INTRO → A → B → BREAK → CLIMAX → TURN。再生するとAへループします');
 }
 function syncPatternToPlayhead(){
  const block=currentBlockFromStep(step);
@@ -3534,7 +3546,8 @@ function bindUi(){
  $("#songDelBtn").onclick=deleteSong;
  $("#songNameInput").onchange=updateCurrentSongName;
  $("#arrClearBtn").onclick=()=>{saveUndo();state.arrangement=Array.from({length:7},()=>Array(12).fill(null));renderArrangement();autoSave();};
- $("#arrDemoBtn").onclick=()=>{saveUndo();standardArrangement();renderArrangement();autoSave();};
+ $("#arrDemoBtn").onclick=()=>{saveUndo();stopPlayback();standardArrangement();render();autoSave();};
+ $('#arrAuditionBtn').onclick=auditionArrangement;
  const applyChordsBtn=$("#applyChordsBtn");
  if(applyChordsBtn)applyChordsBtn.onclick=applyChordBacking;
  $("#autoComposeBtn").onclick=()=>{
@@ -3592,7 +3605,7 @@ function bindUi(){
  $("#copyNotesBtn").onclick=copySelectedNotes;
  $("#pasteNotesBtn").onclick=pasteNotes;
  $("#deleteNotesBtn").onclick=deleteSelectedNotes;
- $("#undoBtn").onclick=()=>{if(!undoStack.length)return; const prev=JSON.parse(undoStack.pop()); Object.assign(state,prev); render();};
+ $("#undoBtn").onclick=()=>{if(!undoStack.length)return; const prev=JSON.parse(undoStack.pop());Object.keys(state).forEach(key=>{if(!(key in prev))delete state[key];}); Object.assign(state,prev); render();};
  $("#demoBtn").onclick=()=>{if(!confirm('現在の曲全体をデモに置き換えます。続けますか？'))return;saveUndo();stopPlayback();demo();autoSave();};
  $("#arrGrid").addEventListener("dragend",()=>autoSave());
  document.querySelectorAll(".control input,.control select").forEach(el=>{if(!el.oninput&&!el.onchange) el.onchange=autoSave;});

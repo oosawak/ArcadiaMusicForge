@@ -47,7 +47,7 @@ const realRender=render;
 window.smoothChordVoicings=smoothChordVoicings;
 render=()=>{};renderArrangement=()=>{};refreshPatternSelect=()=>{};updateArrangementHighlight=()=>{};
 window.testApi={adaptAccompaniment,rhythmChoices,resolveMelodyRhythm,applyMelodyRhythm,renderRhythmChoices,get rhythms(){return MELODY_RHYTHMS;},loadProjectPayload,songGenerationDescription,installBuiltinSamples,melodyDescription,reverseLookup,saveTheoryHistory,restoreTheoryHistory,previewTheoryChords,stopTheoryPreview,ArcadiaTheory,normalizeTheory,normalizeSongShape,createSongState,ensurePatterns,autoComposeBattle,applyChordBacking,changeTheory,renderTheoryAssist,renderTheoryGuide,initTheoryControls,initGrid,bindUi,patternProgression,theoryProgression,exportProjectPayload,normalizeProjectShape,allArrangedNotes,serializeSong,fitMidiToRoll,generateTheoryPart,renameCurrentPattern,deleteCurrentPattern,
- generatorPalettes:GENERATOR_PROGRESSIONS,progressModes:EXTRA_PROGRESS_MODES,contourChoicesFor,extraContours:EXTRA_CONTOUR_LABELS,genres:Object.keys(GENRE_PRESETS),styles:Object.keys(STYLE_GENERATION),scenePresets:SCENE_PRESETS,gameShapes:GAME_GENERATION_SHAPES,genreTags:genreTheoryTags,
+ auditionArrangement,standardArrangement,generatorPalettes:GENERATOR_PROGRESSIONS,progressModes:EXTRA_PROGRESS_MODES,contourChoicesFor,extraContours:EXTRA_CONTOUR_LABELS,genres:Object.keys(GENRE_PRESETS),styles:Object.keys(STYLE_GENERATION),scenePresets:SCENE_PRESETS,gameShapes:GAME_GENERATION_SHAPES,genreTags:genreTheoryTags,
  get state(){return state;},get undo(){return undoStack;},
  prepare(song){project={version:17,title:'test',activeSongIndex:0,songs:[song]};state=song;undoStack=[];selectedNotes=new Set();ensurePatterns();},
  selectPattern(p){state.selectedPattern=p;},selectTrack(t){state.selected=t;},realRender};
@@ -103,6 +103,16 @@ function composeScene(scene,style='pop',contour='auto',rhythm='auto',category='a
  api.autoComposeBattle();return plain(api.state);
 }
 const sceneIds=['dawn','nightCity','rainyRoom','seaside','journey','celebration','longing','mystery','openSky','resolve'];
+{
+ const before=compose();api.auditionArrangement();const song=plain(api.state);
+ assert.deepEqual(song.tracks,before.tracks,'audition arrangement preserves notes and sound');
+ const layout=['INTRO','A','B','BREAK','CLIMAX','TURN'];
+ song.arrangement.forEach((row,ti)=>assert.deepEqual(row,Array.from({length:12},(_,i)=>layout[i]&&song.tracks[ti].patterns[layout[i]].length?layout[i]:null)));
+ assert.equal(song.loopStart,5);assert.equal(song.loopEnd,24);assert.equal(song.loopEnabled,true);
+ assert.equal(api.normalizeSongShape(song).arrangementPreset,'audition');
+ nodes.get('#undoBtn').onclick();assert.deepEqual(plain(api.state),before);
+ api.auditionArrangement();api.standardArrangement();assert.equal(api.state.loopEnd,48);
+}
 for(const id of Object.keys(api.generatorPalettes))for(const mode of ['fixed',...Object.keys(api.progressModes)]){
  compose();nodes.get('#progressionSel').value=id;nodes.get('#generationMode').value=mode;
  const theory=plain(api.state.theory);api.autoComposeBattle();const song=plain(api.state),p=song.generation.progressions;
