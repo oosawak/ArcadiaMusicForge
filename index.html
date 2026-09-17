@@ -990,6 +990,53 @@ function shapeSceneParts(pat,scene,seed){
   track.patterns[pat]=kept.map(n=>({...n,velocity:clamp(Math.round((n.velocity??90)*scene.velocity/96*(pat==='CLIMAX'?1.06:1)),1,127)}));
  });
 }
+// Game type shapes phrasing and accompaniment after the music-style arranger.
+// Separate seed stream: explicit melody/rhythm, harmony and sound settings stay intact.
+const GAME_PLAY_PROFILES={
+ Action:{name:'短い戦闘パルス',bass:[0,3,8,11],chord:[0,6,10],arp:[0,2,6,8,10,14],length:2,space:1,sections:[.65,1,.85,.35,1,.7]},
+ Puzzle:{name:'問いと応答',bass:[0,10],chord:[2,10],arp:[0,6,12],length:3,space:2,sections:[.5,.75,1,.4,.85,.5]},
+ Racing:{name:'連続する推進力',bass:[0,4,8,12],chord:[2,6,10,14],arp:[0,2,4,6,8,10,12,14],length:2,space:1,sections:[.75,.9,1,.5,1,.9]},
+ Horror:{name:'不規則な間と長い響き',bass:[0,13],chord:[0,11],arp:[3,14],length:9,space:3,sections:[.35,.5,.65,.25,.85,.35]},
+ Cozy:{name:'ゆったりした循環',bass:[0,8],chord:[0,8],arp:[2,6,10,14],length:6,space:1,sections:[.55,.8,.8,.5,.9,.6]},
+ 'Sci-Fi':{name:'交差する機械的パルス',bass:[0,6,10],chord:[3,11],arp:[0,3,6,9,12,15],length:2,space:1,sections:[.5,.85,1,.35,1,.65]},
+ Platformer:{name:'弾む短いフレーズ',bass:[0,6,8,14],chord:[4,12],arp:[0,4,6,8,12,14],length:2,space:1,sections:[.65,1,.9,.5,1,.65]},
+ Boss:{name:'重い応答と段階的な高揚',bass:[0,7,8],chord:[0,7,12],arp:[0,4,7,8,12,15],length:4,space:1,sections:[.35,.65,.85,.25,1,.75]},
+ Menu:{name:'会話を支える余白',bass:[0],chord:[0],arp:[4,12],length:12,space:2,sections:[.4,.6,.7,.3,.8,.45]},
+ Town:{name:'日常の軽い掛け合い',bass:[0,8,12],chord:[2,8],arp:[0,6,10],length:4,space:1,sections:[.6,.85,.8,.45,.95,.6]},
+ Dungeon:{name:'反復探索と区切りの変化',bass:[0,5,10],chord:[0,10],arp:[0,5,10,14],length:3,space:2,sections:[.45,.75,1,.4,1,.65]},
+ Sports:{name:'明快な拍と応援の応答',bass:[0,4,8,12],chord:[0,4,10,12],arp:[2,6,10,14],length:3,space:1,sections:[.65,.9,.85,.5,1,.8]},
+ Rhythm:{name:'拍の輪郭と終端フィル',bass:[0,3,6,8,11,14],chord:[2,6,10,14],arp:[0,2,4,7,8,10,12,15],length:1,space:1,sections:[.7,1,.9,.3,1,.9]}
+};
+function applyGamePlayProfile(song,seed){
+ const profile=GAME_PLAY_PROFILES[song.genrePreset];if(!profile)return;
+ const random=makeGeneratorRandom((seed^0x6d2b79f5)>>>0);
+ const patterns=['INTRO','A','B','BREAK','CLIMAX','TURN'];
+ patterns.forEach((pat,section)=>{
+  song.tracks.forEach((track,ti)=>{
+   if(ti===0)return; // Honor the selected lead contour and rhythm.
+   const source=track.patterns[pat]||[],result=[],seen=new Set();
+   const hits=ti===5?profile.bass:ti===4?profile.arp:profile.chord;
+   source.forEach(n=>{
+    const bar=Math.floor(n.step/16),offset=n.step%16;
+    // Keep music-style percussion timing; vary its section density and accents.
+    if(ti===6){
+     if((offset===0&&n.pitch==='C5')||random()<profile.sections[section])
+      result.push({...n,velocity:clamp(Math.round((n.velocity||90)*(section===4?1.08:.92)),1,127)});
+     return;
+    }
+    if((ti===1||ti===3)&&bar%profile.space!==0)return;
+    if(ti!==5&&random()>profile.sections[section])return;
+    const hit=hits.reduce((a,b)=>Math.abs(b-offset)<Math.abs(a-offset)?b:a,hits[0]);
+    const step=bar*16+hit,key=step+':'+n.pitch;
+    if(seen.has(key))return;seen.add(key);
+    const next=hits.find(h=>h>hit)??16;
+    result.push({...n,step,len:Math.max(1,Math.min(profile.length,next-hit,64-step)),velocity:clamp(Math.round((n.velocity||90)*(section===4?1.08:section===3?.8:1)),1,127)});
+   });
+   track.patterns[pat]=result.sort((a,b)=>a.step-b.step);
+  });
+ });
+ song.generation.gamePlayProfile={id:song.genrePreset,version:1,label:profile.name};
+}
 function generationTempo(genre,style,rng){
  const genreRanges={hiphop:[78,104],trap:[128,152],rnb:[72,100],edm:[120,136]};
  if(genreRanges[style]){const [lo,hi]=genreRanges[style];return lo+Math.floor(rng()*(hi-lo+1));}
@@ -2182,6 +2229,7 @@ function autoComposeBattle(){
  });
  arrangeByMusicGenre(sectionProgressions,seed);
  if(variation)PATTERNS.forEach(pat=>shapeSceneParts(pat,variation,seed));
+ applyGamePlayProfile(state,seed);
  state.tracks[6].sound={...SOUND_DEFAULTS[6],filter:12000,reverb:.06};
  applyGeneratorSoundStyle();
  state.selectedPattern="INTRO";
