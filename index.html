@@ -216,6 +216,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
 .loop-marker.start::after{content:"START";left:4px}
 .loop-marker.end::after{content:"END";right:4px}
 .mode-status-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px}.mode-status-row #currentModeLabel{display:inline-block;padding:8px 12px;border-left:4px solid #56d9c3;border-radius:5px;background:#122e30;color:#d5fff6;font-size:13px}.advanced-mode .mode-status-row #currentModeLabel{border-left-color:#b39bff;background:#29203d;color:#eee4ff}.mode-status-row .mode-top-btn{margin-top:0}
+.quick-mode #composerTabs{display:none!important}.quick-mode #composerPanel.composer-tab-panel-hidden{display:block!important}
 </style>
 </head>
 <body>
@@ -2237,9 +2238,9 @@ function autoComposeBattle(){
  state.generation.progressions=sectionProgressions;
  state.generation.generatedProgressions=JSON.parse(JSON.stringify(sectionProgressions));
  state.generation.theory={...ensureTheory()};
- standardArrangement();
+ applyAuditionArrangement();
  if(state.generation.arrangementStyle)state.arrangement.forEach((row,ti)=>row.forEach((pat,i)=>{if(pat&&!state.tracks[ti].patterns[pat]?.length)row[i]=null;}));
- render();toast(`${scene?.label||variation?.label||state.genrePreset} の曲を48小節へ自動生成しました`);
+ render();toast(`${scene?.label||variation?.label||state.genrePreset} の曲を試聴構成へ自動生成しました`);
 }
 function applyChordBackingCore(prog){
  prog.forEach((c,bar)=>{
@@ -2560,14 +2561,17 @@ function standardArrangement(){
    });
  });
 }
-function auditionArrangement(){
- saveUndo();stopPlayback();ensureArrangement();
+function applyAuditionArrangement(){
+ ensureArrangement();
  const layout=['INTRO','A','B','BREAK','CLIMAX','TURN'];
  state.arrangement=state.tracks.map(track=>Array.from({length:12},(_,i)=>{
   const p=layout[i];return p&&track.patterns[p]?.length?p:null;
  }));
  state.arrangementPreset='audition';state.loopEnabled=true;state.loopStart=5;state.loopEnd=24;
- step=0;state.selectedPattern='INTRO';render();autoSave();
+ step=0;state.selectedPattern='INTRO';
+}
+function auditionArrangement(){
+ saveUndo();stopPlayback();applyAuditionArrangement();render();autoSave();
  toast('試聴構成：INTRO → A → B → BREAK → CLIMAX → TURN。再生するとAへループします');
 }
 function syncPatternToPlayhead(){
@@ -3550,7 +3554,7 @@ function moveTheoryBelowPiano(){
 function initComposerTabs(){
  const composer=$("#composerPanel"), theory=$("#theoryAssist"), gemini=$("#geminiAssist"), main=composer?.parentElement;
  if(!composer||!theory||!gemini||!main||$("#composerTabs"))return;
- const tabs=document.createElement('div');tabs.id='composerTabs';tabs.className='composer-tabs';
+ const tabs=document.createElement('div');tabs.id='composerTabs';tabs.className='composer-tabs advanced-only';
  [['generator','GENERATOR',composer],['theory','THEORY ASSIST',theory],['gemini','CHROME GEMINI',gemini]].forEach(([id,label,panel])=>{
   const button=document.createElement('button');button.type='button';button.className='composer-tab';button.dataset.panel=id;button.textContent=label;
   button.onclick=()=>{tabs.querySelectorAll('.composer-tab').forEach(b=>b.classList.toggle('active',b===button));[composer,theory,gemini].forEach(p=>p.classList.add('composer-tab-panel-hidden'));panel.classList.remove('composer-tab-panel-hidden');if(panel.tagName==='DETAILS')panel.open=true;};tabs.appendChild(button);
