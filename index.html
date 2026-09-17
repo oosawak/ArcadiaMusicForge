@@ -14,7 +14,8 @@ radial-gradient(circle at 70% -10%,#3a1018 0,transparent 28rem),var(--bg);
 color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh}
 button,input,select{font:inherit}button{cursor:pointer}
 .app{max-width:1480px;margin:auto;padding:22px 22px 104px}
-.top{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:end;border-bottom:1px solid var(--line);padding-bottom:18px}
+.top{position:relative;display:grid;grid-template-columns:1fr auto;gap:18px;align-items:end;min-height:230px;border:1px solid var(--line);border-radius:14px;overflow:hidden;border-bottom:1px solid var(--line);padding:28px 18px 18px;background:linear-gradient(90deg,rgba(5,9,22,.9) 0%,rgba(5,9,22,.58) 42%,rgba(5,9,22,.2) 100%),url('assets/arcadia-title-banner.png') center 42%/cover no-repeat;box-shadow:0 12px 32px rgba(0,0,0,.28)}
+.top .brand,.top .actions{position:relative;z-index:1}.top .brand p{max-width:620px;color:#e4e8f3;text-shadow:0 1px 3px #000}
 .brand small{letter-spacing:.28em;color:var(--red);font-weight:800}.brand h1{font-size:clamp(26px,4vw,58px);margin:3px 0 0;letter-spacing:-.04em;white-space:nowrap}
 .brand p{margin:3px 0 0;color:var(--muted)}
 .actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
@@ -115,7 +116,7 @@ details>summary{list-style:none}details>summary::-webkit-details-marker{display:
 kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-radius:4px;padding:2px 5px;color:#bcc3d2}
 .toast{position:fixed;right:18px;bottom:18px;background:#171a21;border:1px solid #3a4050;padding:11px 14px;border-radius:8px;opacity:0;transform:translateY(8px);transition:.2s;pointer-events:none}.toast.show{opacity:1;transform:none}
 @media(max-width:900px){
- body{font-size:11px}.app{font-size:11px}.panel-title{font-size:10px}.btn,.control,select,input,button{font-size:10px}
+ body{font-size:11px}.app{font-size:11px}.panel-title{font-size:10px}.btn,.control,select,input,button{font-size:10px}.top{min-height:190px;background-position:34% center;padding:20px 12px 14px}.top .brand h1{font-size:clamp(24px,8vw,42px)}.top .brand p{font-size:10px;max-width:360px}
  .top{grid-template-columns:1fr}.actions{justify-content:flex-start}
  .workspace{grid-template-columns:1fr}.tracks{max-height:285px;overflow:auto}
  .transport{display:flex;flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;align-items:center;gap:6px;padding-left:10px;padding-right:10px;-webkit-overflow-scrolling:touch}.transport>*{flex:0 0 auto}.transport .control{display:flex;min-width:0}.transport .transport-stack{font-size:10px}.transport .value-fields,.transport .loop-fields{gap:3px}
