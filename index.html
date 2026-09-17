@@ -111,6 +111,7 @@ details>summary{list-style:none}details>summary::-webkit-details-marker{display:
 .tool-group-collapsible>summary::after{content:''!important}
 .help-modal{border:1px solid var(--line);border-radius:12px;background:#11131a;color:var(--text);max-width:680px;width:calc(100% - 32px);padding:0;box-shadow:0 18px 60px #000b}
 .help-modal::backdrop{background:#0009}.help-modal-body{padding:18px;line-height:1.65}.help-modal h2{margin:0 0 10px}.help-modal h3{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--gold);margin:18px -4px 7px;padding:8px 10px;border:1px solid #303646;border-radius:8px;background:linear-gradient(90deg,#1a1f2d,#12151d);letter-spacing:.04em}.help-modal h3:first-of-type{margin-top:2px}.help-modal h3::first-letter{font-size:16px}.help-modal-body>div[style*="white-space"]{color:#c2c8d7}.help-modal-body>div[style*="white-space"]:empty{height:4px}.help-close{float:right}
+.quick-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 12px;margin:10px 0;border:1px solid var(--line);border-radius:10px;background:#121722}.quick-bar .quick-title{font-weight:800;color:var(--gold);letter-spacing:.05em}.quick-bar select{min-width:130px}.quick-bar .btn.primary{background:var(--red2);color:#fff;border-color:var(--red)}.quick-mode .advanced-only{display:none!important}.quick-bar small{color:#8f98ad}.mode-switch{margin-left:auto}.advanced-mode .quick-bar{border-color:#5b4d32}.advanced-mode .quick-title{color:#9bb7ff}
 .note{position:absolute;height:20px;margin-top:3px;border-radius:4px;background:linear-gradient(#ef5262,#bb2638);border:1px solid #ff7784;box-shadow:0 0 12px rgba(217,52,69,.2);pointer-events:none}
 .playhead{position:absolute;top:0;bottom:0;width:2px;background:#f8d990;box-shadow:0 0 10px #f8d990;z-index:5;pointer-events:none}
 .status{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:10px 14px;color:#7f8799;font-size:11px;border-top:1px solid var(--line)}
@@ -245,6 +246,18 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
     <label class="control transport-stack"><span>MASTER</span><span class="value-fields"><input id="masterVol" type="range" min="0" max="1" step=".01" value=".75"><span id="masterText">75%</span></span></label>
   </section>
 
+  <section class="quick-bar" id="quickBar">
+    <span class="quick-title">QUICK MODE</span>
+    <label class="control">ジャンル／情景 <select id="quickGenre"></select></label>
+    <label class="control">STYLE <select id="quickStyle"></select></label>
+    <button class="btn primary" id="quickGenerateBtn" type="button">自動生成</button>
+    <button class="play" id="quickPlayBtn" type="button" title="生成して再生">▶</button>
+    <button class="btn" id="quickSaveBtn" type="button">保存</button>
+    <label class="control mode-switch"><input id="advancedStartup" type="checkbox"> 次回もADVANCED MODE</label>
+    <button class="btn" id="advancedModeBtn" type="button">ADVANCED MODE</button>
+    <small>自動生成・再生・保存に絞った簡単モード</small>
+  </section>
+
   <section class="workspace">
     <aside class="panel tracks">
       <div class="panel-title">曲ライブラリ <button class="collapse-toggle" data-collapse="#libraryBody">折りたたむ</button><span style="float:right;margin-right:90px" id="songCount">1 曲</span></div>
@@ -285,7 +298,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
         </div>
         </div>
       </section>
-      <section class="panel collapsible-panel" id="composerPanel">
+      <section class="panel collapsible-panel advanced-only" id="composerPanel">
         <div class="panel-title">COMPOSER TOOLS <button class="collapse-toggle" data-collapse="#composerPanel">折りたたむ</button><span style="float:right;margin-right:90px">Battle Generator</span></div>
         <div style="padding:14px;display:grid;gap:12px">
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
@@ -298,7 +311,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
             <span id="workspaceModeHint" style="color:#7f8799;font-size:11px">音楽ジャンルと情景を選び、自動生成で現在の曲へ反映します。</span>
           </div>
           <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px" id="chordGrid"></div>
-          <details id="theoryAssist" class="panel gemini-assist" style="display:grid;gap:10px">
+          <details id="theoryAssist" class="advanced-only" class="panel gemini-assist" style="display:grid;gap:10px">
             <summary class="panel-title" style="padding-left:15px;cursor:pointer">THEORY ASSIST</summary>
             <div id="diatonicGrid" style="display:flex;gap:6px;flex-wrap:wrap"></div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
@@ -374,7 +387,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
       </section>
 
 
-      <section class="panel collapsible-panel" id="soundPanel">
+      <section class="panel collapsible-panel advanced-only" id="soundPanel">
         <div class="panel-title">SOUND DESIGN <button class="collapse-toggle" data-collapse="#soundPanel">開く</button><label class="control" style="margin-left:8px;letter-spacing:0"><input id="fxBypassToggle" type="checkbox"> FX全オフ</label><span style="float:right;margin-right:50px">Track FX / Synth</span></div>
         <div style="padding:14px;display:grid;gap:12px">
           <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">
@@ -437,7 +450,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
       </section>
 
 
-      <section class="panel collapsible-panel" id="samplerPanel">
+      <section class="panel collapsible-panel advanced-only" id="samplerPanel">
         <div class="panel-title">PCM SAMPLER <button class="collapse-toggle" data-collapse="#samplerPanel">開く</button><span style="float:right;margin-right:50px">Custom Sample / Drum Slots</span></div>
         <div style="padding:14px;display:grid;gap:12px">
           <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
@@ -504,13 +517,13 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
         </div>
       </section>
 
-      <section class="panel" id="drumPanel" style="display:none">
+      <section class="panel advanced-only" id="drumPanel" style="display:none">
         <div class="panel-title">DRUM STEP SEQUENCER <span style="float:right">16 steps</span></div>
         <div style="padding:14px;overflow:auto">
           <div id="drumSeq" style="min-width:760px;display:grid;gap:6px"></div>
         </div>
       </section>
-      <section class="panel collapsible-panel" id="pianoPanel">
+      <section class="panel collapsible-panel advanced-only" id="pianoPanel">
         <div class="panel-title">PIANO ROLL <button class="collapse-toggle" data-collapse="#pianoPanel">折りたたむ</button></div>
         <div class="roll-head">
           <div class="roll-title-row"><div><h2 id="rollTitle">メロディー・ピアノロール</h2><small>4小節パターン · 48小節アレンジメントに配置</small></div><div class="roll-title-actions"><details class="tool-group tool-group-collapsible"><summary title="音符設定を開閉">音符</summary>
@@ -560,7 +573,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
           <span>グリッド 1/16 · <kbd>SPACE</kbd> 48小節 再生 / 一時停止</span>
         </div>
       </section>
-      <details class="panel gemini-assist" id="geminiAssist">
+      <details class="panel gemini-assist advanced-only" id="geminiAssist">
         <summary class="panel-title gemini-title" style="cursor:pointer"><span>CHROME GEMINI 作曲アシスト（オプション）</span><span class="gemini-status" id="geminiStatus"></span></summary>
         <div style="padding:0 14px 14px">
           <textarea id="geminiPrompt" placeholder="例：町の夜。少し寂しいが安心できる、8小節のゲームBGMを作って"></textarea>
@@ -3684,7 +3697,22 @@ if(!loadedAutoSave){
  toast("空の曲をデモ曲へ復元しました");
 }
 installBuiltinSamples();
+function setupWorkspaceMode(){
+ const root=document.body;if(!root)return; const savedMode=localStorage.getItem('arcadia.workspaceMode')||'quick', remember=localStorage.getItem('arcadia.advancedStartup')==='1';
+ const setMode=mode=>{root.classList.toggle('quick-mode',mode==='quick');root.classList.toggle('advanced-mode',mode==='advanced');localStorage.setItem('arcadia.workspaceMode',mode);};
+ const copyOptions=(from,to)=>{if(!from||!to)return;to.innerHTML=from.innerHTML;to.value=from.value;};
+ copyOptions($('#genrePresetSel'),$('#quickGenre'));copyOptions($('#styleSel'),$('#quickStyle'));
+ $('#quickGenre').onchange=()=>{$('#genrePresetSel').value=$('#quickGenre').value;$('#genrePresetSel').dispatchEvent(new Event('change',{bubbles:true}));};
+ $('#quickStyle').onchange=()=>{$('#styleSel').value=$('#quickStyle').value;$('#styleSel').dispatchEvent(new Event('change',{bubbles:true}));};
+ $('#quickGenerateBtn').onclick=()=>$('#autoComposeBtn')?.click();
+ $('#quickPlayBtn').onclick=()=>{$('#playBtn')?.click();};
+ $('#quickSaveBtn').onclick=()=>$('#saveBtn')?.click();
+ $('#advancedModeBtn').onclick=()=>{const next=root.classList.contains('advanced-mode')?'quick':'advanced';setMode(next);$('#advancedModeBtn').textContent=next==='advanced'?'QUICK MODE':'ADVANCED MODE';$('#quickBar .quick-title').textContent=next==='advanced'?'ADVANCED MODE':'QUICK MODE';};
+ $('#advancedStartup').checked=remember;$('#advancedStartup').onchange=()=>{localStorage.setItem('arcadia.advancedStartup',$('#advancedStartup').checked?'1':'0');if($('#advancedStartup').checked)setMode('advanced');};
+ setMode(remember?'advanced':savedMode);$('#advancedModeBtn').textContent=(remember||savedMode==='advanced')?'QUICK MODE':'ADVANCED MODE';$('#quickBar .quick-title').textContent=(remember||savedMode==='advanced')?'ADVANCED MODE':'QUICK MODE';
+}
 bindUi();
+setupWorkspaceMode();
 disableStandaloneOnlyFeatures();
  $("#genrePresetSel").value=state.genrePreset||"Action";
  $("#workspaceModeSel").value=state.workspaceMode||"library";
@@ -3697,6 +3725,8 @@ render();
 })();
 </script>
 </body></html>
+
+
 
 
 
