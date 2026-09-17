@@ -952,17 +952,17 @@ const SCENE_PRESETS={
  resolve:{label:'決意・高揚',base:'Action',tempo:[125,165],density:6,contours:['stairsUp','lateRise','riseTurn','peak'],categories:['dense','balanced'],texture:.95,velocity:106,tags:['epic','battle'],description:'上昇する旋律と、厚みを増す伴奏。'}
 };
 const GAME_GENERATION_SHAPES={
- Action:{label:'アクション',contours:['leap','zigzag','riseTurn','peak'],categories:['dense','accent'],texture:.88,velocity:106,description:'細かい動きと跳躍で、勢いを出す。'},
+ Action:{label:'アクション・シューティング（FPS／TPS）',contours:['leap','zigzag','riseTurn','peak'],categories:['dense','accent'],texture:.88,velocity:106,description:'細かい動きと跳躍で、勢いを出す。'},
  Puzzle:{label:'パズル',contours:['repeat','pendulum','wave'],categories:['sparse','balanced'],texture:.42,velocity:78,description:'短い反復と余白で、考える時間を残す。'},
- Racing:{label:'レース',contours:['rise','stairsUp','leap','rush'],categories:['dense'],texture:1,velocity:112,description:'高密度のリズムと上昇する旋律で、速度感を出す。'},
- Horror:{label:'ホラー',contours:['fall','valley','lateFall','pendulum'],categories:['sparse','accent'],texture:.3,velocity:74,description:'沈む旋律と不規則な間で、不安を作る。'},
- Cozy:{label:'ほのぼの',contours:['wave','arch','repeat'],categories:['sparse','balanced'],texture:.5,velocity:82,description:'穏やかな反復と軽い伴奏。'},
- 'Sci-Fi':{label:'SF',contours:['zigzag','wave','lateRise','leap'],categories:['accent','balanced'],texture:.68,velocity:92,description:'裏拍や跳躍を使った、浮遊感のある動き。'},
- Platformer:{label:'アクション・冒険',contours:['stairsUp','rise','wave','leap'],categories:['balanced','dense'],texture:.74,velocity:98,description:'覚えやすい反復に、軽快な上昇感を加える。'},
- Boss:{label:'ボス戦',contours:['peak','leap','riseTurn','zigzag'],categories:['dense','accent'],texture:.96,velocity:116,description:'強い跳躍と厚い伴奏で、対決の緊張を作る。'},
- Menu:{label:'タイトル・メニュー',contours:['wave','repeat','arch'],categories:['sparse'],texture:.28,velocity:74,description:'長く聴いても疲れにくい、少ない音数と緩やかな旋律。'},
- Town:{label:'町・日常',contours:['arch','wave','repeat'],categories:['sparse','balanced'],texture:.48,velocity:84,description:'口ずさみやすい旋律と、柔らかな伴奏。'},
- Dungeon:{label:'ダンジョン',contours:['pendulum','valley','fallTurn'],categories:['sparse','accent'],texture:.38,velocity:80,description:'低い動きと反復で、探索の緊張を保つ。'},
+ Racing:{label:'レーシング',contours:['rise','stairsUp','leap','rush'],categories:['dense'],texture:1,velocity:112,description:'高密度のリズムと上昇する旋律で、速度感を出す。'},
+ Horror:{label:'サバイバルホラー',contours:['fall','valley','lateFall','pendulum'],categories:['sparse','accent'],texture:.3,velocity:74,description:'沈む旋律と不規則な間で、不安を作る。'},
+ Cozy:{label:'コージー・スローライフ',contours:['wave','arch','repeat'],categories:['sparse','balanced'],texture:.5,velocity:82,description:'穏やかな反復と軽い伴奏。'},
+ 'Sci-Fi':{label:'SFアクション',contours:['zigzag','wave','lateRise','leap'],categories:['accent','balanced'],texture:.68,velocity:92,description:'裏拍や跳躍を使った、浮遊感のある動き。'},
+ Platformer:{label:'プラットフォーマー',contours:['stairsUp','rise','wave','leap'],categories:['balanced','dense'],texture:.74,velocity:98,description:'覚えやすい反復に、軽快な上昇感を加える。'},
+ Boss:{label:'高難度アクション（ソウルライク）',contours:['peak','leap','riseTurn','zigzag'],categories:['dense','accent'],texture:.96,velocity:116,description:'強い跳躍と厚い伴奏で、対決の緊張を作る。'},
+ Menu:{label:'ノベル・アドベンチャー',contours:['wave','repeat','arch'],categories:['sparse'],texture:.28,velocity:74,description:'長く聴いても疲れにくい、少ない音数と緩やかな旋律。'},
+ Town:{label:'ライフシミュレーション',contours:['arch','wave','repeat'],categories:['sparse','balanced'],texture:.48,velocity:84,description:'口ずさみやすい旋律と、柔らかな伴奏。'},
+ Dungeon:{label:'ローグライク・ダンジョンRPG',contours:['pendulum','valley','fallTurn'],categories:['sparse','accent'],texture:.38,velocity:80,description:'低い動きと反復で、探索の緊張を保つ。'},
  Sports:{label:'スポーツ',contours:['rise','leap','peak','zigzag'],categories:['dense','balanced'],texture:.92,velocity:108,description:'明快な拍と強いアクセントで、応援の高揚感を出す。'},
  Rhythm:{label:'リズムゲーム',contours:['zigzag','repeat','leap','wave'],categories:['dense','accent'],texture:1,velocity:110,description:'拍に乗りやすい反復と細かなリズム。'}
 };
@@ -3556,7 +3556,7 @@ function bindUi(){
  });
  const genreSel=$("#genrePresetSel");
  if(genreSel){
-   genreSel.innerHTML='<optgroup label="情景・ムード">'+Object.entries(SCENE_PRESETS).map(([id,scene])=>`<option value="${id}" title="${scene.description}">${scene.label}</option>`).join('')+'</optgroup><optgroup label="ゲーム向け">'+Object.entries(GAME_GENERATION_SHAPES).map(([id,game])=>`<option value="${id}" title="${game.description}">${game.label}</option>`).join('')+'</optgroup>';
+   genreSel.innerHTML='<optgroup label="ゲームジャンル">'+Object.entries(GAME_GENERATION_SHAPES).map(([id,game])=>`<option value="${id}" title="${game.description}">${game.label}</option>`).join('')+'</optgroup><optgroup label="情景・ムード">'+Object.entries(SCENE_PRESETS).map(([id,scene])=>`<option value="${id}" title="${scene.description}">${scene.label}</option>`).join('')+'</optgroup>';
    genreSel.value=state.genrePreset||"Action";
    genreSel.onchange=()=>{state.genrePreset=genreSel.value;renderSceneDescription();autoSave();};
  }
