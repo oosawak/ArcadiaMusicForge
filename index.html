@@ -2222,6 +2222,8 @@ function drumDisplayName(pitch){
  return pitch==='C5'?'KICK':pitch==='D5'?'SNARE':'HAT';
 }
 async function exportMidi(){
+ const logMidi=(message,detail)=>{const text=`MIDI: ${message}${detail?` — ${detail}`:''}`;console.info(text);toast(text);};
+ logMidi('保存を開始');
  const ppq=96, ticksPerStep=ppq/4, tracks=[];
  const arranged=allArrangedNotes();
  state.tracks.forEach((tr,ti)=>{
@@ -2245,21 +2247,27 @@ async function exportMidi(){
  try{
    const tauriInvoke=window.__TAURI_INTERNALS__?.invoke;
    if(typeof tauriInvoke==='function'){
+     logMidi('Tauri保存APIを検出');
      const bytes=Array.from(new Uint8Array(await blob.arrayBuffer()));
+     logMidi(`データ生成完了（${bytes.length} bytes）`);
      const path=await tauriInvoke('plugin:dialog|save',{options:{defaultPath:fileName,filters:[{name:'MIDI file',extensions:['mid']}]}});
-     if(!path)return toast('MIDI保存をキャンセルしました');
+     if(!path)return logMidi('保存をキャンセル');
+     logMidi('保存先を選択',path);
      await tauriInvoke('plugin:fs|write_file',{path,contents:bytes});
+     logMidi('Tauri FS書き込み完了');
    }else if(typeof window.showSaveFilePicker==='function'){
+     logMidi('ブラウザ保存APIを使用');
      const handle=await window.showSaveFilePicker({suggestedName:fileName,types:[{description:'MIDI file',accept:{'audio/midi':['.mid']}}]});
      const writable=await handle.createWritable();
      await writable.write(blob); await writable.close();
    }else{
      const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=fileName;a.style.display='none';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),60000);
    }
-   toast("48小節MIDIを書き出しました");
+   logMidi("48小節MIDIを書き出しました");
  }catch(error){
-   if(error?.name==='AbortError')toast('MIDI保存をキャンセルしました');
-   else toast(`MIDI保存に失敗しました：${error?.message||error}`);
+   console.error('MIDI export failed',error);
+   if(error?.name==='AbortError')logMidi('保存をキャンセル');
+   else logMidi('保存に失敗',error?.message||String(error));
  }
 }
 async function exportWav(){
