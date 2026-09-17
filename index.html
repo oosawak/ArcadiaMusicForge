@@ -216,6 +216,8 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
 .loop-marker.start::after{content:"START";left:4px}
 .loop-marker.end::after{content:"END";right:4px}
 .mode-status-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px}.mode-status-row #currentModeLabel{display:inline-block;padding:8px 12px;border-left:4px solid #56d9c3;border-radius:5px;background:#122e30;color:#d5fff6;font-size:13px}.advanced-mode .mode-status-row #currentModeLabel{border-left-color:#b39bff;background:#29203d;color:#eee4ff}.mode-status-row .mode-top-btn{margin-top:0}
+.advanced-startup{margin-left:auto}.quick-mode .advanced-startup{display:none!important}
+.panel-title #quickModeHint{color:#8f98ad;font-size:11px}.advanced-mode #quickModeHint{display:none}
 .quick-mode #composerTabs{display:none!important}.quick-mode #composerPanel.composer-tab-panel-hidden{display:block!important}
 #composerPanel>.panel-title{display:flex;align-items:center;flex-wrap:wrap;gap:8px}#composerPanel #currentModeLabel{margin-left:auto;color:#83dfca;font-size:12px;letter-spacing:0}.advanced-mode #composerPanel #currentModeLabel{color:#c8b5ff}
 </style>
@@ -262,8 +264,6 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
     <button class="btn primary" id="quickGenerateBtn" type="button">自動生成</button>
     <button class="play" id="quickPlayBtn" type="button" title="生成して再生">▶</button>
     <button class="btn" id="quickSaveBtn" type="button">保存</button>
-    <label class="control mode-switch"><input id="advancedStartup" type="checkbox"> 次回もADVANCED MODE</label>
-    <small>自動生成・再生・保存に絞った簡単モード</small>
   </section>
 
   <section class="workspace">
@@ -307,7 +307,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
         </div>
       </section>
       <section class="panel collapsible-panel" id="composerPanel">
-        <div class="panel-title">COMPOSER TOOLS <button class="collapse-toggle" data-collapse="#composerPanel">折りたたむ</button><strong id="currentModeLabel" role="status" aria-live="polite">現在：QUICK MODE（簡単操作）</strong></div>
+        <div class="panel-title">COMPOSER TOOLS <button class="collapse-toggle" data-collapse="#composerPanel">折りたたむ</button><strong id="currentModeLabel" role="status" aria-live="polite">現在：QUICK MODE（簡単操作）</strong><span id="quickModeHint">自動生成・再生・保存に絞った簡単モード</span><label class="control advanced-startup"><input id="advancedStartup" type="checkbox"> 次回もADVANCED MODE</label></div>
         <div style="padding:14px;display:grid;gap:12px">
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
             <label class="control">WORK MODE
@@ -2182,6 +2182,11 @@ function autoComposeBattle(){
  }
  if(resolvedPalette){mainProgression=generatorPalette(resolvedPalette,theory.root);state.generation.generatorProgression=resolvedPalette;state.generation.generatorProgressionLabel=GENERATOR_PROGRESSIONS[resolvedPalette].name;}
  if(mode==='minimal')mainProgression=[mainProgression[0],mainProgression[0],mainProgression[1],mainProgression[0]];
+ // Reflect the progression actually selected by auto/development mode in both selectors.
+ const resolvedProgressionText=mainProgression.map(c=>c.symbol).join(' - ');
+ const progressionLabel=state.generation.generatorProgressionLabel||resolvedProgressionText;
+ const progressionDisplay=`${progressionLabel} · ${resolvedProgressionText}`;
+ if(mode==='auto') ['#progressionSel','#quickProgression'].forEach(selector=>{const el=$(selector);if(!el)return;let option=Array.from(el.options).find(o=>o.value===paletteId);if(!option){option=document.createElement('option');option.value=paletteId;el.appendChild(option);}option.textContent=progressionDisplay;el.value=option.value;});
  state.generatorProgressionChoice=paletteId;state.generatorProgressionMode=mode;
  state.generation.progressionId=chosen;
  state.progression=mainProgression.map(c=>c.symbol).join('-'); // Legacy display/export only.
