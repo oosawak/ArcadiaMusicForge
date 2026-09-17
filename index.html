@@ -111,7 +111,8 @@ details>summary{list-style:none}details>summary::-webkit-details-marker{display:
 .tool-group-collapsible>summary::after{content:''!important}
 .help-modal{border:1px solid var(--line);border-radius:12px;background:#11131a;color:var(--text);max-width:680px;width:calc(100% - 32px);padding:0;box-shadow:0 18px 60px #000b}
 .help-modal::backdrop{background:#0009}.help-modal-body{padding:18px;line-height:1.65}.help-modal h2{margin:0 0 10px}.help-modal h3{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--gold);margin:18px -4px 7px;padding:8px 10px;border:1px solid #303646;border-radius:8px;background:linear-gradient(90deg,#1a1f2d,#12151d);letter-spacing:.04em}.help-modal h3:first-of-type{margin-top:2px}.help-modal h3::first-letter{font-size:16px}.help-modal-body>div[style*="white-space"]{color:#c2c8d7}.help-modal-body>div[style*="white-space"]:empty{height:4px}.help-close{float:right}
-.quick-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 12px;margin:10px 0;border:1px solid var(--line);border-radius:10px;background:#121722}.quick-bar .quick-title{font-weight:800;color:var(--gold);letter-spacing:.05em}.quick-bar select{min-width:130px}.quick-bar .btn.primary{background:var(--red2);color:#fff;border-color:var(--red)}.quick-mode .advanced-only{display:none!important}.quick-bar small{color:#8f98ad}.mode-switch{margin-left:auto}.advanced-mode .quick-bar{border-color:#5b4d32}.advanced-mode .quick-title{color:#9bb7ff}
+.quick-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 12px;margin:0;border:1px solid var(--line);border-radius:8px;background:#121722}.quick-bar .quick-title{font-weight:800;color:var(--gold);letter-spacing:.05em}.quick-bar select{min-width:130px}.quick-bar .btn.primary{background:var(--red2);color:#fff;border-color:var(--red)}.quick-mode #composerPanel>div:not(.panel-title):not(#quickBar){display:none!important}.quick-mode .advanced-only{display:none!important}.quick-bar small{color:#8f98ad}.mode-switch{margin-left:auto}.advanced-mode .quick-bar{display:none}.advanced-mode .quick-title{color:#9bb7ff}
+.mode-top-btn{margin-top:8px;border-color:#6679b5;color:#cbd6ff;background:#171d31}.mode-top-btn:hover{background:#232d4b}
 .note{position:absolute;height:20px;margin-top:3px;border-radius:4px;background:linear-gradient(#ef5262,#bb2638);border:1px solid #ff7784;box-shadow:0 0 12px rgba(217,52,69,.2);pointer-events:none}
 .playhead{position:absolute;top:0;bottom:0;width:2px;background:#f8d990;box-shadow:0 0 10px #f8d990;z-index:5;pointer-events:none}
 .status{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:10px 14px;color:#7f8799;font-size:11px;border-top:1px solid var(--line)}
@@ -223,6 +224,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
       <small>MUSIC COMPOSER &amp; SEQUENCER</small>
       <h1>Arcadia Music Forge</h1>
       <p>ジャンルと情景から作曲。フレーズ作成、アレンジ、再生、MIDI/WAV書き出しまでをブラウザで。</p>
+      <button class="btn mode-top-btn" id="advancedModeBtn" type="button">ADVANCED MODE</button>
     </div>
     <div class="actions">
       <button class="btn" id="newBtn">新規</button>
@@ -250,11 +252,14 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
     <span class="quick-title">QUICK MODE</span>
     <label class="control">ジャンル／情景 <select id="quickGenre"></select></label>
     <label class="control">STYLE <select id="quickStyle"></select></label>
+    <label class="control">音源スタイル <select id="quickSoundStyle"></select></label>
+    <label class="control">進行 <select id="quickProgression"></select></label>
+    <label class="control">進行モード <select id="quickGenerationMode"></select></label>
+    <label class="control">SEED <input id="quickSeed" type="number" min="1" max="4294967295" style="width:100px"></label>
     <button class="btn primary" id="quickGenerateBtn" type="button">自動生成</button>
     <button class="play" id="quickPlayBtn" type="button" title="生成して再生">▶</button>
     <button class="btn" id="quickSaveBtn" type="button">保存</button>
     <label class="control mode-switch"><input id="advancedStartup" type="checkbox"> 次回もADVANCED MODE</label>
-    <button class="btn" id="advancedModeBtn" type="button">ADVANCED MODE</button>
     <small>自動生成・再生・保存に絞った簡単モード</small>
   </section>
 
@@ -298,7 +303,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
         </div>
         </div>
       </section>
-      <section class="panel collapsible-panel advanced-only" id="composerPanel">
+      <section class="panel collapsible-panel" id="composerPanel">
         <div class="panel-title">COMPOSER TOOLS <button class="collapse-toggle" data-collapse="#composerPanel">折りたたむ</button><span style="float:right;margin-right:90px">Battle Generator</span></div>
         <div style="padding:14px;display:grid;gap:12px">
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
@@ -3699,17 +3704,23 @@ if(!loadedAutoSave){
 installBuiltinSamples();
 function setupWorkspaceMode(){
  const root=document.body;if(!root)return; const savedMode=localStorage.getItem('arcadia.workspaceMode')||'quick', remember=localStorage.getItem('arcadia.advancedStartup')==='1';
+ const composerPanel=$('#composerPanel'),quickBar=$('#quickBar');if(composerPanel&&quickBar)composerPanel.insertBefore(quickBar,composerPanel.children[1]||null);
  const setMode=mode=>{root.classList.toggle('quick-mode',mode==='quick');root.classList.toggle('advanced-mode',mode==='advanced');localStorage.setItem('arcadia.workspaceMode',mode);};
  const copyOptions=(from,to)=>{if(!from||!to)return;to.innerHTML=from.innerHTML;to.value=from.value;};
- copyOptions($('#genrePresetSel'),$('#quickGenre'));copyOptions($('#styleSel'),$('#quickStyle'));
+ copyOptions($('#genrePresetSel'),$('#quickGenre'));copyOptions($('#styleSel'),$('#quickStyle'));copyOptions($('#soundStyleSel'),$('#quickSoundStyle'));copyOptions($('#progressionSel'),$('#quickProgression'));copyOptions($('#generationMode'),$('#quickGenerationMode'));$('#quickSeed').value=$('#generationSeed')?.value||state?.generation?.seed||1;
  $('#quickGenre').onchange=()=>{$('#genrePresetSel').value=$('#quickGenre').value;$('#genrePresetSel').dispatchEvent(new Event('change',{bubbles:true}));};
  $('#quickStyle').onchange=()=>{$('#styleSel').value=$('#quickStyle').value;$('#styleSel').dispatchEvent(new Event('change',{bubbles:true}));};
- $('#quickGenerateBtn').onclick=()=>$('#autoComposeBtn')?.click();
+ $('#quickSoundStyle').onchange=()=>{$('#soundStyleSel').value=$('#quickSoundStyle').value;$('#soundStyleSel').dispatchEvent(new Event('change',{bubbles:true}));};
+ $('#quickProgression').onchange=()=>{$('#progressionSel').value=$('#quickProgression').value;$('#progressionSel').dispatchEvent(new Event('change',{bubbles:true}));};
+ $('#quickGenerationMode').onchange=()=>{$('#generationMode').value=$('#quickGenerationMode').value;$('#generationMode').dispatchEvent(new Event('change',{bubbles:true}));};
+ $('#quickSeed').onchange=()=>{$('#generationSeed').value=$('#quickSeed').value;};
+ $('#quickGenerateBtn').onclick=()=>{$('#autoComposeBtn')?.click();setTimeout(()=>{$('#quickSeed').value=$('#generationSeed')?.value||state?.generation?.seed||1;},0);};
  $('#quickPlayBtn').onclick=()=>{$('#playBtn')?.click();};
  $('#quickSaveBtn').onclick=()=>$('#saveBtn')?.click();
  $('#advancedModeBtn').onclick=()=>{const next=root.classList.contains('advanced-mode')?'quick':'advanced';setMode(next);$('#advancedModeBtn').textContent=next==='advanced'?'QUICK MODE':'ADVANCED MODE';$('#quickBar .quick-title').textContent=next==='advanced'?'ADVANCED MODE':'QUICK MODE';};
  $('#advancedStartup').checked=remember;$('#advancedStartup').onchange=()=>{localStorage.setItem('arcadia.advancedStartup',$('#advancedStartup').checked?'1':'0');if($('#advancedStartup').checked)setMode('advanced');};
  setMode(remember?'advanced':savedMode);$('#advancedModeBtn').textContent=(remember||savedMode==='advanced')?'QUICK MODE':'ADVANCED MODE';$('#quickBar .quick-title').textContent=(remember||savedMode==='advanced')?'ADVANCED MODE':'QUICK MODE';
+ if(!remember&&savedMode==='quick'&&state?.arrangementPreset!=='audition'&&typeof auditionArrangement==='function') auditionArrangement();
 }
 bindUi();
 setupWorkspaceMode();
@@ -3725,6 +3736,7 @@ render();
 })();
 </script>
 </body></html>
+
 
 
 
