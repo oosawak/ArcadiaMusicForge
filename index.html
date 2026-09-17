@@ -217,6 +217,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
 .loop-marker.end::after{content:"END";right:4px}
 .mode-status-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px}.mode-status-row #currentModeLabel{display:inline-block;padding:8px 12px;border-left:4px solid #56d9c3;border-radius:5px;background:#122e30;color:#d5fff6;font-size:13px}.advanced-mode .mode-status-row #currentModeLabel{border-left-color:#b39bff;background:#29203d;color:#eee4ff}.mode-status-row .mode-top-btn{margin-top:0}
 .quick-mode #composerTabs{display:none!important}.quick-mode #composerPanel.composer-tab-panel-hidden{display:block!important}
+#composerPanel>.panel-title{display:flex;align-items:center;flex-wrap:wrap;gap:8px}#composerPanel #currentModeLabel{margin-left:auto;color:#83dfca;font-size:12px;letter-spacing:0}.advanced-mode #composerPanel #currentModeLabel{color:#c8b5ff}
 </style>
 </head>
 <body>
@@ -226,7 +227,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
       <small>MUSIC COMPOSER &amp; SEQUENCER</small>
       <h1>Arcadia Music Forge</h1>
       <p>ジャンルと情景から作曲。フレーズ作成、アレンジ、再生、MIDI/WAV書き出しまでをブラウザで。</p>
-      <div class="mode-status-row"><strong id="currentModeLabel" role="status" aria-live="polite">現在：QUICK MODE（簡単操作）</strong><button class="btn mode-top-btn" id="advancedModeBtn" type="button">ADVANCED MODEへ切り替え</button></div>
+      <div class="mode-status-row"><button class="btn mode-top-btn" id="advancedModeBtn" type="button">ADVANCED MODEへ切り替え</button></div>
     </div>
     <div class="actions">
       <button class="btn" id="newBtn">新規</button>
@@ -306,7 +307,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
         </div>
       </section>
       <section class="panel collapsible-panel" id="composerPanel">
-        <div class="panel-title">COMPOSER TOOLS <button class="collapse-toggle" data-collapse="#composerPanel">折りたたむ</button><span style="float:right;margin-right:90px">Battle Generator</span></div>
+        <div class="panel-title">COMPOSER TOOLS <button class="collapse-toggle" data-collapse="#composerPanel">折りたたむ</button><strong id="currentModeLabel" role="status" aria-live="polite">現在：QUICK MODE（簡単操作）</strong></div>
         <div style="padding:14px;display:grid;gap:12px">
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
             <label class="control">WORK MODE

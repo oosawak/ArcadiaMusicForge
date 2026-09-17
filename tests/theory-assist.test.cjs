@@ -484,7 +484,14 @@ nodes.get('#adaptiveAccompaniment').checked=true;nodes.get('#adaptiveAccompanime
 api.autoComposeBattle();const accompanimentOn=plain(api.state);
 assert.deepEqual(accompanimentOn.tracks[0],accompanimentOff.tracks[0],'preserve final melody');
 assert.notDeepEqual(accompanimentOn.tracks.slice(1),accompanimentOff.tracks.slice(1));
-assert.deepEqual(accompanimentOn.arrangement,accompanimentOff.arrangement);
+for(const song of [accompanimentOn,accompanimentOff]){
+ assert.equal(song.arrangementPreset,'audition');
+ assert.equal(song.loopStart,5);assert.equal(song.loopEnd,24);assert.equal(song.loopEnabled,true);
+ song.arrangement.forEach((row,ti)=>assert.deepEqual(row,Array.from({length:12},(_,i)=>{
+  const pat=['INTRO','A','B','BREAK','CLIMAX','TURN'][i];
+  return pat&&song.tracks[ti].patterns[pat]?.length?pat:null;
+ })));
+}
 assert.equal(accompanimentOn.bpm,accompanimentOff.bpm);
 for(let ti=0;ti<7;ti++)assert.deepEqual(accompanimentOn.tracks[ti].sound,accompanimentOff.tracks[ti].sound);
 for(const [pat,ns] of Object.entries(accompanimentOn.tracks[1].patterns)){
