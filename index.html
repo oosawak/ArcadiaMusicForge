@@ -3690,7 +3690,7 @@ function bindUi(){
  $("#autoPlayBtn").onclick=()=>{if(!playing){play();$("#autoPlayBtn").textContent="■ Stop";}else stopPlayback();};
  $("#styleSel").onchange=()=>{state.style=$("#styleSel").value;autoSave();};
  $('#soundStyleSel').onchange=()=>{saveUndo();state.soundStyle=$('#soundStyleSel').value;autoSave();};
- $('#progressionSel').onchange=()=>{saveUndo();state.generatorProgressionChoice=$('#progressionSel').value;autoSave();};
+ $('#progressionSel').onchange=()=>{saveUndo();state.generatorProgressionChoice=$('#progressionSel').value;const mode=$('#generationMode');if(mode&&mode.value!=='fixed'){mode.value='fixed';state.generatorProgressionMode='fixed';const quickMode=$('#quickGenerationMode');if(quickMode)quickMode.value='fixed';}autoSave();};
  $('#generationMode').onchange=()=>{saveUndo();state.generatorProgressionMode=$('#generationMode').value;autoSave();};
  $("#sourceSel").onchange=()=>{state.tracks[state.selected].sound={...(state.tracks[state.selected].sound||SOUND_DEFAULTS[state.selected]),source:$("#sourceSel").value};autoSave();};
  $("#trackTypeSel").onchange=e=>applyTrackType(e.target.value);
