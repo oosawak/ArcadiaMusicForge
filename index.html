@@ -110,7 +110,7 @@ details>summary{list-style:none}details>summary::-webkit-details-marker{display:
 .main>#theoryAssist{padding:0 14px 14px}.main>#theoryAssist>summary{margin:0 -14px 10px;padding:13px 15px;border-bottom:1px solid var(--line)}
 .tool-group-collapsible>summary::after{content:''!important}
 .help-modal{border:1px solid var(--line);border-radius:12px;background:#11131a;color:var(--text);max-width:680px;width:calc(100% - 32px);padding:0;box-shadow:0 18px 60px #000b}
-.help-modal::backdrop{background:#0009}.help-modal-body{padding:18px;line-height:1.65}.help-modal h2{margin:0 0 10px}.help-modal h3{font-size:13px;color:var(--gold);margin:14px 0 3px}.help-close{float:right}
+.help-modal::backdrop{background:#0009}.help-modal-body{padding:18px;line-height:1.65}.help-modal h2{margin:0 0 10px}.help-modal h3{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--gold);margin:18px -4px 7px;padding:8px 10px;border:1px solid #303646;border-radius:8px;background:linear-gradient(90deg,#1a1f2d,#12151d);letter-spacing:.04em}.help-modal h3:first-of-type{margin-top:2px}.help-modal h3::first-letter{font-size:16px}.help-modal-body>div[style*="white-space"]{color:#c2c8d7}.help-modal-body>div[style*="white-space"]:empty{height:4px}.help-close{float:right}
 .note{position:absolute;height:20px;margin-top:3px;border-radius:4px;background:linear-gradient(#ef5262,#bb2638);border:1px solid #ff7784;box-shadow:0 0 12px rgba(217,52,69,.2);pointer-events:none}
 .playhead{position:absolute;top:0;bottom:0;width:2px;background:#f8d990;box-shadow:0 0 10px #f8d990;z-index:5;pointer-events:none}
 .status{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:10px 14px;color:#7f8799;font-size:11px;border-top:1px solid var(--line)}
@@ -580,12 +580,12 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
 </div>
 <div class="toast" id="toastMessage"></div>
 <dialog class="help-modal" id="helpModal"><div class="help-modal-body"><button class="btn help-close" id="helpCloseBtn" type="button">閉じる</button>
-<h3>Arcadia Music Forge 機能・操作ガイド</h3>
+<h3>📘 Arcadia Music Forge 機能・操作ガイド</h3>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere">確認日：2026年9月9日  </div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere">確認対象：ローカル main、コミット ca565f4 の index.html、README、統合資料、回帰テスト。GitHub公開版の反映状態は別途確認が必要です。</div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
-<h3>1. どんなツールか</h3>
+<h3>🎵 1. どんなツールか</h3>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere">Arcadia Music Forgeは、ブラウザ上でゲームBGMのたたき台を生成し、音符・音色・曲構成を編集して、プロジェクト、MIDI、WAVとして保存するツールです。単一HTMLに画面と生成・音声処理を収めています。</div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
@@ -603,7 +603,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere">実機ファミコン／スーファミの音源エミュレーターではありません。7トラックは同時発音数の上限ではなく、1トラックに和音を置けば複数の音が同時に鳴ります。</div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
-<h3>2. 最初の曲を作る手順</h3>
+<h3>🚀 2. 最初の曲を作る手順</h3>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere">1. 新規プロジェクトまたは曲ライブラリで曲を用意します。</div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere">2. ROOTとSCALEを設定します。</div>
@@ -616,13 +616,13 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere">自動生成は既存の生成対象パターンや配置を更新します。大切な編集は先に保存、または曲を複製してください。</div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
-<h3>3. 画面ごとの機能</h3>
+<h3>🧭 3. 画面ごとの機能</h3>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
-<h3>曲ライブラリ</h3>
+<h3>📚 曲ライブラリ</h3>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere">複数曲をプロジェクト内で管理します。曲名変更、追加、複製、削除、曲の切り替えに対応します。ブラウザ内の自動保存に加え、プロジェクトファイルとして保存できます。曲を切り替えるとUndo履歴はクリアされます。</div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
-<h3>GENERATOR</h3>
+<h3>⚙️ GENERATOR</h3>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere">音楽ジャンルと情景・ムードを組み合わせて作曲します。例えば「ピアノ × 雨の日の部屋」「シンセウェーブ × 夜の街」「オーケストラ × 旅立ち」。Geminiの接続は不要です。</div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
@@ -643,7 +643,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere">進行一覧には基本進行と、カノン、小室、王道、織田哲郎、循環、ポップパンク、アンダルシア風、冒険系、切ないゲーム系、ボス戦系、ホラー系、SF系などがあります。名称はアプリ内ラベルであり、音楽理論上の名称の正確さを保証するものではありません。</div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
-<h3>THEORY ASSIST</h3>
+<h3>🎼 THEORY ASSIST</h3>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere">ROOT／SCALEから和音を計算し、手動で音楽を組み立てる補助機能です。</div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
@@ -659,35 +659,35 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere">逆引きは音の集合に合う候補を探す機能です。曲の調やコードを一意に断定するものではありません。</div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
-<h3>アレンジメント</h3>
+<h3>🧩 アレンジメント</h3>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere">48小節を4小節×12ブロックで扱い、各トラックにパターンを配置します。クリックでパターン切り替え、右クリックでOFF、ドラッグで移動・コピーする処理があります。標準構成の配置、配置クリア、トラックごとの音量・ミュート・ソロに対応します。</div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere">スマホ幅では横スクロール用の幅指定があります。ただし、タッチ端末でのドラッグや実際のスクロール操作は端末ごとの確認が必要です。</div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
-<h3>PIANO ROLL</h3>
+<h3>🎹 PIANO ROLL</h3>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere">4小節・64ステップのグリッドを使い、音符を追加・選択・編集します。表示音域はE4～E6です。音価、ベロシティ、クオンタイズ、半音移調、ヒューマナイズ、音符コピー／貼り付け／削除、パターンの追加・複製・改名・削除を備えます。</div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere">INTRO、A、B、BREAK、CLIMAX、TURNなどのパターンを切り替えて編集し、アレンジメントへ配置します。Undo履歴は最大30件です。すべての操作にUndoが付くとは限りません。</div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
-<h3>SOUND DESIGN</h3>
+<h3>🎛️ SOUND DESIGN</h3>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere">選択トラックの音色・エンベロープ・フィルター・パン・LFOなどを調整し、音色プリセットの保存・読込・試聴を行います。</div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere">「FX全オフ」はライブ再生のリバーブとディレイをバイパスします。フィルター、エンベロープ、LFOなど音作り全体を無効にするスイッチではありません。現在はスマホ判定時に初期ON、PCでは初期OFFです。</div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
-<h3>PCM SAMPLER</h3>
+<h3>🔊 PCM SAMPLER</h3>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere">音声ファイルをトラック用またはドラム用サンプルとして読み込みます。基準音、音量、ループ開始／終了、ワンショット、フェードを調整できます。波形表示、トリミング、ノーマライズ、逆再生を備えます。音声形式の対応はブラウザのデコード能力に依存します。</div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
-<h3>CHROME GEMINI（オプション）</h3>
+<h3>✨ CHROME GEMINI（オプション）</h3>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere">文章で曲の設計図や音符生成を依頼する補助機能です。設計図は保存されますが、それだけで48小節の曲へ自動配置される機能ではありません。作曲結果は別の「結果を現在パターンへ反映」で適用します。</div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere">Chrome内蔵LanguageModel APIとモデルの準備が必要です。この環境ではダウンロード／セッション準備が完了しない事象があり、実用動作は未確認です。通常のGENERATORはGeminiなしで利用できます。</div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
-<h3>4. 再生と保存</h3>
+<h3>▶️ 4. 再生と保存</h3>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere">|項目|内容|</div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere">|---|---|</div>
@@ -703,7 +703,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere">WAVはライブ再生とは別処理です。現在のWAV処理にはライブ用リバーブ・ディレイ接続がなく、再生音と完全一致しません。</div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
-<h3>5. 活用に向く場面</h3>
+<h3>💡 5. 活用に向く場面</h3>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere">ゲームBGMのアイデア出し、短いフレーズの比較、コードとメロディーの学習、音色・サンプルの試作、DAWへ渡すMIDI素材作りに向きます。実機音源の厳密な再現や、長時間・高負荷のライブ運用については追加の実装・検証が必要です。</div>
 <div style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
@@ -3697,6 +3697,7 @@ render();
 })();
 </script>
 </body></html>
+
 
 
 
