@@ -232,6 +232,7 @@ kbd{border:1px solid #3b4050;border-bottom-width:2px;background:#171a22;border-r
       <div class="mode-status-row"><button class="btn mode-top-btn" id="advancedModeBtn" type="button">ADVANCED MODEへ切り替え</button></div>
     </div>
     <div class="actions">
+      <label class="control language-switch">LANG <select id="languageMode"><option value="us">US</option><option value="jp">JP</option></select></label>
       <button class="btn" id="newBtn">新規</button>
       <button class="btn" id="saveBtn" title="プロジェクトを保存">保存</button>
       <button class="btn" id="loadBtn" title="プロジェクトを読み込み">読込</button>
@@ -3761,6 +3762,13 @@ if(!loadedAutoSave){
  toast("空の曲をデモ曲へ復元しました");
 }
 installBuiltinSamples();
+function setupLanguageMode(){
+ const select=$('#languageMode');if(!select)return;
+ const mode=localStorage.getItem('arcadia.languageMode')||'us';
+ const labels={us:{newBtn:'New',saveBtn:'Save',loadBtn:'Load',midiImportBtn:'MIDI Import',midiBtn:'MIDI Save',wavBtn:'WAVE Save',helpBtn:'Guide',quickGenerateBtn:'Generate',quickSaveBtn:'Save',quickModeHint:'Generate, play and save',currentQuick:'Current: QUICK MODE (Simple)',currentAdvanced:'Current: ADVANCED MODE (Detailed)',advancedSwitch:'Switch to ADVANCED MODE',quickSwitch:'Switch to QUICK MODE'},jp:{newBtn:'新規',saveBtn:'保存',loadBtn:'読込',midiImportBtn:'MIDI読込',midiBtn:'MIDI保存',wavBtn:'WAVE保存',helpBtn:'操作ガイド',quickGenerateBtn:'自動生成',quickSaveBtn:'保存',quickModeHint:'自動生成・再生・保存に絞った簡単モード',currentQuick:'現在：QUICK MODE（簡単操作）',currentAdvanced:'現在：ADVANCED MODE（詳細編集）',advancedSwitch:'ADVANCED MODEへ切り替え',quickSwitch:'QUICK MODEへ切り替え'}};
+ const apply=lang=>{const l=labels[lang]||labels.us;select.value=lang;Object.entries(l).forEach(([id,text])=>{const el=$('#'+id);if(el)el.textContent=text;});const advanced=document.body?.classList.contains('advanced-mode');const label=$('#currentModeLabel'),toggle=$('#advancedModeBtn');if(label)label.textContent=advanced?l.currentAdvanced:l.currentQuick;if(toggle)toggle.textContent=advanced?l.quickSwitch:l.advancedSwitch;const hint=$('#quickModeHint');if(hint)hint.textContent=l.quickModeHint;localStorage.setItem('arcadia.languageMode',lang);};
+ select.onchange=()=>apply(select.value);window.applyLanguageMode=apply;apply(mode);
+}
 function setupWorkspaceMode(){
  const root=document.body;if(!root)return; const savedMode=localStorage.getItem('arcadia.workspaceMode')||'quick', remember=localStorage.getItem('arcadia.advancedStartup')==='1';
  const composerPanel=$('#composerPanel'),quickBar=$('#quickBar');if(composerPanel&&quickBar)composerPanel.insertBefore(quickBar,composerPanel.children[1]||null);
@@ -3790,6 +3798,7 @@ function setupWorkspaceMode(){
 }
 bindUi();
 setupWorkspaceMode();
+setupLanguageMode();
 disableStandaloneOnlyFeatures();
  $("#genrePresetSel").value=state.genrePreset||"Action";
  $("#workspaceModeSel").value=state.workspaceMode||"library";
