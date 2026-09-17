@@ -1,0 +1,17 @@
+[package]
+name = "arcadia_music_forge"
+version = "17.0.0"
+description = "Arcadia Music Forge standalone app"
+authors = ["Arcadia Music Forge"]
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+tauri-plugin-fs = "2"
+
+[features]
+custom-protocol = ["tauri/custom-protocol"]

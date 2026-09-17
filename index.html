@@ -103,6 +103,7 @@ background-size:calc(100% / 64) 100%}
 .composer-tab{border:1px solid #3a4051;background:#12151c;color:#aeb6c8;border-radius:7px;padding:8px 13px;cursor:pointer}
 .composer-tab.active{background:var(--red2);border-color:var(--red);color:#fff;font-weight:800}
 .composer-tab-panel-hidden{display:none!important}
+.platform-disabled{opacity:.52;filter:saturate(.35)}
 .collapse-toggle{font-size:0}.collapse-toggle::before{content:'▼';font-size:12px}.collapse-toggle.is-collapsed::before{content:'▶'}
 details>summary{list-style:none}details>summary::-webkit-details-marker{display:none}details>summary::before{content:'▶';display:inline-block;margin-right:4px;color:#9bb7dd;font-size:11px}details[open]>summary::before{content:'▼'}
 .gemini-assist>summary.panel-title,#theoryAssist>summary.panel-title{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:#b4bac9}
@@ -1606,6 +1607,12 @@ function renderTheoryHistory(){
 let geminiDraft=null;
 let geminiPlan=null;
 function geminiAvailable(){return !!(window.LanguageModel?.create||window.ai?.languageModel?.create);}
+function disableStandaloneOnlyFeatures(){
+ if(!(window.__TAURI__||window.__TAURI_INTERNALS__))return;
+ const gemini=$('#geminiAssist');if(gemini){gemini.open=false;gemini.classList.add('platform-disabled');gemini.querySelectorAll('input,select,textarea,button').forEach(el=>el.disabled=true);const status=$('#geminiStatus');if(status)status.textContent='スタンドアローン版では利用できません';}
+ const generator=$('#wtrmaxGenerateBtn'),prompt=$('#wtrmaxPrompt'),duration=$('#wtrmaxDuration');[generator,prompt,duration].forEach(el=>{if(el)el.disabled=true;});
+ const wtrStatus=$('#wtrmaxStatus');if(wtrStatus)wtrStatus.textContent='スタンドアローン版では利用できません';
+}
 function geminiLog(message){const el=$('#geminiLog');if(!el)return;const stamp=new Date().toLocaleTimeString();el.textContent=(el.textContent==='ログ：待機中'?'':el.textContent+'\n')+`${stamp}  ${message}`;el.scrollTop=el.scrollHeight;}
 async function geminiCreateSession(systemPrompt){
  const api=window.LanguageModel||window.ai?.languageModel;
@@ -2214,7 +2221,7 @@ function u16be(n){return [(n>>>8)&255,n&255]}
 function drumDisplayName(pitch){
  return pitch==='C5'?'KICK':pitch==='D5'?'SNARE':'HAT';
 }
-function exportMidi(){
+async function exportMidi(){
  const ppq=96, ticksPerStep=ppq/4, tracks=[];
  const arranged=allArrangedNotes();
  state.tracks.forEach((tr,ti)=>{
@@ -2234,7 +2241,26 @@ function exportMidi(){
  });
  const header=[0x4d,0x54,0x68,0x64,0,0,0,6,...u16be(1),...u16be(tracks.length),...u16be(ppq)];
  const blob=new Blob([new Uint8Array([...header,...tracks.flat()])],{type:"audio/midi"});
- const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="battle-composer-48bars.mid";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500);toast("48小節MIDIを書き出しました");
+ const fileName=`${sanitizeFileName(state.name||'arcadia-music-forge')}.mid`;
+ try{
+   const tauriInvoke=window.__TAURI_INTERNALS__?.invoke;
+   if(typeof tauriInvoke==='function'){
+     const bytes=Array.from(new Uint8Array(await blob.arrayBuffer()));
+     const path=await tauriInvoke('plugin:dialog|save',{options:{defaultPath:fileName,filters:[{name:'MIDI file',extensions:['mid']}]}});
+     if(!path)return toast('MIDI保存をキャンセルしました');
+     await tauriInvoke('plugin:fs|write_file',{path,contents:bytes});
+   }else if(typeof window.showSaveFilePicker==='function'){
+     const handle=await window.showSaveFilePicker({suggestedName:fileName,types:[{description:'MIDI file',accept:{'audio/midi':['.mid']}}]});
+     const writable=await handle.createWritable();
+     await writable.write(blob); await writable.close();
+   }else{
+     const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=fileName;a.style.display='none';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),60000);
+   }
+   toast("48小節MIDIを書き出しました");
+ }catch(error){
+   if(error?.name==='AbortError')toast('MIDI保存をキャンセルしました');
+   else toast(`MIDI保存に失敗しました：${error?.message||error}`);
+ }
 }
 async function exportWav(){
  const button=$("#wavBtn"),originalLabel=button?.textContent;
@@ -3651,6 +3677,7 @@ if(!loadedAutoSave){
 }
 installBuiltinSamples();
 bindUi();
+disableStandaloneOnlyFeatures();
  $("#genrePresetSel").value=state.genrePreset||"Action";
  $("#workspaceModeSel").value=state.workspaceMode||"library";
  setWorkspaceMode(state.workspaceMode||"library");
